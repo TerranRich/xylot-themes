@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Drupal\Commands\pm;
 
 use Consolidation\AnnotatedCommand\CommandData;
@@ -17,6 +16,7 @@ use Drush\Utils\StringUtils;
 
 class PmCommands extends DrushCommands
 {
+
     protected $configFactory;
 
     protected $moduleInstaller;
@@ -37,27 +37,42 @@ class PmCommands extends DrushCommands
         $this->extensionListModule = $extensionListModule;
     }
 
-    public function getConfigFactory(): ConfigFactoryInterface
+    /**
+     * @return \Drupal\Core\Config\ConfigFactoryInterface
+     */
+    public function getConfigFactory()
     {
         return $this->configFactory;
     }
 
-    public function getModuleInstaller(): ModuleInstallerInterface
+    /**
+     * @return \Drupal\Core\Extension\ModuleInstallerInterface
+     */
+    public function getModuleInstaller()
     {
         return $this->moduleInstaller;
     }
 
-    public function getModuleHandler(): ModuleHandlerInterface
+    /**
+     * @return \Drupal\Core\Extension\ModuleHandlerInterface
+     */
+    public function getModuleHandler()
     {
         return $this->moduleHandler;
     }
 
-    public function getThemeHandler(): ThemeHandlerInterface
+    /**
+     * @return \Drupal\Core\Extension\ThemeHandlerInterface
+     */
+    public function getThemeHandler()
     {
         return $this->themeHandler;
     }
 
-    public function getExtensionListModule(): ModuleExtensionList
+    /**
+     * @return \Drupal\Core\Extension\ModuleExtensionList
+     */
+    public function getExtensionListModule()
     {
         return $this->extensionListModule;
     }
@@ -65,12 +80,12 @@ class PmCommands extends DrushCommands
     /**
      * Enable one or more modules.
      *
-     * @command pm:install
+     * @command pm:enable
      * @param $modules A comma delimited list of modules.
-     * @aliases in, install, pm-install, en, pm-enable, pm:enable
+     * @aliases en,pm-enable
      * @bootstrap root
      */
-    public function install(array $modules): void
+    public function enable(array $modules)
     {
         $modules = StringUtils::csvToArray($modules);
         $todo = $this->addInstallDependencies($modules);
@@ -97,14 +112,14 @@ class PmCommands extends DrushCommands
     /**
      * Run requirements checks on the module installation.
      *
-     * @hook validate pm:install
+     * @hook validate pm:enable
      *
-     * @throws UserAbortException
-     * @throws MissingDependencyException
+     * @throws \Drush\Exceptions\UserAbortException
+     * @throws \Drupal\Core\Extension\MissingDependencyException
      *
      * @see \drupal_check_module()
      */
-    public function validateEnableModules(CommandData $commandData): void
+    public function validateEnableModules(CommandData $commandData)
     {
         $modules = $commandData->input()->getArgument('modules');
         $modules = StringUtils::csvToArray($modules);
@@ -116,15 +131,7 @@ class PmCommands extends DrushCommands
         require_once DRUSH_DRUPAL_CORE . '/includes/install.inc';
         $error = false;
         foreach ($modules as $module) {
-            // Note: we can't just call the API ($moduleHandler->loadInclude($module, 'install')),
-            // because the API ignores modules that haven't been installed yet. We have
-            // to do it the same way the `function drupal_check_module($module)` does.
-            $module_list = \Drupal::service('extension.list.module');
-            $file = DRUPAL_ROOT . '/' . $module_list->getPath($module) . "/$module.install";
-            if (is_file($file)) {
-                require_once $file;
-            }
-            // Once we've loaded the module, we can invoke its requirements hook.
+            module_load_install($module);
             $requirements = $this->getModuleHandler()->invoke($module, 'requirements', ['install']);
             if (is_array($requirements) && drupal_requirements_severity($requirements) == REQUIREMENT_ERROR) {
                 $error = true;
@@ -143,8 +150,8 @@ class PmCommands extends DrushCommands
         }
 
         if ($error) {
-            // Allow the user to bypass the install requirements.
-            if (!$this->io()->confirm(dt('The module install requirements failed. Do you wish to continue?'), false)) {
+            // Let the user confirm the installation if the requirements are unmet.
+            if (!$this->io()->confirm(dt('The module install requirements failed. Do you wish to continue?'))) {
                 throw new UserAbortException();
             }
         }
@@ -157,7 +164,7 @@ class PmCommands extends DrushCommands
      * @param $modules A comma delimited list of modules.
      * @aliases pmu,pm-uninstall
      */
-    public function uninstall(array $modules): void
+    public function uninstall(array $modules)
     {
         $modules = StringUtils::csvToArray($modules);
         $list = $this->addUninstallDependencies($modules);
@@ -176,7 +183,7 @@ class PmCommands extends DrushCommands
     /**
      * @hook validate pm-uninstall
      */
-    public function validateUninstall(CommandData $commandData): void
+    public function validateUninstall(CommandData $commandData)
     {
         if ($modules = $commandData->input()->getArgument('modules')) {
             $modules = StringUtils::csvToArray($modules);
@@ -212,8 +219,9 @@ class PmCommands extends DrushCommands
      * @default-fields package,display_name,status,version
      * @aliases pml,pm-list
      * @filter-default-field display_name
+     * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
      */
-    public function pmList($options = ['format' => 'table', 'type' => 'module,theme', 'status' => 'enabled,disabled', 'package' => self::REQ, 'core' => false, 'no-core' => false]): RowsOfFields
+    public function pmList($options = ['format' => 'table', 'type' => 'module,theme', 'status' => 'enabled,disabled', 'package' => self::REQ, 'core' => false, 'no-core' => false])
     {
         $rows = [];
 
@@ -271,7 +279,7 @@ class PmCommands extends DrushCommands
             $row = [
                 'package' => $extension->info['package'],
                 'project' => isset($extension->info['project']) ? $extension->info['project'] : '',
-                'display_name' => $extension->info['name'] . ' (' . $extension->getName() . ')',
+                'display_name' => $extension->info['name']. ' ('. $extension->getName(). ')',
                 'name' => $extension->getName(),
                 'type' => $extension->getType(),
                 'path' => $extension->getPath(),
@@ -294,12 +302,12 @@ class PmCommands extends DrushCommands
      * @return
      *   String describing extension status. Values: enabled|disabled.
      */
-    public function extensionStatus($extension): string
+    public function extensionStatus($extension)
     {
         return $extension->status == 1 ? 'enabled' : 'disabled';
     }
 
-    public function addInstallDependencies($modules): array
+    public function addInstallDependencies($modules)
     {
         $module_data = $this->getExtensionListModule()->reset()->getList();
         $module_list  = array_combine($modules, $modules);
@@ -345,7 +353,7 @@ class PmCommands extends DrushCommands
 
         // Add dependent modules to the list. The new modules will be processed as
         // the while loop continues.
-        $profile = \Drupal::installProfile();
+        $profile = drush_drupal_get_profile();
         foreach (array_keys($module_list) as $module) {
             foreach (array_keys($module_data[$module]->required_by) as $dependent) {
                 if (!isset($module_data[$dependent])) {

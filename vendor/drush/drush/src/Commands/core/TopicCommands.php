@@ -1,8 +1,6 @@
 <?php
-
 namespace Drush\Commands\core;
 
-use Consolidation\AnnotatedCommand\AnnotationData;
 use Consolidation\AnnotatedCommand\AnnotatedCommand;
 use Consolidation\AnnotatedCommand\CommandData;
 use Drush\Commands\DrushCommands;
@@ -15,6 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class TopicCommands extends DrushCommands
 {
+
     /**
      * Read detailed documentation on a given topic.
      *
@@ -31,7 +30,7 @@ class TopicCommands extends DrushCommands
      * @bootstrap max
      * @topics docs:readme
      */
-    public function topic($topic_name): int
+    public function topic($topic_name)
     {
         $application = Drush::getApplication();
         $input = new ArrayInput([$topic_name], null);
@@ -41,7 +40,7 @@ class TopicCommands extends DrushCommands
     /**
      * @hook interact topic
      */
-    public function interact(InputInterface $input, OutputInterface $output): void
+    public function interact(InputInterface $input, OutputInterface $output)
     {
         $topics = self::getAllTopics();
         $topic_name = $input->getArgument('topic_name');
@@ -67,7 +66,7 @@ class TopicCommands extends DrushCommands
     /**
      * @hook validate topic
      */
-    public function validate(CommandData $commandData): void
+    public function validate(CommandData $commandData)
     {
         $topic_name = $commandData->input()->getArgument('topic_name');
         if (!in_array($topic_name, array_keys(self::getAllTopics()))) {
@@ -80,14 +79,14 @@ class TopicCommands extends DrushCommands
      *
      * @return Command[]
      */
-    public static function getAllTopics(): array
+    public static function getAllTopics()
     {
         /** @var Application $application */
         $application = Drush::getApplication();
         $all = $application->all();
         foreach ($all as $key => $command) {
             if ($command instanceof AnnotatedCommand) {
-                /** @var AnnotationData $annotationData */
+                /** @var \Consolidation\AnnotatedCommand\AnnotationData $annotationData */
                 $annotationData = $command->getAnnotationData();
                 if ($annotationData->has('topic')) {
                     $topics[$command->getName()] = $command;

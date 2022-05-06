@@ -57,9 +57,8 @@ use Consolidation\SiteAlias\SiteAliasManagerAwareTrait;
 class MyModuleCommands extends DrushCommands implements SiteAliasManagerAwareInterface
 {
   use SiteAliasManagerAwareTrait;
-  
   /**
-   * Prints the current alias name and info.
+   * Prints the currenbt alias name and info.
    *
    * @command mymodule:myAlias
    * @return \Consolidation\OutputFormatters\StructuredData\ListDataFromKeys

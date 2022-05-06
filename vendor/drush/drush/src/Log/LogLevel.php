@@ -5,8 +5,6 @@ namespace Drush\Log;
 /**
  * Additional log levels that Drush uses for historical reasons.
  * Standard log levels should be preferred.
- *
- * @deprecated Use \Psr\Log\Loglevel directly.
  */
 class LogLevel extends \Psr\Log\LogLevel
 {

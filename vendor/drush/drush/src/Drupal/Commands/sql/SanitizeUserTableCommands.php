@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Drupal\Commands\sql;
 
 use Consolidation\AnnotatedCommand\CommandData;
@@ -32,7 +31,7 @@ class SanitizeUserTableCommands extends DrushCommands implements SanitizePluginI
      *
      * @inheritdoc
      */
-    public function sanitize($result, CommandData $commandData): void
+    public function sanitize($result, CommandData $commandData)
     {
         $options = $commandData->options();
         $query = $this->database->update('users_field_data')->condition('uid', 0, '>');
@@ -93,7 +92,7 @@ class SanitizeUserTableCommands extends DrushCommands implements SanitizePluginI
      *   By default, passwords are randomized. Specify <info>no</info> to disable that. Specify any other value to set all passwords
      *   to that value.
      */
-    public function options($options = ['sanitize-email' => 'user+%uid@localhost.localdomain', 'sanitize-password' => null]): void
+    public function options($options = ['sanitize-email' => 'user+%uid@localhost.localdomain', 'sanitize-password' => null])
     {
     }
 
@@ -102,7 +101,7 @@ class SanitizeUserTableCommands extends DrushCommands implements SanitizePluginI
      *
      * @inheritdoc
      */
-    public function messages(&$messages, InputInterface $input): void
+    public function messages(&$messages, InputInterface $input)
     {
         $options = $input->getOptions();
         if ($this->isEnabled($options['sanitize-password'])) {
@@ -116,8 +115,9 @@ class SanitizeUserTableCommands extends DrushCommands implements SanitizePluginI
     /**
      * Test an option value to see if it is disabled.
      * @param $value
+     * @return bool
      */
-    protected function isEnabled($value): bool
+    protected function isEnabled($value)
     {
         return $value != 'no' && $value != '0';
     }

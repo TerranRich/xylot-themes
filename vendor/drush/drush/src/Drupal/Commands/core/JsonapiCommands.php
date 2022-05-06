@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Drupal\Commands\core;
 
 use Consolidation\OutputFormatters\StructuredData\UnstructuredData;
@@ -10,6 +9,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class JsonapiCommands extends DrushCommands
 {
+
     /**
      * Execute a JSONAPI request.
      *
@@ -21,8 +21,10 @@ class JsonapiCommands extends DrushCommands
      * @usage drush jn:get jsonapi/node/article | jq
      *   Pretty print JSON by piping to jq. See https://stedolan.github.io/jq/ for lots more jq features.
      * @validate-module-enabled jsonapi
+     *
+     * @return UnstructuredData
      */
-    public function get($url, $options = ['format' => 'json']): UnstructuredData
+    public function get($url, $options = ['format' => 'json'])
     {
         $kernel = Drush::bootstrap()->getKernel();
         $sub_request = Request::create($url, 'GET');

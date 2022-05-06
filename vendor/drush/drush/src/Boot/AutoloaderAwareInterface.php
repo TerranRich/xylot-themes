@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Boot;
 
 interface AutoloaderAwareInterface

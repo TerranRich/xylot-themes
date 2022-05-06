@@ -2,22 +2,14 @@
 
 namespace Drush\Boot;
 
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Console\Input\InputAwareInterface;
-use Robo\Contract\OutputAwareInterface;
-use Robo\Contract\ProgressIndicatorAwareInterface;
-use Consolidation\AnnotatedCommand\Events\CustomEventAwareInterface;
-use Robo\Contract\VerbosityThresholdInterface;
-use Consolidation\SiteAlias\SiteAliasManagerAwareInterface;
-use Consolidation\SiteProcess\ProcessManagerAwareInterface;
-use Consolidation\AnnotatedCommand\Input\StdinAwareInterface;
 use Consolidation\AnnotatedCommand\AnnotationData;
 use DrupalFinder\DrupalFinder;
-use Drush\Config\ConfigAwareTrait;
+use Drush\Log\LogLevel;
 use League\Container\ContainerAwareInterface;
 use League\Container\ContainerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Drush\Config\ConfigAwareTrait;
 use Robo\Contract\ConfigAwareInterface;
 
 class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface, ConfigAwareInterface, ContainerAwareInterface
@@ -33,12 +25,12 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
     protected $drupalFinder;
 
     /**
-     * @var Boot[]
+     * @var \Drush\Boot\Boot[]
      */
     protected $bootstrapCandidates = [];
 
     /**
-     * @var Boot
+     * @var \Drush\Boot\Boot
      */
     protected $bootstrap;
 
@@ -58,7 +50,10 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
         return $this->bootstrap()->getPhase();
     }
 
-    protected function setPhase(int $phase): void
+    /**
+     * @param int $phase
+     */
+    protected function setPhase($phase)
     {
         if ($this->bootstrap) {
             $this->bootstrap()->setPhase($phase);
@@ -71,14 +66,14 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
      * @param \Drush\Boot\Boot|Array
      *   List of boot candidates
      */
-    public function add($candidateList): void
+    public function add($candidateList)
     {
         foreach (func_get_args() as $candidate) {
             $this->bootstrapCandidates[] = $candidate;
         }
     }
 
-    public function drupalFinder(): DrupalFinder
+    public function drupalFinder()
     {
         if (!isset($this->drupalFinder)) {
             $this->drupalFinder = new DrupalFinder();
@@ -86,7 +81,7 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
         return $this->drupalFinder;
     }
 
-    public function setDrupalFinder(DrupalFinder $drupalFinder): void
+    public function setDrupalFinder(DrupalFinder $drupalFinder)
     {
         $this->drupalFinder = $drupalFinder;
     }
@@ -94,7 +89,7 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
     /**
      * Return the framework root selected by the user.
      */
-    public function getRoot(): string
+    public function getRoot()
     {
         return $this->drupalFinder()->getDrupalRoot();
     }
@@ -102,12 +97,12 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
     /**
      * Return the composer root for the selected Drupal site.
      */
-    public function getComposerRoot(): string
+    public function getComposerRoot()
     {
         return $this->drupalFinder()->getComposerRoot();
     }
 
-    public function locateRoot($root, $start_path = null): void
+    public function locateRoot($root, $start_path = null)
     {
         // TODO: Throw if we already bootstrapped a framework?
 
@@ -139,7 +134,7 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
         return $uri;
     }
 
-    public function setUri($uri): void
+    public function setUri($uri)
     {
         // TODO: Throw if we already bootstrapped a framework?
         // n.b. site-install needs to set the uri.
@@ -151,8 +146,10 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
      * be the latched bootstrap object if we have started
      * bootstrapping; otherwise, it will be whichever bootstrap
      * object is best for the selected root.
+     *
+     * @return \Drush\Boot\Boot
      */
-    public function bootstrap(): Boot
+    public function bootstrap()
     {
         if (!$this->bootstrap) {
             $this->bootstrap = $this->selectBootstrapClass();
@@ -163,7 +160,7 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
     /**
      * For use in testing
      */
-    public function injectBootstrap(Boot $bootstrap): void
+    public function injectBootstrap($bootstrap)
     {
         $this->inflect($bootstrap);
         $this->bootstrap = $bootstrap;
@@ -176,8 +173,10 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
     /**
      * Look up the best bootstrap class for the given location
      * from the set of available candidates.
+     *
+     * @return \Drush\Boot\Boot
      */
-    public function bootstrapObjectForRoot($path): Boot
+    public function bootstrapObjectForRoot($path)
     {
         foreach ($this->bootstrapCandidates as $candidate) {
             if ($candidate->validRoot($path)) {
@@ -200,7 +199,7 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
      * be 'latched', and further calls to Drush::bootstrap()
      * will always return the same object.
      */
-    protected function selectBootstrapClass(): Boot
+    protected function selectBootstrapClass()
     {
         // Once we have selected a Drupal root, we will reduce our bootstrap
         // candidates down to just the one used to select this site root.
@@ -212,7 +211,7 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
      * object being used, and do not allow it to change any
      * longer.
      */
-    public function latch(Boot $bootstrap): void
+    public function latch($bootstrap)
     {
         $this->bootstrap = $bootstrap;
     }
@@ -225,10 +224,11 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
      *   (optional) If TRUE, return an array of method names index by their
      *   corresponding phase values. Otherwise return an array of phase values.
      *
+     * @return array
      *
      * @see \Drush\Boot\Boot::bootstrapPhases()
      */
-    public function bootstrapPhases(bool $function_names = false): array
+    public function bootstrapPhases($function_names = false)
     {
         $result = [];
 
@@ -254,13 +254,15 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
      *   function itself but can be useful for other code called from within this
      *   function, to know if e.g. a caller is in the process of booting to the
      *   specified level. If specified, it should never be lower than $phase.
-     * @param AnnotationData $annotationData
+     * @param \Consolidation\AnnotatedCommand\AnnotationData $annotationData
      *   Optional annotation data from the command.
      *
+     * @return bool
      *   TRUE if the specified bootstrap phase has completed.
+     *
      * @see \Drush\Boot\Boot::bootstrapPhases()
      */
-    public function doBootstrap(int $phase, $phase_max = false, AnnotationData $annotationData = null): bool
+    public function doBootstrap($phase, $phase_max = false, AnnotationData $annotationData = null)
     {
         $bootstrap = $this->bootstrap();
         $phases = $this->bootstrapPhases(true);
@@ -287,7 +289,7 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
             if ($phase_index > $bootstrapped_phase) {
                 if ($result = $this->bootstrapValidate($phase_index)) {
                     if (method_exists($bootstrap, $current_phase)) {
-                        $this->logger->info('Drush bootstrap phase: {function}()', ['function' => $current_phase]);
+                        $this->logger->log(LogLevel::BOOTSTRAP, 'Drush bootstrap phase: {function}()', ['function' => $current_phase]);
                         $bootstrap->{$current_phase}($this, $annotationData);
                     }
                     $bootstrap->setPhase($phase_index);
@@ -300,7 +302,7 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
     /**
      * hasBootstrap determines whether the manager has a bootstrap object yet.
      */
-    public function hasBootstrap(): bool
+    public function hasBootstrap()
     {
         return $this->bootstrap != null;
     }
@@ -311,9 +313,10 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
      * @param int $phase
      *   The bootstrap phase to test
      *
+     * @return bool
      *   TRUE if the specified bootstrap phase has completed.
      */
-    public function hasBootstrapped(int $phase): bool
+    public function hasBootstrapped($phase)
     {
         return $this->getPhase() >= $phase;
     }
@@ -332,10 +335,12 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
      * @param int $phase
      *   The bootstrap phase to validate to.
      *
+     * @return bool
      *   TRUE if bootstrap is possible, FALSE if the validation failed.
+     *
      * @see \Drush\Boot\Boot::bootstrapPhases()
      */
-    public function bootstrapValidate(int $phase): bool
+    public function bootstrapValidate($phase)
     {
         $bootstrap = $this->bootstrap();
         $phases = $this->bootstrapPhases(true);
@@ -349,7 +354,11 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
                 }
                 if ($phase_index > $validated_phase) {
                     $current_phase .= 'Validate';
-                    $result_cache[$phase_index] = method_exists($bootstrap, $current_phase) ? $bootstrap->{$current_phase}($this) : true;
+                    if (method_exists($bootstrap, $current_phase)) {
+                        $result_cache[$phase_index] = $bootstrap->{$current_phase}($this);
+                    } else {
+                        $result_cache[$phase_index] = true;
+                    }
                     $validated_phase = $phase_index;
                 }
             }
@@ -362,16 +371,19 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
      *
      * @param string $bootstrapPhase
      *   Name of phase to bootstrap to. Will be converted to appropriate index.
+     * @param \Consolidation\AnnotatedCommand\AnnotationData $annotationData
      *   Optional annotation data from the command.
      *
+     * @return bool
      *   TRUE if the specified bootstrap phase has completed.
+     *
      * @throws \Exception
      *   Thrown when an unknown bootstrap phase is passed in the annotation
      *   data.
      */
-    public function bootstrapToPhase(string $bootstrapPhase, AnnotationData $annotationData = null): bool
+    public function bootstrapToPhase($bootstrapPhase, AnnotationData $annotationData = null)
     {
-        $this->logger->info('Starting bootstrap to {phase}', ['phase' => $bootstrapPhase]);
+        $this->logger->log(LogLevel::BOOTSTRAP, 'Starting bootstrap to {phase}', ['phase' => $bootstrapPhase]);
         $phase = $this->bootstrap()->lookUpPhaseIndex($bootstrapPhase);
         if (!isset($phase)) {
             throw new \Exception(dt('Bootstrap phase !phase unknown.', ['!phase' => $bootstrapPhase]));
@@ -400,10 +412,13 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
      *
      * @param int $max_phase_index
      *   Only attempt bootstrap to the specified level.
+     * @param \Consolidation\AnnotatedCommand\AnnotationData $annotationData
      *   Optional annotation data from the command.
+     *
+     * @return bool
      *   TRUE if the specified bootstrap phase has completed.
      */
-    public function bootstrapToPhaseIndex(int $max_phase_index, AnnotationData $annotationData = null): bool
+    public function bootstrapToPhaseIndex($max_phase_index, AnnotationData $annotationData = null)
     {
         if ($max_phase_index == DRUSH_BOOTSTRAP_MAX) {
             // Try get a max phase.
@@ -413,7 +428,7 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
             return true;
         }
 
-        $this->logger->info('Drush bootstrap phase {phase}', ['phase' => $max_phase_index]);
+        $this->logger->log(LogLevel::BOOTSTRAP, 'Drush bootstrap phase {phase}', ['phase' => $max_phase_index]);
         $phases = $this->bootstrapPhases();
         $result = true;
 
@@ -424,15 +439,15 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
                 break;
             }
 
-            $this->logger->info('Try to validate bootstrap phase {phase}', ['phase' => $max_phase_index]);
+            $this->logger->log(LogLevel::BOOTSTRAP, 'Try to validate bootstrap phase {phase}', ['phase' => $max_phase_index]);
 
             if ($this->bootstrapValidate($phase_index)) {
                 if ($phase_index > $this->getPhase()) {
-                    $this->logger->info('Try to bootstrap at phase {phase}', ['phase' => $max_phase_index]);
+                    $this->logger->log(LogLevel::BOOTSTRAP, 'Try to bootstrap at phase {phase}', ['phase' => $max_phase_index]);
                     $result = $this->doBootstrap($phase_index, $max_phase_index, $annotationData);
                 }
             } else {
-                $this->logger->info('Could not bootstrap at phase {phase}', ['phase' => $max_phase_index]);
+                $this->logger->log(LogLevel::BOOTSTRAP, 'Could not bootstrap at phase {phase}', ['phase' => $max_phase_index]);
                 $result = false;
                 break;
             }
@@ -446,12 +461,13 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
      *
      * @param int $max_phase_index
      *   (optional) Only attempt bootstrap to the specified level.
-     * @param AnnotationData $annotationData
+     * @param \Consolidation\AnnotatedCommand\AnnotationData $annotationData
      *   Optional annotation data from the command.
      *
+     * @return int
      *   The maximum phase to which we bootstrapped.
      */
-    public function bootstrapMax($max_phase_index = false, AnnotationData $annotationData = null): int
+    public function bootstrapMax($max_phase_index = false, AnnotationData $annotationData = null)
     {
         // Bootstrap as far as we can without throwing an error, but log for
         // debugging purposes.
@@ -462,7 +478,7 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
         }
 
         if ($max_phase_index >= count($phases)) {
-            $this->logger->debug('Trying to bootstrap as far as we can');
+            $this->logger->log(LogLevel::DEBUG, 'Trying to bootstrap as far as we can');
         }
 
         // Try to bootstrap to the maximum possible level, without generating errors.
@@ -480,7 +496,7 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
                 // $this->bootstrapValidate() only logs successful validations. For us,
                 // knowing what failed can also be important.
                 $previous = $this->getPhase();
-                $this->logger->debug('Bootstrap phase {function}() failed to validate; continuing at {current}()', ['function' => $current_phase, 'current' => $phases[$previous]]);
+                $this->logger->log(LogLevel::DEBUG, 'Bootstrap phase {function}() failed to validate; continuing at {current}()', ['function' => $current_phase, 'current' => $phases[$previous]]);
                 break;
             }
         }
@@ -491,47 +507,47 @@ class BootstrapManager implements LoggerAwareInterface, AutoloaderAwareInterface
     /**
      * Allow those with an instance to us to the BootstrapManager to use its logger
      */
-    public function logger(): ?LoggerInterface
+    public function logger()
     {
         return $this->logger;
     }
 
-    public function inflect($object): void
+    public function inflect($object)
     {
         // See \Drush\Runtime\DependencyInjection::addDrushServices and
         // \Robo\Robo\addInflectors
         $container = $this->getContainer();
-        if ($object instanceof ConfigAwareInterface) {
+        if ($object instanceof \Robo\Contract\ConfigAwareInterface) {
             $object->setConfig($container->get('config'));
         }
-        if ($object instanceof LoggerAwareInterface) {
+        if ($object instanceof \Psr\Log\LoggerAwareInterface) {
             $object->setLogger($container->get('logger'));
         }
-        if ($object instanceof ContainerAwareInterface) {
+        if ($object instanceof \League\Container\ContainerAwareInterface) {
             $object->setContainer($container->get('container'));
         }
-        if ($object instanceof InputAwareInterface) {
+        if ($object instanceof \Symfony\Component\Console\Input\InputAwareInterface) {
             $object->setInput($container->get('input'));
         }
-        if ($object instanceof OutputAwareInterface) {
+        if ($object instanceof \Robo\Contract\OutputAwareInterface) {
             $object->setOutput($container->get('output'));
         }
-        if ($object instanceof ProgressIndicatorAwareInterface) {
+        if ($object instanceof \Robo\Contract\ProgressIndicatorAwareInterface) {
             $object->setProgressIndicator($container->get('progressIndicator'));
         }
-        if ($object instanceof CustomEventAwareInterface) {
+        if ($object instanceof \Consolidation\AnnotatedCommand\Events\CustomEventAwareInterface) {
             $object->setHookManager($container->get('hookManager'));
         }
-        if ($object instanceof VerbosityThresholdInterface) {
+        if ($object instanceof \Robo\Contract\VerbosityThresholdInterface) {
             $object->setOutputAdapter($container->get('outputAdapter'));
         }
-        if ($object instanceof SiteAliasManagerAwareInterface) {
+        if ($object instanceof \Consolidation\SiteAlias\SiteAliasManagerAwareInterface) {
             $object->setSiteAliasManager($container->get('site.alias.manager'));
         }
-        if ($object instanceof ProcessManagerAwareInterface) {
+        if ($object instanceof \Consolidation\SiteProcess\ProcessManagerAwareInterface) {
             $object->setProcessManager($container->get('process.manager'));
         }
-        if ($object instanceof StdinAwareInterface) {
+        if ($object instanceof \Consolidation\AnnotatedCommand\Input\StdinAwareInterface) {
             $object->setStdinHandler($container->get('stdinHandler'));
         }
     }

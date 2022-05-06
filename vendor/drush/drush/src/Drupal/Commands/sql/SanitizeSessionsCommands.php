@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Drupal\Commands\sql;
 
 use Consolidation\AnnotatedCommand\CommandData;
@@ -34,7 +33,7 @@ class SanitizeSessionsCommands extends DrushCommands implements SanitizePluginIn
      *
      * @inheritdoc
      */
-    public function sanitize($result, CommandData $commandData): void
+    public function sanitize($result, CommandData $commandData)
     {
         $this->getDatabase()->truncate('sessions')->execute();
         $this->logger()->success(dt('Sessions table truncated.'));
@@ -45,7 +44,7 @@ class SanitizeSessionsCommands extends DrushCommands implements SanitizePluginIn
      *
      * @inheritdoc
      */
-    public function messages(&$messages, InputInterface $input): void
+    public function messages(&$messages, InputInterface $input)
     {
         $messages[] = dt('Truncate sessions table.');
     }

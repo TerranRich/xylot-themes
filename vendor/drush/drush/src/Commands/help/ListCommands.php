@@ -1,8 +1,6 @@
 <?php
-
 namespace Drush\Commands\help;
 
-use Symfony\Component\Console\Application;
 use Consolidation\AnnotatedCommand\Help\HelpDocument;
 use Consolidation\OutputFormatters\FormatterManager;
 use Consolidation\OutputFormatters\Options\FormatterOptions;
@@ -81,8 +79,9 @@ class ListCommands extends DrushCommands
     /**
      * @param $namespaced
      * @param $application
+     * @return \DOMDocument
      */
-    public function buildDom($namespaced, $application): \DOMDocument
+    public function buildDom($namespaced, $application)
     {
         $dom = new \DOMDocument('1.0', 'UTF-8');
         $rootXml = $dom->createElement('symfony');
@@ -119,7 +118,13 @@ class ListCommands extends DrushCommands
         return $dom;
     }
 
-    public static function renderListCLI(Application $application, array $namespaced, OutputInterface $output, string $preamble): void
+    /**
+     * @param \Symfony\Component\Console\Application $application
+     * @param array $namespaced
+     * @param OutputInterface $output
+     * @param string $preamble
+     */
+    public static function renderListCLI($application, $namespaced, $output, $preamble)
     {
         $output->writeln($application->getHelp());
         $output->writeln('');
@@ -158,13 +163,16 @@ class ListCommands extends DrushCommands
         $formatterManager->write($output, 'table', new RowsOfFields($rows), $formatterOptions);
     }
 
-    public static function getTerminalWidth(): int
+    public static function getTerminalWidth()
     {
         $term = new Terminal();
         return $term->getWidth();
     }
 
-    public function renderListRaw(array $namespaced): void
+    /**
+     * @param array $namespaced
+     */
+    public function renderListRaw($namespaced)
     {
         $table = new Table($this->output());
         $table->setStyle('compact');
@@ -178,10 +186,11 @@ class ListCommands extends DrushCommands
 
     /**
      * @param Command[] $all
+     * @param string $separator
      *
      * @return Command[]
      */
-    public static function categorize(array $all, string $separator = ':'): array
+    public static function categorize($all, $separator = ':')
     {
         foreach ($all as $key => $command) {
             if (!in_array($key, $command->getAliases()) && !$command->isHidden()) {

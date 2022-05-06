@@ -1,12 +1,11 @@
 <?php
-
 namespace Drush\TestTraits;
 
 /**
  * DrushTestTrait provides a `drush()` method that may be
  * used to write functional tests for Drush extensions.
  *
- * More information is available at https://github.com/drush-ops/drush/blob/11.x/docs/contribute/unish.md#drush-test-traits.
+ * More information is available at https://github.com/drush-ops/drush/blob/10.x/docs/contribute/unish.md#drush-test-traits.
  */
 trait DrushTestTrait
 {
@@ -40,7 +39,7 @@ trait DrushTestTrait
      * @param array $env
      *   Environment variables to pass along to the subprocess.
      */
-    public function drush($command, array $args = [], array $options = [], $site_specification = null, $cd = null, $expected_return = 0, $suffix = null, array $env = [])
+    public function drush($command, array $args = [], array $options = [], $site_specification = null, $cd = null, $expected_return = 0, $suffix = null, $env = [])
     {
         // Set UA for SimpleTests which typically extend BrowserTestCase (i.e. contrib modules).
         if (isset($this->databasePrefix) && function_exists('drupal_generate_test_ua') && !isset($env['HTTP_USER_AGENT'])) {
@@ -75,8 +74,8 @@ trait DrushTestTrait
             $cmd[] = $this->convertKeyValueToFlag($key, $value);
         }
 
-        $cmd[] = (string) $suffix;
-        $exec = array_filter($cmd, 'strlen'); // Removes empty strings.
+        $cmd[] = $suffix;
+        $exec = array_filter($cmd, 'strlen'); // Remove NULLs
 
         $cmd = implode(' ', $exec);
         $this->execute($cmd, $expected_return, $cd, $env);
@@ -90,7 +89,7 @@ trait DrushTestTrait
      * @param string $value The option value (or empty)
      * @return string
      */
-    protected function convertKeyValueToFlag(string $key, ?string $value)
+    protected function convertKeyValueToFlag($key, $value)
     {
         if (!isset($value)) {
             return "--$key";

@@ -15,29 +15,35 @@ use Webmozart\PathUtil\Path;
 class TwigCommands extends DrushCommands
 {
   /**
-     * @var TwigEnvironment
-     */
+   * @var \Drupal\Core\Template\TwigEnvironment
+   */
     protected $twig;
 
   /**
-     * @var ModuleHandlerInterface
-     */
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
     protected $moduleHandler;
 
-    public function getTwig(): TwigEnvironment
+  /**
+   * @return \Drupal\Core\Template\TwigEnvironment
+   */
+    public function getTwig()
     {
         return $this->twig;
     }
 
-    public function getModuleHandler(): ModuleHandlerInterface
+  /**
+   * @return \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+    public function getModuleHandler()
     {
         return $this->moduleHandler;
     }
 
   /**
-     * @param TwigEnvironment $twig
-     * @param ModuleHandlerInterface $moduleHandler
-     */
+   * @param \Drupal\Core\Template\TwigEnvironment $twig
+   * @param ModuleHandlerInterface $moduleHandler
+   */
     public function __construct(TwigEnvironment $twig, ModuleHandlerInterface $moduleHandler)
     {
         $this->twig = $twig;
@@ -59,10 +65,11 @@ class TwigCommands extends DrushCommands
      *   compiled: Compiled
      * @default-fields template,compiled
      * @filter-output
+     * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
      *
      * @command twig:unused
      */
-    public function unused($searchpaths): RowsOfFields
+    public function unused($searchpaths)
     {
         $unused = [];
         $phpstorage = PhpStorageFactory::get('twig');
@@ -97,7 +104,7 @@ class TwigCommands extends DrushCommands
    * @command twig:compile
    * @aliases twigc,twig-compile
    */
-    public function twigCompile(): void
+    public function twigCompile()
     {
         require_once DRUSH_DRUPAL_CORE . "/themes/engines/twig/twig.engine";
         // Scan all enabled modules and themes.

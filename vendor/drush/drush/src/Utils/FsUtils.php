@@ -10,6 +10,7 @@ use Webmozart\PathUtil\Path;
 
 class FsUtils
 {
+
     /**
      * Decide where our backup directory should go
      *
@@ -21,7 +22,7 @@ class FsUtils
      *   A path to the backup directory.
      * @throws \Exception
      */
-    public static function getBackupDir($subdir = null): string
+    public static function getBackupDir($subdir = null)
     {
         $parent = self::getBackupDirParent();
 
@@ -47,13 +48,13 @@ class FsUtils
     }
 
     /**
-     * Get the base dir where our backup directories will be stored. Also stores CLI history file.
+     * Get the base dir where our backup directories will be stored
      *
      * @return
      *   A path to the backup directory parent
      * @throws \Exception
      */
-    public static function getBackupDirParent()
+    protected static function getBackupDirParent()
     {
         // Try in order:
         //  1. The user-specified backup directory from drush.yml config file
@@ -82,18 +83,17 @@ class FsUtils
     }
 
     /**
-     * Determine if the specified location is writable, or if a writable
-     *   directory could be created at that path.
-     *
-     * @param $dir
+     * Description
+     * @param string $dir
      *   Path to directory that we are considering using
-     *
-     * @return bool|string
+     * @return bool
+     *   True if the specified location is writable, or if a writable
+     *   directory could be created at that path.
      */
-    public static function isUsableDirectory(?string $dir)
+    public static function isUsableDirectory($dir)
     {
         // This directory is not usable if it is empty or if it is the root.
-        if (empty($dir) || (dirname($dir) === $dir)) {
+        if (empty($dir) || (dirname($dir) == $dir)) {
             return false;
         }
 
@@ -118,10 +118,11 @@ class FsUtils
      * @param string $subdir
      *   A string naming the subdirectory of the backup directory.
      *
+     * @return string
      *   Path to the specified backup directory.
      * @throws \Exception
      */
-    public static function prepareBackupDir($subdir = null): string
+    public static function prepareBackupDir($subdir = null)
     {
         $fs = new Filesystem();
         $backup_dir = self::getBackupDir($subdir);
@@ -138,9 +139,10 @@ class FsUtils
      * @param string $path
      *   The path being checked.
      *
+     * @return string
      *   The canonicalized absolute pathname.
      */
-    public static function realpath(string $path): string
+    public static function realpath($path)
     {
         $realpath = realpath($path);
         return $realpath ?: $path;
@@ -154,7 +156,7 @@ class FsUtils
      * @return string|bool
      *   The file content type if it's a tarball. FALSE otherwise.
      */
-    public static function isTarball(string $path)
+    public static function isTarball($path)
     {
         $content_type = self::getMimeContentType($path);
         $supported = [
@@ -183,7 +185,7 @@ class FsUtils
      * @return string|bool|null
      *   The MIME content type of the file.
      */
-    public static function getMimeContentType(string $path)
+    public static function getMimeContentType($path)
     {
         $content_type = false;
         if (class_exists('finfo')) {

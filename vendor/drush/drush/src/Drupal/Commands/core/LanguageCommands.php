@@ -11,22 +11,29 @@ use Drush\Utils\StringUtils;
 
 class LanguageCommands extends DrushCommands
 {
+
     /**
-     * @var LanguageManagerInterface
+     * @var \Drupal\Core\Language\LanguageManagerInterface
      */
     protected $languageManager;
 
     /**
-     * @var ModuleHandlerInterface
+     * @var \Drupal\Core\Extension\ModuleHandlerInterface
      */
     protected $moduleHandler;
 
-    public function getLanguageManager(): LanguageManagerInterface
+    /**
+     * @return \Drupal\Core\Language\LanguageManagerInterface
+     */
+    public function getLanguageManager()
     {
         return $this->languageManager;
     }
 
-    public function getModuleHandler(): ModuleHandlerInterface
+    /**
+     * @return \Drupal\Core\Extension\ModuleHandlerInterface
+     */
+    public function getModuleHandler()
     {
         return $this->moduleHandler;
     }
@@ -42,7 +49,7 @@ class LanguageCommands extends DrushCommands
      *
      * @command language:add
      * @param $langcode A comma delimited list of language codes.
-     * @option skip-translations Prevent translations from being downloaded and/or imported.
+     * @option skip-translations Prevent translations to be downloaded and/or imported.
      * @usage drush language:add nl,fr
      *   Add Dutch and French language and import their translations.
      * @usage drush language:add nl --skip-translations
@@ -52,7 +59,7 @@ class LanguageCommands extends DrushCommands
      * @hidden
      * @throws \Exception
      */
-    public function add($langcode, $options = ['skip-translations' => false]): void
+    public function add($langcode, $options = ['skip-translations' => false])
     {
         if ($langcodes = StringUtils::csvToArray($langcode)) {
             $langcodes = array_unique($langcodes);
@@ -95,8 +102,9 @@ class LanguageCommands extends DrushCommands
      *   locked: Locked
      * @default-fields language,direction,default
      * @filter-default-field language
+     * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
      */
-    public function info(): RowsOfFields
+    public function info()
     {
         $rows = [];
         $languages = $this->getLanguageManager()->getLanguages();
@@ -118,10 +126,11 @@ class LanguageCommands extends DrushCommands
      * Filters valid language codes.
      *
      * @param $langcodes
+     * @return array
      * @throws \Exception
      *   Exception when a language code is not in the standard language list.
      */
-    private function filterValidLangcode($langcodes): array
+    private function filterValidLangcode($langcodes)
     {
         $standardLanguages = $this->getLanguageManager()->getStandardLanguageList();
         foreach ($langcodes as $key => $langcode) {
@@ -139,8 +148,9 @@ class LanguageCommands extends DrushCommands
      * Filters new language codes.
      *
      * @param $langcodes
+     * @return array
      */
-    private function filterNewLangcode($langcodes): array
+    private function filterNewLangcode($langcodes)
     {
         $enabledLanguages = $this->getLanguageManager()->getLanguages();
         foreach ($langcodes as $key => $langcode) {
@@ -160,7 +170,7 @@ class LanguageCommands extends DrushCommands
      *
      * @param $langcodes
      */
-    private function setBatchLanguageImport($langcodes): void
+    private function setBatchLanguageImport($langcodes)
     {
         $moduleHandler = $this->getModuleHandler();
         $moduleHandler->loadInclude('locale', 'inc', 'locale.translation');

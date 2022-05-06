@@ -1,8 +1,6 @@
 <?php
-
 namespace Drush\Drupal\Commands\core;
 
-use Drupal\Core\Datetime\DateFormatterInterface;
 use Consolidation\AnnotatedCommand\CommandData;
 use Consolidation\AnnotatedCommand\CommandError;
 use Consolidation\OutputFormatters\Options\FormatterOptions;
@@ -14,8 +12,9 @@ use Drush\Utils\StringUtils;
 
 class UserCommands extends DrushCommands
 {
+
     /**
-     * @var DateFormatterInterface
+     * @var \Drupal\Core\Datetime\DateFormatterInterface
      */
     protected $dateFormatter;
 
@@ -69,8 +68,9 @@ class UserCommands extends DrushCommands
      * @default-fields uid,name,mail,roles,user_status
      *
      * @filter-default-field name
+     * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
      */
-    public function information(string $names = '', $options = ['format' => 'table', 'uid' => self::REQ, 'mail' => self::REQ]): RowsOfFields
+    public function information($names = '', $options = ['format' => 'table', 'uid' => self::REQ, 'mail' => self::REQ])
     {
         $accounts = [];
         if ($mails = StringUtils::csvToArray($options['mail'])) {
@@ -119,41 +119,47 @@ class UserCommands extends DrushCommands
      * @command user:block
      *
      * @param string $names A comma delimited list of user names.
-     * @option $uid A comma delimited list of user ids to lookup (an alternative to names).
-     * @option $mail A comma delimited list of emails to lookup (an alternative to names).
      * @aliases ublk,user-block
      * @usage drush user:block user3
      *   Block the users whose name is user3
      */
-    public function block(string $names = '', $options = ['uid' => self::REQ, 'mail' => self::REQ]): void
+    public function block($names)
     {
-        $accounts = $this->getAccounts($names, $options);
-        foreach ($accounts as $id => $account) {
-            $account->block();
-            $account->save();
-            $this->logger->success(dt('Blocked user(s): !user', ['!user' => $account->getAccountName()]));
+        if ($names = StringUtils::csvToArray($names)) {
+            foreach ($names as $name) {
+                if ($account = user_load_by_name($name)) {
+                    $account->block();
+                    $account->save();
+                    $this->logger->success(dt('Blocked user(s): !user', ['!user' => $name]));
+                } else {
+                    $this->logger->warning(dt('Unable to load user: !user', ['!user' => $name]));
+                }
+            }
         }
     }
 
     /**
-     * Unblock the specified user(s).
+     * UnBlock the specified user(s).
      *
      * @command user:unblock
      *
      * @param string $names A comma delimited list of user names.
-     * @option $uid A comma delimited list of user ids to lookup (an alternative to names).
-     * @option $mail A comma delimited list of emails to lookup (an alternative to names).
      * @aliases uublk,user-unblock
      * @usage drush user:unblock user3
      *   Unblock the users with name user3
      */
-    public function unblock(string $names = '', $options = ['uid' => self::REQ, 'mail' => self::REQ]): void
+    public function unblock($names)
     {
-        $accounts = $this->getAccounts($names, $options);
-        foreach ($accounts as $id => $account) {
-            $account->activate();
-            $account->save();
-            $this->logger->success(dt('Unblocked user(s): !user', ['!user' => $account->getAccountName()]));
+        if ($names = StringUtils::csvToArray($names)) {
+            foreach ($names as $name) {
+                if ($account = user_load_by_name($name)) {
+                    $account->activate();
+                    $account->save();
+                    $this->logger->success(dt('Unblocked user(s): !user', ['!user' => $name]));
+                } else {
+                    $this->logger->warning(dt('Unable to load user: !user', ['!user' => $name]));
+                }
+            }
         }
     }
 
@@ -165,22 +171,25 @@ class UserCommands extends DrushCommands
      * @validate-entity-load user_role role
      * @param string $role The machine name of the role to add.
      * @param string $names A comma delimited list of user names.
-     * @option $uid A comma delimited list of user ids to lookup (an alternative to names).
-     * @option $mail A comma delimited list of emails to lookup (an alternative to names).
      * @aliases urol,user-add-role
      * @usage drush user-add-role "editor" user3
      *   Add the editor role to user3
      */
-    public function addRole(string $role, string $names = '', $options = ['uid' => self::REQ, 'mail' => self::REQ]): void
+    public function addRole($role, $names)
     {
-        $accounts = $this->getAccounts($names, $options);
-        foreach ($accounts as $id => $account) {
-            $account->addRole($role);
-            $account->save();
-            $this->logger->success(dt('Added !role role to !user', [
-            '!role' => $role,
-            '!user' => $account->getAccountName(),
-            ]));
+        if ($names = StringUtils::csvToArray($names)) {
+            foreach ($names as $name) {
+                if ($account = user_load_by_name($name)) {
+                    $account->addRole($role);
+                    $account->save();
+                    $this->logger->success(dt('Added !role role to !user', [
+                    '!role' => $role,
+                    '!user' => $name,
+                    ]));
+                } else {
+                    $this->logger->warning(dt('Unable to load user: !user', ['!user' => $name]));
+                }
+            }
         }
     }
 
@@ -192,22 +201,25 @@ class UserCommands extends DrushCommands
      * @validate-entity-load user_role role
      * @param string $role The name of the role to add
      * @param string $names A comma delimited list of user names.
-     * @option $uid A comma delimited list of user ids to lookup (an alternative to names).
-     * @option $mail A comma delimited list of emails to lookup (an alternative to names).
      * @aliases urrol,user-remove-role
      * @usage drush user:remove-role "power user" user3
      *   Remove the "power user" role from user3
      */
-    public function removeRole(string $role, string $names = '', $options = ['uid' => self::REQ, 'mail' => self::REQ]): void
+    public function removeRole($role, $names)
     {
-        $accounts = $this->getAccounts($names, $options);
-        foreach ($accounts as $id => $account) {
-            $account->removeRole($role);
-            $account->save();
-            $this->logger->success(dt('Removed !role role from !user', [
-            '!role' => $role,
-            '!user' => $account->getAccountName(),
-            ]));
+        if ($names = StringUtils::csvToArray($names)) {
+            foreach ($names as $name) {
+                if ($account = user_load_by_name($name)) {
+                    $account->removeRole($role);
+                    $account->save();
+                    $this->logger->success(dt('Removed !role role from !user', [
+                    '!role' => $role,
+                    '!user' => $name,
+                    ]));
+                } else {
+                    $this->logger->warning(dt('Unable to load user: !user', ['!user' => $name]));
+                }
+            }
         }
     }
 
@@ -223,7 +235,7 @@ class UserCommands extends DrushCommands
      * @usage drush user:create newuser --mail="person@example.com" --password="letmein"
      *   Create a new user account with the name newuser, the email address person@example.com, and the password letmein
      */
-    public function create(string $name, $options = ['password' => self::REQ, 'mail' => self::REQ])
+    public function create($name, $options = ['password' => self::REQ, 'mail' => self::REQ])
     {
         $new_user = [
             'name' => $name,
@@ -247,7 +259,7 @@ class UserCommands extends DrushCommands
      *
      * @hook validate user-create
      */
-    public function createValidate(CommandData $commandData): void
+    public function createValidate(CommandData $commandData)
     {
         if ($mail = $commandData->input()->getOption('mail')) {
             if (user_load_by_mail($mail)) {
@@ -267,26 +279,29 @@ class UserCommands extends DrushCommands
      *
      * @param string $names A comma delimited list of user names.
      * @option delete-content Delete the user, and all content created by the user
-     * @option $uid A comma delimited list of user ids to lookup (an alternative to names).
-     * @option $mail A comma delimited list of emails to lookup (an alternative to names).
      * @aliases ucan,user-cancel
      * @usage drush user:cancel username
      *   Cancel the user account with the name username and anonymize all content created by that user.
      * @usage drush user:cancel --delete-content username
      *   Delete the user account with the name username and delete all content created by that user.
      */
-    public function cancel(string $names, $options = ['delete-content' => false, 'uid' => self::REQ, 'mail' => self::REQ]): void
+    public function cancel($names, $options = ['delete-content' => false])
     {
-        $accounts = $this->getAccounts($names, $options);
-        foreach ($accounts as $id => $account) {
-            if ($options['delete-content']) {
-                $this->logger()->warning(dt('All content created by !name will be deleted.', ['!name' => $account->getAccountName()]));
-            }
-            if ($this->io()->confirm('Cancel user account?: ')) {
-                $method = $options['delete-content'] ? 'user_cancel_delete' : 'user_cancel_block';
-                user_cancel([], $account->id(), $method);
-                drush_backend_batch_process();
-                // Drupal logs a message for us.
+        if ($names = StringUtils::csvToArray($names)) {
+            foreach ($names as $name) {
+                if ($account = user_load_by_name($name)) {
+                    if ($options['delete-content']) {
+                        $this->logger()->warning(dt('All content created by !name will be deleted.', ['!name' => $account->getAccountName()]));
+                    }
+                    if ($this->io()->confirm('Cancel user account?: ')) {
+                        $method = $options['delete-content'] ? 'user_cancel_delete' : 'user_cancel_block';
+                        user_cancel([], $account->id(), $method);
+                        drush_backend_batch_process();
+                        // Drupal logs a message for us.
+                    }
+                } else {
+                    $this->logger()->warning(dt('Unable to load user: !user', ['!user' => $name]));
+                }
             }
         }
     }
@@ -302,7 +317,7 @@ class UserCommands extends DrushCommands
      * @usage drush user:password someuser "correct horse battery staple"
      *   Set the password for the username someuser. See https://xkcd.com/936
      */
-    public function password(string $name, string $password): void
+    public function password($name, $password)
     {
         if ($account = user_load_by_name($name)) {
             if (!$this->getConfig()->simulate()) {
@@ -319,8 +334,9 @@ class UserCommands extends DrushCommands
      * A flatter and simpler array presentation of a Drupal $user object.
      *
      * @param $account A user account
+     * @return array
      */
-    public function infoArray($account): array
+    public function infoArray($account)
     {
         return [
             'uid' => $account->id(),
@@ -340,51 +356,5 @@ class UserCommands extends DrushCommands
             'langcode' => $account->getPreferredLangcode(),
             'uuid' => $account->uuid->value,
         ];
-    }
-
-    /**
-     * Get accounts from name variables or uid & mail options.
-     *
-     * @param string $names
-     * @param array $options
-     *
-     *   A array of loaded accounts.
-     * @throws \Exception
-     */
-    protected function getAccounts(string $names = '', array $options = []): array
-    {
-        $accounts = [];
-        if (isset($options['mail']) && $mails = StringUtils::csvToArray($options['mail'])) {
-            foreach ($mails as $mail) {
-                if ($account = user_load_by_mail($mail)) {
-                    $accounts[$account->id()] = $account;
-                } else {
-                    $this->logger->warning(dt('Unable to load user: !mail', ['!mail' => $mail]));
-                }
-            }
-        }
-        if (isset($options['uid']) && $uids = StringUtils::csvToArray($options['uid'])) {
-            foreach ($uids as $uid) {
-                if ($account = User::load($uid)) {
-                    $accounts[$account->id()] = $account;
-                } else {
-                    $this->logger->warning(dt('Unable to load user: !uid', ['!uid' => $uid]));
-                }
-            }
-        }
-        if ($names = StringUtils::csvToArray($names)) {
-            foreach ($names as $name) {
-                if ($account = user_load_by_name($name)) {
-                    $accounts[$account->id()] = $account;
-                } else {
-                    $this->logger->warning(dt('Unable to load user: !user', ['!user' => $name]));
-                }
-            }
-        }
-        if (empty($accounts)) {
-            throw new \Exception(dt('Unable to find any matching user'));
-        }
-
-        return  $accounts;
     }
 }

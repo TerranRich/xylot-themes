@@ -23,6 +23,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DrushHelpCommand extends BaseCommand
 {
+
     /**
      * Label for PsySH commands.
      */
@@ -38,7 +39,7 @@ class DrushHelpCommand extends BaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure(): void
+    protected function configure()
     {
         $this
         ->setName('help')
@@ -54,7 +55,7 @@ class DrushHelpCommand extends BaseCommand
      *
      * @param \Symfony\Component\Console\Command\Command $command
      */
-    public function setCommand(Command $command): void
+    public function setCommand(Command $command)
     {
         $this->command = $command;
     }
@@ -62,7 +63,7 @@ class DrushHelpCommand extends BaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($this->command !== null) {
             // Help for an individual command.

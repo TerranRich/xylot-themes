@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Drupal\Commands\sql;
 
 use Consolidation\AnnotatedCommand\CommandData;
@@ -33,7 +32,7 @@ class SanitizeCommentsCommands extends DrushCommands implements SanitizePluginIn
      *
      * @inheritdoc
      */
-    public function sanitize($result, CommandData $commandData): void
+    public function sanitize($result, CommandData $commandData)
     {
         if ($this->applies()) {
             //Update anon.
@@ -62,7 +61,7 @@ class SanitizeCommentsCommands extends DrushCommands implements SanitizePluginIn
      *
      * @inheritdoc
      */
-    public function messages(&$messages, InputInterface $input): void
+    public function messages(&$messages, InputInterface $input)
     {
         if ($this->applies()) {
             $messages[] = dt('Remove comment display names and emails.');

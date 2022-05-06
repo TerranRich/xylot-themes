@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class BootstrapCompilerPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container): void
+    public function process(ContainerBuilder $container)
     {
         if (!$container->has('bootstrap.manager')) {
             return;

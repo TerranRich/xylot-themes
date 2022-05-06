@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\SiteAlias;
 
 use Symfony\Component\Yaml\Yaml;
@@ -52,12 +51,18 @@ class LegacyAliasConverter
         $this->target = '';
     }
 
-    public function isSimulate(): bool
+    /**
+     * @return bool
+     */
+    public function isSimulate()
     {
         return $this->simulate;
     }
 
-    public function setSimulate(bool $simulate): void
+    /**
+     * @param bool $simulate
+     */
+    public function setSimulate($simulate)
     {
         $this->simulate = $simulate;
     }
@@ -66,7 +71,7 @@ class LegacyAliasConverter
      * @param string $target
      *   A directory to write to. If not provided, writes go into same dir as the corresponding legacy file.
      */
-    public function setTargetDir(string $target): void
+    public function setTargetDir($target)
     {
         $this->target = $target;
     }
@@ -97,7 +102,7 @@ class LegacyAliasConverter
         return $convertedFiles;
     }
 
-    protected function checkAnyNeedsConversion($legacyFiles): bool
+    protected function checkAnyNeedsConversion($legacyFiles)
     {
         foreach ($legacyFiles as $legacyFile) {
             $convertedFile = $this->determineConvertedFilename($legacyFile);
@@ -108,7 +113,7 @@ class LegacyAliasConverter
         return false;
     }
 
-    protected function convertAll($legacyFiles): array
+    protected function convertAll($legacyFiles)
     {
         $result = [];
         foreach ($legacyFiles as $legacyFile) {
@@ -125,7 +130,7 @@ class LegacyAliasConverter
         return $result;
     }
 
-    protected function writeAll($convertedFiles): void
+    protected function writeAll($convertedFiles)
     {
         foreach ($convertedFiles as $path => $data) {
             $contents = $this->getContents($path, $data);
@@ -139,25 +144,26 @@ class LegacyAliasConverter
         }
     }
 
-    protected function getContents($path, $data): string
+    protected function getContents($path, $data)
     {
         if (!empty($data)) {
             $indent = 2;
-            return Yaml::dump($data, PHP_INT_MAX, $indent, false);
+            return Yaml::dump($data, PHP_INT_MAX, $indent, false, true);
         }
 
         $recoverSource = $this->recoverLegacyFile($path);
         if (!$recoverSource) {
             $recoverSource = 'the source alias file';
         }
-
-        return <<<EOT
+        $contents = <<<EOT
 # This is a placeholder file used to track when $recoverSource was converted.
 # If you delete $recoverSource, then you may delete this file.
 EOT;
+
+        return $contents;
     }
 
-    protected function writeOne($path, $contents): void
+    protected function writeOne($path, $contents)
     {
         $checksumPath = $this->checksumPath($path);
         if ($this->safeToWrite($path, $contents, $checksumPath)) {
@@ -175,7 +181,7 @@ EOT;
      * alias file at the specified path. If the user has modified the target
      * file, then we will not overwrite it.
      */
-    protected function safeToWrite($path, $contents, $checksumPath): bool
+    protected function safeToWrite($path, $contents, $checksumPath)
     {
         // Bail if simulate mode is enabled.
         if ($this->isSimulate()) {
@@ -205,10 +211,10 @@ EOT;
         // the checksum we cached in the checksum file, then there has
         // been no user modification of this file, and it is safe to
         // overwrite it.
-        return $previousChecksum === $previousWrittenChecksum;
+        return $previousChecksum == $previousWrittenChecksum;
     }
 
-    public function saveChecksum($checksumPath, $path, $contents): void
+    public function saveChecksum($checksumPath, $path, $contents)
     {
         $name = basename($path);
         $comment = <<<EOT
@@ -220,7 +226,7 @@ EOT;
         file_put_contents($checksumPath, "{$comment}\n{$checksum}");
     }
 
-    protected function readChecksum($checksumPath): string
+    protected function readChecksum($checksumPath)
     {
         $checksumContents = file_get_contents($checksumPath);
         $checksumContents = preg_replace('/^#.*/m', '', $checksumContents);
@@ -228,12 +234,12 @@ EOT;
         return trim($checksumContents);
     }
 
-    protected function checksumPath($path): string
+    protected function checksumPath($path)
     {
         return dirname($path) . '/.checksums/' . basename($path, '.yml') . '.md5';
     }
 
-    protected function calculateChecksum($data): string
+    protected function calculateChecksum($data)
     {
         return md5($data);
     }
@@ -258,7 +264,7 @@ EOT;
         return $convertedFile;
     }
 
-    protected function cacheConvertedFilePath($legacyFile, $convertedFile): void
+    protected function cacheConvertedFilePath($legacyFile, $convertedFile)
     {
         $this->convertedFileMap[basename($convertedFile)] = basename($legacyFile);
     }
@@ -311,14 +317,14 @@ EOT;
         return $this->convertMultipleAliasesLegacyFile($legacyFile, $aliases, $options);
     }
 
-    protected function convertSingleAliasLegacyFile($legacyFile, $options): array
+    protected function convertSingleAliasLegacyFile($legacyFile, $options)
     {
         $aliasName = basename($legacyFile, '.alias.drushrc.php');
 
         return $this->convertAlias($aliasName, $options, dirname($legacyFile));
     }
 
-    protected function convertMultipleAliasesLegacyFile($legacyFile, $aliases, $options): array
+    protected function convertMultipleAliasesLegacyFile($legacyFile, $aliases, $options)
     {
         $result = [];
         foreach ($aliases as $aliasName => $data) {
@@ -330,7 +336,7 @@ EOT;
         return $result;
     }
 
-    protected function convertAlias($aliasName, $data, $dir = ''): array
+    protected function convertAlias($aliasName, $data, $dir = '')
     {
         $env = 'dev';
         // We allow $aliasname to be:
@@ -352,7 +358,7 @@ EOT;
         return $this->convertSingleFileAlias($aliasName, $env, $data, $dir);
     }
 
-    protected function fixSiteData($data): array
+    protected function fixSiteData($data)
     {
         $keyMap = $this->keyConversion();
 
@@ -385,7 +391,7 @@ EOT;
         return $this->remapData($data);
     }
 
-    protected function remapData($data): array
+    protected function remapData($data)
     {
         $converter = new Data($data);
 
@@ -406,7 +412,7 @@ EOT;
      * Anything NOT identified by the key in the returned array
      * is moved to the 'options' element.
      */
-    protected function keyConversion(): array
+    protected function keyConversion()
     {
         return [
             'remote-host' => 'host',
@@ -426,14 +432,14 @@ EOT;
      * been moved into the 'options' element before this remapping
      * table is consulted.
      */
-    protected function dataRemap(): array
+    protected function dataRemap()
     {
         return [
             'options.ssh-options' => 'ssh.options',
         ];
     }
 
-    protected function removePercentFromKey($data): array
+    protected function removePercentFromKey($data)
     {
         return
             array_flip(
@@ -446,7 +452,7 @@ EOT;
             );
     }
 
-    protected function convertSingleFileAlias($aliasName, $env, $data, $dir = ''): array
+    protected function convertSingleFileAlias($aliasName, $env, $data, $dir = '')
     {
         $filename = $this->outputFilename($aliasName, '.site.yml', $dir);
         return [
@@ -473,6 +479,7 @@ EOT;
      * @param array $array1
      * @param array $array2
      *
+     * @return array
      *
      * @see http://php.net/manual/en/function.array-merge-recursive.php#92195
      * @see https://github.com/grasmash/bolt/blob/robo-rebase/src/Robo/Common/ArrayManipulator.php#L22
@@ -480,7 +487,7 @@ EOT;
     protected static function arrayMergeRecursiveDistinct(
         array &$array1,
         array &$array2
-    ): array {
+    ) {
         $merged = $array1;
         foreach ($array2 as $key => &$value) {
             $merged[$key] = self::mergeRecursiveValue($merged, $key, $value);

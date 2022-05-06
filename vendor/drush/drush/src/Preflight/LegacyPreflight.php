@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Preflight;
 
 use Drush\Drush;
@@ -20,7 +19,7 @@ class LegacyPreflight
     /**
      * Define legacy constants.
      */
-    public static function defineConstants(Environment $environment, $applicationPath): void
+    public static function defineConstants(Environment $environment, $applicationPath)
     {
         // 'define' is undesirable in that it will error if the same identifier
         // is defined more than once. Ideally we would inject the legacy preflight
@@ -65,14 +64,18 @@ class LegacyPreflight
      * Include old code. It is an aspirational goal to remove or refactor
      * all of this into more modular, class-based code.
      */
-    public static function includeCode($drushBasePath): void
+    public static function includeCode($drushBasePath)
     {
         // We still need preflight for drush_shutdown()
         require_once $drushBasePath . '/includes/preflight.inc';
         require_once $drushBasePath . '/includes/bootstrap.inc';
+        require_once $drushBasePath . '/includes/environment.inc';
+        require_once $drushBasePath . '/includes/backend.inc';
         require_once $drushBasePath . '/includes/drush.inc';
         require_once $drushBasePath . '/includes/batch.inc';
+        require_once $drushBasePath . '/includes/drupal.inc';
         require_once $drushBasePath . '/includes/output.inc';
+        require_once $drushBasePath . '/includes/cache.inc';
         require_once $drushBasePath . '/includes/filesystem.inc';
         require_once $drushBasePath . '/includes/legacy.inc';
     }

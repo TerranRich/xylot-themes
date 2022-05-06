@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Drupal\Commands\pm;
 
 use Drupal\Core\Extension\ThemeInstallerInterface;
@@ -9,6 +8,7 @@ use Drush\Utils\StringUtils;
 
 class ThemeCommands extends DrushCommands
 {
+
     protected $themeInstaller;
 
     public function __construct(ThemeInstallerInterface $themeInstaller)
@@ -20,7 +20,7 @@ class ThemeCommands extends DrushCommands
     /**
      * @return mixed
      */
-    public function getThemeInstaller(): ThemeInstallerInterface
+    public function getThemeInstaller()
     {
         return $this->themeInstaller;
     }
@@ -32,7 +32,7 @@ class ThemeCommands extends DrushCommands
      * @param $themes A comma delimited list of themes.
      * @aliases then,theme-enable
      */
-    public function enable(array $themes): void
+    public function enable(array $themes)
     {
         $themes = StringUtils::csvToArray($themes);
         if (!$this->getThemeInstaller()->install($themes, true)) {
@@ -48,7 +48,7 @@ class ThemeCommands extends DrushCommands
      * @param $themes A comma delimited list of themes.
      * @aliases thun,theme-uninstall
      */
-    public function uninstall(array $themes): void
+    public function uninstall(array $themes)
     {
         $themes = StringUtils::csvToArray($themes);
         // The uninstall() method has no return value. Assume it succeeded, and

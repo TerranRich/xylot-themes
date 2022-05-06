@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Symfony;
 
 use Consolidation\AnnotatedCommand\CommandData;
@@ -9,7 +8,7 @@ use Drush\Style\DrushStyle;
 
 class DrushStyleInjector implements ParameterInjector
 {
-    public function get(CommandData $commandData, $interfaceName): DrushStyle
+    public function get(CommandData $commandData, $interfaceName)
     {
         return new DrushStyle($commandData->input(), $commandData->output());
     }

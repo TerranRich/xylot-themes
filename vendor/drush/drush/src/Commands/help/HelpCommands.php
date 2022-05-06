@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Commands\help;
 
 use Consolidation\AnnotatedCommand\AnnotatedCommand;
@@ -9,6 +8,7 @@ use Drush\Drush;
 
 class HelpCommands extends DrushCommands
 {
+
     /**
      * Display usage details for a command.
      *
@@ -24,8 +24,10 @@ class HelpCommands extends DrushCommands
      *   All available commands, in JSON format.
      * @bootstrap max
      * @topics docs:readme
+     *
+     * @return \Consolidation\AnnotatedCommand\Help\HelpDocument
      */
-    public function help($command_name = '', $options = ['format' => 'helpcli', 'include-field-labels' => false, 'table-style' => 'compact']): DrushHelpDocument
+    public function help($command_name = '', $options = ['format' => 'helpcli', 'include-field-labels' => false, 'table-style' => 'compact'])
     {
         $application = Drush::getApplication();
         $command = $application->get($command_name);
@@ -45,7 +47,7 @@ class HelpCommands extends DrushCommands
     /**
      * @hook validate help
      */
-    public function validate(CommandData $commandData): void
+    public function validate(CommandData $commandData)
     {
         $name = $commandData->input()->getArgument('command_name');
         if (empty($name)) {

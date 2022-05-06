@@ -2,7 +2,6 @@
 
 namespace Drush\Drupal;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Composer\Semver\Semver;
 use Drupal\Core\DependencyInjection\ServiceModifierInterface;
 use Drupal\Core\Site\Settings;
@@ -45,7 +44,7 @@ trait DrupalKernelTrait
     /**
      * Initializes the service container.
      *
-     * @return ContainerInterface
+     * @return \Symfony\Component\DependencyInjection\ContainerInterface
      */
     protected function initializeContainer()
     {
@@ -101,7 +100,6 @@ trait DrupalKernelTrait
         //  - These commands are not available until Drupal is bootstrapped.
         $this->addDrushServiceProvider("_drush__config", DRUSH_BASE_PATH . '/src/Drupal/Commands/config/drush.services.yml');
         $this->addDrushServiceProvider("_drush__core", DRUSH_BASE_PATH . '/src/Drupal/Commands/core/drush.services.yml');
-        $this->addDrushServiceProvider("_drush__field", DRUSH_BASE_PATH . '/src/Drupal/Commands/field/drush.services.yml');
         $this->addDrushServiceProvider("_drush__pm", DRUSH_BASE_PATH . '/src/Drupal/Commands/pm/drush.services.yml');
         $this->addDrushServiceProvider("_drush__sql", DRUSH_BASE_PATH . '/src/Drupal/Commands/sql/drush.services.yml');
 
@@ -147,7 +145,7 @@ trait DrupalKernelTrait
         if (!file_exists($result)) {
             return;
         }
-        Drush::logger()->info(dt("!module should have an extra.drush.services section in its composer.json. See https://www.drush.org/latest/commands/#specifying-the-services-file.", ['!module' => $module]));
+        Drush::logger()->info(dt("!module should have an extra.drush.services section in its composer.json. See http://docs.drush.org/en/10.x/commands/#specifying-the-services-file.", ['!module' => $module]));
         return $result;
     }
 
@@ -204,9 +202,9 @@ trait DrupalKernelTrait
     /**
      * Add a services.yml file if it exists.
      */
-    protected function addDrushServiceProvider($serviceProviderName, $serviceYmlPath = '')
+    protected function addDrushServiceProvider($serviceProviderName, $serviceYmlPath)
     {
-        if (($serviceYmlPath !== null) && file_exists($serviceYmlPath)) {
+        if (file_exists($serviceYmlPath)) {
             $this->serviceYamls['app'][$serviceProviderName] = $serviceYmlPath;
         }
     }

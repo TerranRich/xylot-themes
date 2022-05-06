@@ -2,7 +2,7 @@
 
 namespace Drush\Config\Loader;
 
-use Symfony\Component\Yaml\Yaml;
+use Drush\Internal\Config\Yaml\Yaml;
 use Consolidation\Config\Loader\ConfigLoader;
 
 /**
@@ -11,7 +11,7 @@ use Consolidation\Config\Loader\ConfigLoader;
  */
 class YamlConfigLoader extends ConfigLoader
 {
-    public function load($path): self
+    public function load($path)
     {
         $this->setSourceName($path);
 

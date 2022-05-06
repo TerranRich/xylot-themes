@@ -26,7 +26,7 @@
         "drupal/rabbit_hole": "^1.0@beta",
         "drupal/svg_image_field": "^2.1",
         "drupal/synonyms": "^2.1",
-        "drush/drush": "^11.0"
+        "drush/drush": "^10.6"
     },
     "conflict": {
         "drupal/drupal": "*"

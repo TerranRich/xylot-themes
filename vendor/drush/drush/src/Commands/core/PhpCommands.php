@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Commands\core;
 
 use Consolidation\AnnotatedCommand\Input\StdinAwareInterface;

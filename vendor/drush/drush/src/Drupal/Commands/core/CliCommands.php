@@ -2,7 +2,6 @@
 
 namespace Drush\Drupal\Commands\core;
 
-use Consolidation\AnnotatedCommand\AnnotatedCommand;
 use Drush\Commands\DrushCommands;
 use Drush\Drush;
 use Drush\Psysh\DrushCommand;
@@ -10,12 +9,13 @@ use Drush\Psysh\DrushHelpCommand;
 use Drupal\Component\Assertion\Handle;
 use Drush\Psysh\Shell;
 use Drush\Runtime\Runtime;
-use Drush\Utils\FsUtils;
 use Psy\Configuration;
 use Psy\VersionUpdater\Checker;
+use Webmozart\PathUtil\Path;
 
 class CliCommands extends DrushCommands
 {
+
     /**
      * Drush's PHP Shell.
      *
@@ -24,7 +24,7 @@ class CliCommands extends DrushCommands
      * @hidden
      * @topic ../../../../docs/repl.md
      */
-    public function docs(): void
+    public function docs()
     {
         self::printFileTopic($this->commandData);
     }
@@ -39,7 +39,7 @@ class CliCommands extends DrushCommands
      * @topics docs:repl
      * @remote-tty
      */
-    public function cli(array $options = ['version-history' => false, 'cwd' => self::REQ]): void
+    public function cli(array $options = ['version-history' => false, 'cwd' => self::REQ])
     {
         $configuration = new Configuration();
 
@@ -99,8 +99,10 @@ class CliCommands extends DrushCommands
 
     /**
      * Returns a filtered list of Drush commands used for CLI commands.
+     *
+     * @return array
      */
-    protected function getDrushCommands(): array
+    protected function getDrushCommands()
     {
         $application = Drush::getApplication();
         $commands = $application->all();
@@ -118,7 +120,7 @@ class CliCommands extends DrushCommands
         ];
         $php_keywords = $this->getPhpKeywords();
 
-        /** @var AnnotatedCommand $command */
+        /** @var \Consolidation\AnnotatedCommand\AnnotatedCommand $command */
         foreach ($commands as $name => $command) {
             $definition = $command->getDefinition();
 
@@ -150,7 +152,7 @@ class CliCommands extends DrushCommands
      * @return array.
      *   An array of caster callbacks keyed by class or interface.
      */
-    protected function getCasters(): array
+    protected function getCasters()
     {
         return [
         'Drupal\Core\Entity\ContentEntityInterface' => 'Drush\Psysh\Caster::castContentEntity',
@@ -172,9 +174,9 @@ class CliCommands extends DrushCommands
      *
      * @return string.
      */
-    protected function historyPath(array $options): string
+    protected function historyPath(array $options)
     {
-        $cli_directory = FsUtils::getBackupDirParent();
+        $cli_directory = Path::join($this->getConfig()->cache(), 'cli');
         $drupal_major_version = Drush::getMajorVersion();
 
         // If there is no drupal version (and thus no root). Just use the current
@@ -211,8 +213,10 @@ class CliCommands extends DrushCommands
      * Returns a list of PHP keywords.
      *
      * This will act as a blocklist for command and alias names.
+     *
+     * @return array
      */
-    protected function getPhpKeywords(): array
+    protected function getPhpKeywords()
     {
         return [
         '__halt_compiler',

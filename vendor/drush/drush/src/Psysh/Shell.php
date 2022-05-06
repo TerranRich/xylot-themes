@@ -12,6 +12,7 @@ use Symfony\Component\Console\Input\StringInput;
 
 class Shell extends BaseShell
 {
+
     /**
      * Get a command (if one exists) for the current input string.
      *
@@ -19,7 +20,7 @@ class Shell extends BaseShell
      *
      * @return null|string
      */
-    protected function getCommand(string $input)
+    protected function getCommand($input)
     {
         if ($name = $this->getCommandFromInput($input)) {
             return $this->get($name);
@@ -33,7 +34,7 @@ class Shell extends BaseShell
      *
      * @return bool True if the shell has a command for the given input.
      */
-    protected function hasCommand(string $input): bool
+    protected function hasCommand($input)
     {
         if ($name = $this->getCommandFromInput($input)) {
             return $this->has($name);
@@ -51,7 +52,7 @@ class Shell extends BaseShell
      * @return string|NULL
      *   The current command.
      */
-    protected function getCommandFromInput(string $input): ?string
+    protected function getCommandFromInput($input)
     {
         // Remove the alias from the start of the string before parsing and
         // returning the command. Essentially, when choosing a command, we're

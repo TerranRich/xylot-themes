@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\TestTraits;
 
 use Symfony\Component\Process\Process;
@@ -79,7 +78,7 @@ trait CliTestTrait
     /**
      * Run a command and return the process without waiting for it to finish.
      *
-     * @param string|array $command
+     * @param string $command
      *   The actual command line to run.
      * @param sting cd
      *   The directory to run the command in.
@@ -93,6 +92,7 @@ trait CliTestTrait
         try {
             // Process uses a default timeout of 60 seconds, set it to 0 (none).
             $this->process = new Process($command, $cd, $env, $input, 0);
+            $this->process->inheritEnvironmentVariables(true);
             if ($this->timeout) {
                 $this->process->setTimeout($this->timeout)
                 ->setIdleTimeout($this->idleTimeout);
@@ -107,7 +107,7 @@ trait CliTestTrait
             } else {
                 $message = 'Command had no output for ' . $this->idleTimeout . " seconds:\n" .  $command;
             }
-            throw new \Exception($message . $this->buildProcessMessage(), $e->getCode(), $e);
+            throw new \Exception($message . $this->buildProcessMessage());
         }
     }
 
@@ -125,7 +125,7 @@ trait CliTestTrait
      * @param string $input
      *   A string representing the STDIN that is piped to the command.
      */
-    public function execute($command, int $expected_return = 0, $cd = null, $env = null, $input = null)
+    public function execute($command, $expected_return = 0, $cd = null, $env = null, $input = null)
     {
         try {
             // Process uses a default timeout of 60 seconds, set it to 0 (none).
@@ -166,7 +166,7 @@ trait CliTestTrait
             } else {
                 $message = 'Command had no output for ' . $this->idleTimeout . " seconds:\n" .  $command;
             }
-            throw new \Exception($message . $this->buildProcessMessage(), $e->getCode(), $e);
+            throw new \Exception($message . $this->buildProcessMessage());
         }
     }
 
@@ -243,7 +243,7 @@ trait CliTestTrait
      *   Optional regular expression that should be ignored in the error output.
      */
 
-    protected function assertOutputEquals(string $expected, string $filter = '')
+    protected function assertOutputEquals($expected, $filter = '')
     {
         $output = $this->getSimplifiedOutput();
         if (!empty($filter)) {
@@ -264,7 +264,7 @@ trait CliTestTrait
      * @param string $filter
      *   Optional regular expression that should be ignored in the error output.
      */
-    protected function assertErrorOutputEquals(string $expected, string $filter = '')
+    protected function assertErrorOutputEquals($expected, $filter = '')
     {
         $output = $this->getSimplifiedErrorOutput();
         if (!empty($filter)) {

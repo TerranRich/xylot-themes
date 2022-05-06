@@ -5,7 +5,7 @@ namespace Drush\Drupal\Migrate;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\migrate\Row;
-use Symfony\Contracts\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Wraps a prepare-row event for event listeners.
@@ -19,27 +19,33 @@ final class MigratePrepareRowEvent extends Event
 {
     /**
      * Row object.
+     *
+     * @var \Drupal\migrate\Row
      */
-    protected Row $row;
+    protected $row;
 
     /**
      * Migration source plugin.
+     *
+     * @var \Drupal\migrate\Plugin\MigrateSourceInterface
      */
-    protected MigrateSourceInterface $source;
+    protected $source;
 
     /**
      * Migration plugin.
+     *
+     * @var \Drupal\migrate\Plugin\MigrationInterface
      */
-    protected MigrationInterface $migration;
+    protected $migration;
 
     /**
      * Constructs a prepare-row event object.
      *
-     * @param Row $row
+     * @param \Drupal\migrate\Row $row
      *   Row of source data to be analyzed/manipulated.
-     * @param MigrateSourceInterface $source
+     * @param \Drupal\migrate\Plugin\MigrateSourceInterface $source
      *   Source plugin that is the source of the event.
-     * @param MigrationInterface $migration
+     * @param \Drupal\migrate\Plugin\MigrationInterface $migration
      *   Migration entity.
      */
     public function __construct(Row $row, MigrateSourceInterface $source, MigrationInterface $migration)
@@ -52,7 +58,7 @@ final class MigratePrepareRowEvent extends Event
     /**
      * Gets the row object.
      *
-     * @return Row
+     * @return \Drupal\migrate\Row
      *   The row object about to be imported.
      */
     public function getRow(): Row
@@ -61,11 +67,11 @@ final class MigratePrepareRowEvent extends Event
     }
 
     /**
-    * Gets the source plugin.
-    *
-    * @return MigrateSourceInterface $source
-    *   The source plugin firing the event.
-    */
+     * Gets the source plugin.
+     *
+     * @return \Drupal\migrate\Plugin\MigrateSourceInterface $source
+     *   The source plugin firing the event.
+     */
     public function getSource(): MigrateSourceInterface
     {
         return $this->source;
@@ -74,7 +80,7 @@ final class MigratePrepareRowEvent extends Event
     /**
      * Gets the migration plugin.
      *
-     * @return MigrationInterface
+     * @return \Drupal\migrate\Plugin\MigrationInterface
      *   The migration entity being imported.
      */
     public function getMigration(): MigrationInterface

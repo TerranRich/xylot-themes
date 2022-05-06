@@ -3,6 +3,8 @@
 namespace Drush\Boot;
 
 use Drush\Drush;
+use Drush\Log\LogLevel;
+use Drush\Sql\SqlBase;
 use Webmozart\PathUtil\Path;
 
 abstract class DrupalBoot extends BaseBoot
@@ -11,7 +13,7 @@ abstract class DrupalBoot extends BaseBoot
      * Select the best URI for the provided cwd. Only called
      * if the user did not explicitly specify a URI.
      */
-    public function findUri($root, $cwd): string
+    public function findUri($root, $cwd)
     {
         if (Path::isBasePath($root, $cwd)) {
             $siteDir = $this->scanUpForUri($root, $cwd);
@@ -36,7 +38,7 @@ abstract class DrupalBoot extends BaseBoot
                 return false;
             }
             $scan = $next;
-            if ($scan === $root) {
+            if ($scan == $root) {
                 return false;
             }
         }
@@ -70,7 +72,7 @@ abstract class DrupalBoot extends BaseBoot
      * method is called, if defined.  The validate method name is the
      * bootstrap method name with "_validate" appended.
      */
-    public function bootstrapPhases(): array
+    public function bootstrapPhases()
     {
         return parent::bootstrapPhases() + [
             DRUSH_BOOTSTRAP_DRUPAL_ROOT            => 'bootstrapDrupalRoot',
@@ -81,7 +83,7 @@ abstract class DrupalBoot extends BaseBoot
         ];
     }
 
-    public function bootstrapPhaseMap(): array
+    public function bootstrapPhaseMap()
     {
         return parent::bootstrapPhaseMap() + [
             'root' => DRUSH_BOOTSTRAP_DRUPAL_ROOT,
@@ -99,7 +101,7 @@ abstract class DrupalBoot extends BaseBoot
      *
      * In this function, we will check if a valid Drupal directory is available.
      */
-    public function bootstrapDrupalRootValidate(BootstrapManager $manager): bool
+    public function bootstrapDrupalRootValidate(BootstrapManager $manager)
     {
         $drupal_root = $manager->getRoot();
         return (bool) $drupal_root;
@@ -115,11 +117,11 @@ abstract class DrupalBoot extends BaseBoot
      * We can now include files from the Drupal tree, and figure
      * out more context about the codebase, such as the version of Drupal.
      */
-    public function bootstrapDrupalRoot(BootstrapManager $manager): void
+    public function bootstrapDrupalRoot(BootstrapManager $manager)
     {
         $drupal_root = $manager->getRoot();
         chdir($drupal_root);
-        $this->logger->info(dt("Change working directory to !drupal_root", ['!drupal_root' => $drupal_root]));
+        $this->logger->log(LogLevel::BOOTSTRAP, dt("Change working directory to !drupal_root", ['!drupal_root' => $drupal_root]));
 
         $core = $this->bootstrapDrupalCore($manager, $drupal_root);
 
@@ -134,7 +136,7 @@ abstract class DrupalBoot extends BaseBoot
         // DRUSH_DRUPAL_CORE should point to the /core folder in Drupal 8+.
         define('DRUSH_DRUPAL_CORE', $core);
 
-        $this->logger->info(dt("Initialized Drupal !version root directory at !drupal_root", ["!version" => Drush::bootstrap()->getVersion($drupal_root), '!drupal_root' => $drupal_root]));
+        $this->logger->log(LogLevel::BOOTSTRAP, dt("Initialized Drupal !version root directory at !drupal_root", ["!version" => Drush::bootstrap()->getVersion($drupal_root), '!drupal_root' => $drupal_root]));
     }
 
     /**
@@ -183,7 +185,7 @@ abstract class DrupalBoot extends BaseBoot
     {
         // We presume that our derived classes will connect and then
         // either fail, or call us via parent::
-        $this->logger->info(dt("Successfully connected to the Drupal database."));
+        $this->logger->log(LogLevel::BOOTSTRAP, dt("Successfully connected to the Drupal database."));
     }
 
     /**

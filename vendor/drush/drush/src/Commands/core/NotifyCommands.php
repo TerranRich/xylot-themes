@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Commands\core;
 
 use Consolidation\AnnotatedCommand\CommandData;
@@ -14,19 +13,19 @@ class NotifyCommands extends DrushCommands
      * @hook option *
      * @option notify Notify upon command completion. If set to a number, commands that finish in fewer seconds won't notify.
      */
-    public function optionsetNotify(): void
+    public function optionsetNotify()
     {
     }
 
     /**
      * @hook pre-command *
      */
-    public function registerShutdown(CommandData $commandData): void
+    public function registerShutdown(CommandData $commandData)
     {
         register_shutdown_function([$this, 'shutdown'], $commandData);
     }
 
-    public function shutdown(CommandData $commandData): void
+    public function shutdown(CommandData $commandData)
     {
 
         $annotationData = $commandData->annotationData();
@@ -51,7 +50,7 @@ class NotifyCommands extends DrushCommands
      * @param string $msg
      *   Message to send via notification.
      */
-    public static function shutdownSend(string $msg, CommandData $commandData): void
+    public static function shutdownSend($msg, CommandData $commandData)
     {
         self::shutdownSendText($msg, $commandData);
     }
@@ -65,9 +64,10 @@ class NotifyCommands extends DrushCommands
      * @param string $msg
      *   Message text for delivery.
      *
+     * @return bool
      *   TRUE on success, FALSE on failure
      */
-    public static function shutdownSendText(string $msg, CommandData $commandData): bool
+    public static function shutdownSendText($msg, CommandData $commandData)
     {
         $override = Drush::config()->get('notify.cmd');
 
@@ -101,8 +101,10 @@ class NotifyCommands extends DrushCommands
 
     /**
      * Identify if the given Drush request should trigger a notification.
+     *
+     * @return bool
      */
-    public static function isAllowed(): bool
+    public static function isAllowed()
     {
         $duration = Drush::config()->get('notify.duration');
         $execution = time() - $_SERVER['REQUEST_TIME'];

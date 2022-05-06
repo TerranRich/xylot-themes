@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Preflight;
 
 use Consolidation\Config\ConfigInterface;
@@ -54,7 +53,7 @@ interface PreflightArgsInterface
      *
      * @param string $arg One argument
      */
-    public function addArg(string $arg);
+    public function addArg($arg);
 
     /**
      * Add everything in the provided array to the list returned by `args()`
@@ -79,5 +78,5 @@ interface PreflightArgsInterface
      *
      * @param string $alias The alias name '@site'
      */
-    public function setAlias(string $alias);
+    public function setAlias($alias);
 }

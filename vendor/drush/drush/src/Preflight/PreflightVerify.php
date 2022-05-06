@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Preflight;
 
 use Drush\Config\Environment;
@@ -15,12 +14,12 @@ class PreflightVerify
      *
      * @param Environment $environment
      */
-    public function verify(Environment $environment): void
+    public function verify(Environment $environment)
     {
-        // Fail fast if the PHP version is not at least 7.4.0.
+        // Fail fast if the PHP version is not at least 7.1.3.
         // We'll come back and check this again later, in case someone
         // set a higher value in a configuration file.
-        $this->confirmPhpVersion('7.4.0');
+        $this->confirmPhpVersion('7.1.3');
 
         // Fail if this is not a CLI php
         $this->confirmUsingCLI($environment);
@@ -36,7 +35,7 @@ class PreflightVerify
      * @param string $minimumPhpVersion
      *   The minimum allowable php version
      */
-    public function confirmPhpVersion(string $minimumPhpVersion): void
+    public function confirmPhpVersion($minimumPhpVersion)
     {
         if (version_compare(phpversion(), $minimumPhpVersion) < 0 && !getenv('DRUSH_NO_MIN_PHP')) {
             throw new \Exception(StringUtils::interpolate('Your command line PHP installation is too old. Drush requires at least PHP {version}. To suppress this check, set the environment variable DRUSH_NO_MIN_PHP=1', ['version' => $minimumPhpVersion]));
@@ -48,7 +47,7 @@ class PreflightVerify
      *
      * @param Environment $environment
      */
-    protected function confirmUsingCLI(Environment $environment): void
+    protected function confirmUsingCLI(Environment $environment)
     {
         if (!$environment->verifyCLI()) {
             throw new \Exception(StringUtils::interpolate('Drush is designed to run via the command line.'));
@@ -60,7 +59,7 @@ class PreflightVerify
      * begins.  If the php environment is too restrictive, then
      * notify the user that a setting change is needed and abort.
      */
-    protected function checkPhpIni(): void
+    protected function checkPhpIni()
     {
         $ini_checks = ['safe_mode' => '', 'open_basedir' => ''];
 
@@ -85,8 +84,9 @@ class PreflightVerify
      * @param string|string[] $disallowed_value
      *   The value that the ini seting cannot be, or a list of disallowed
      *   values that cannot appear in the setting.
+     * @return bool
      */
-    protected function invalidIniValue(string $ini_value, $disallowed_value): bool
+    protected function invalidIniValue($ini_value, $disallowed_value)
     {
         if (empty($disallowed_value)) {
             return !empty($ini_value) && (strcasecmp($ini_value, 'off') != 0);

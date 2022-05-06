@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Drupal\Commands\config;
 
 use Consolidation\AnnotatedCommand\CommandData;
@@ -7,7 +6,6 @@ use Drupal\Core\Config\ConfigManagerInterface;
 use Drupal\Core\Config\StorageComparer;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Config\StorageInterface;
-use Drupal\Core\Site\Settings;
 use Drush\Commands\DrushCommands;
 use Drush\Drush;
 use Drush\Exceptions\UserAbortException;
@@ -36,20 +34,26 @@ class ConfigExportCommands extends DrushCommands
      */
     protected $configStorageExport;
 
-    public function getConfigManager(): ConfigManagerInterface
+    /**
+     * @return ConfigManagerInterface
+     */
+    public function getConfigManager()
     {
         return $this->configManager;
     }
 
     /**
-     * @param StorageInterface $exportStorage
+     * @param \Drupal\Core\Config\StorageInterface $exportStorage
      */
-    public function setExportStorage(StorageInterface $exportStorage): void
+    public function setExportStorage(StorageInterface $exportStorage)
     {
         $this->configStorageExport = $exportStorage;
     }
 
-    public function getConfigStorageExport(): StorageInterface
+    /**
+     * @return StorageInterface
+     */
+    public function getConfigStorageExport()
     {
         if (isset($this->configStorageExport)) {
             return $this->configStorageExport;
@@ -57,13 +61,19 @@ class ConfigExportCommands extends DrushCommands
         return $this->configStorage;
     }
 
-    public function getConfigStorage(): StorageInterface
+    /**
+     * @return StorageInterface
+     */
+    public function getConfigStorage()
     {
         // @todo: deprecate this method.
         return $this->getConfigStorageExport();
     }
 
-    public function getConfigStorageSync(): StorageInterface
+    /**
+     * @return StorageInterface
+     */
+    public function getConfigStorageSync()
     {
         return $this->configStorageSync;
     }
@@ -85,6 +95,8 @@ class ConfigExportCommands extends DrushCommands
      * Export Drupal configuration to a directory.
      *
      * @command config:export
+     * @interact-config-label
+     * @param string $label A config directory label (i.e. a key in $config_directories array in settings.php).
      * @option add Run `git add -p` after exporting. This lets you choose which config changes to sync for commit.
      * @option commit Run `git add -A` and `git commit` after exporting.  This commits everything that was exported without prompting.
      * @option message Commit comment for the exported configuration.  Optional; may only be used with --commit.
@@ -96,10 +108,10 @@ class ConfigExportCommands extends DrushCommands
      *   Export configuration; Save files in a backup directory named config-export.
      * @aliases cex,config-export
      */
-    public function export($options = ['add' => false, 'commit' => false, 'message' => self::REQ, 'destination' => self::OPT, 'diff' => false, 'format' => null]): array
+    public function export($label = null, $options = ['add' => false, 'commit' => false, 'message' => self::REQ, 'destination' => self::OPT, 'diff' => false, 'format' => null])
     {
         // Get destination directory.
-        $destination_dir = ConfigCommands::getDirectory($options['destination']);
+        $destination_dir = ConfigCommands::getDirectory($label, $options['destination']);
 
         // Do the actual config export operation.
         $preview = $this->doExport($options, $destination_dir);
@@ -113,7 +125,7 @@ class ConfigExportCommands extends DrushCommands
     public function doExport($options, $destination_dir)
     {
         // Prepare the configuration storage for the export.
-        if ($destination_dir ==  Path::canonicalize(Settings::get('config_sync_directory'))) {
+        if ($destination_dir ==  Path::canonicalize(\drush_config_get_config_directory())) {
             $target_storage = $this->getConfigStorageSync();
         } else {
             $target_storage = new FileStorage($destination_dir);
@@ -166,7 +178,7 @@ class ConfigExportCommands extends DrushCommands
         return isset($preview) ? $preview : 'No existing configuration to diff against.';
     }
 
-    public function doAddCommit($options, $destination_dir, $preview): void
+    public function doAddCommit($options, $destination_dir, $preview)
     {
         // Commit or add exported configuration if requested.
         if ($options['commit']) {
@@ -178,7 +190,7 @@ class ConfigExportCommands extends DrushCommands
             if (!empty($uncommitted_changes)) {
                 $process = $this->processManager()->process(['git', 'add', '-A', '.'], $destination_dir);
                 $process->mustRun();
-                $comment_file = drush_save_data_to_temp_file($options['message'] ?: 'Exported configuration.' . $preview);
+                $comment_file = drush_save_data_to_temp_file($options['message'] ?: 'Exported configuration.'. $preview);
                 $process = $this->processManager()->process(['git', 'commit', "--file=$comment_file"], $destination_dir);
                 $process->mustRun();
             }
@@ -189,9 +201,9 @@ class ConfigExportCommands extends DrushCommands
 
     /**
      * @hook validate config-export
-     * @param CommandData $commandData
+     * @param \Consolidation\AnnotatedCommand\CommandData $commandData
      */
-    public function validate(CommandData $commandData): void
+    public function validate(CommandData $commandData)
     {
         $destination = $commandData->input()->getOption('destination');
 

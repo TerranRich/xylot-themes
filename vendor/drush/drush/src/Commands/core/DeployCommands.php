@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Commands\core;
 
 use Consolidation\SiteAlias\SiteAlias;
@@ -21,13 +20,11 @@ class DeployCommands extends DrushCommands implements SiteAliasManagerAwareInter
      * @usage drush deploy -v -y
      *   Run updates with verbose logging and accept all prompts.
      *
-     * @version 10.3
-     *
      * @topics docs:deploy
      *
      * @throws \Exception
      */
-    public function deploy(): void
+    public function deploy()
     {
         $self = $this->siteAliasManager()->getSelf();
         $redispatchOptions = Drush::redispatchOptions();
@@ -52,11 +49,11 @@ class DeployCommands extends DrushCommands implements SiteAliasManagerAwareInter
     }
 
     /**
-     * @param ProcessManager $manager
-     * @param SiteAlias $self
+     * @param \Consolidation\SiteProcess\ProcessManager $manager
+     * @param \Consolidation\SiteAlias\SiteAlias $self
      * @param array $redispatchOptions
      */
-    public function cacheRebuild(ProcessManager $manager, SiteAlias $self, array $redispatchOptions): void
+    public function cacheRebuild(ProcessManager $manager, SiteAlias $self, array $redispatchOptions)
     {
         // It is possible that no updates were pending and thus no caches cleared yet.
         $this->logger()->success("Cache rebuild start.");

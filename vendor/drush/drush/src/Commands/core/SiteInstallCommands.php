@@ -1,12 +1,11 @@
 <?php
-
 namespace Drush\Commands\core;
 
+use Composer\Semver\Comparator;
 use Consolidation\AnnotatedCommand\CommandData;
 use Drupal\Component\FileCache\FileCacheFactory;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Installer\Exception\AlreadyInstalledException;
-use Drupal\Core\Site\Settings;
 use Drush\Commands\DrushCommands;
 use Drush\Drush;
 use Drush\Exceptions\UserAbortException;
@@ -47,8 +46,6 @@ class SiteInstallCommands extends DrushCommands implements SiteAliasManagerAware
      *   Install using the specified DB params.
      * @usage drush si --db-url=sqlite://sites/example.com/files/.ht.sqlite
      *   Install using SQLite
-     * @usage drush si --db-url=sqlite://:memory:
-     *   Install using SQLite in-memory database.
      * @usage drush si --account-pass=mom
      *   Re-install with specified uid1 password.
      * @usage drush si --existing-config
@@ -60,7 +57,7 @@ class SiteInstallCommands extends DrushCommands implements SiteAliasManagerAware
      * @aliases si,sin,site-install
      *
      */
-    public function install(array $profile, $options = ['db-url' => self::REQ, 'db-prefix' => self::REQ, 'db-su' => self::REQ, 'db-su-pw' => self::REQ, 'account-name' => 'admin', 'account-mail' => 'admin@example.com', 'site-mail' => 'admin@example.com', 'account-pass' => self::REQ, 'locale' => 'en', 'site-name' => 'Drush Site-Install', 'site-pass' => self::REQ, 'sites-subdir' => self::REQ, 'config-dir' => self::REQ, 'existing-config' => false]): void
+    public function install(array $profile, $options = ['db-url' => self::REQ, 'db-prefix' => self::REQ, 'db-su' => self::REQ, 'db-su-pw' => self::REQ, 'account-name' => 'admin', 'account-mail' => 'admin@example.com', 'site-mail' => 'admin@example.com', 'account-pass' => self::REQ, 'locale' => 'en', 'site-name' => 'Drush Site-Install', 'site-pass' => self::REQ, 'sites-subdir' => self::REQ, 'config-dir' => self::REQ, 'existing-config' => false])
     {
         $additional = $profile;
         $profile = array_shift($additional) ?: '';
@@ -86,7 +83,7 @@ class SiteInstallCommands extends DrushCommands implements SiteAliasManagerAware
 
         // Was giving error during validate() so its here for now.
         if ($options['existing-config']) {
-            $existing_config_dir = Settings::get('config_sync_directory');
+            $existing_config_dir = drush_config_get_config_directory();
             if (!is_dir($existing_config_dir)) {
                 throw new \Exception(dt('Existing config directory @dir not found', ['@dir' => $existing_config_dir]));
             }
@@ -164,7 +161,7 @@ class SiteInstallCommands extends DrushCommands implements SiteAliasManagerAware
         }
     }
 
-    public function taskCallback($install_state): void
+    public function taskCallback($install_state)
     {
         $this->logger()->notice('Performed install task: {task}', ['task' => $install_state['active_task']]);
     }
@@ -172,11 +169,18 @@ class SiteInstallCommands extends DrushCommands implements SiteAliasManagerAware
 
     protected function determineProfile($profile, $options, $class_loader)
     {
+        // --config-dir fails with Standard profile and any other one that carries content entities.
+        // Force to minimal install profile only for drupal < 8.6.
+        if ($options['config-dir'] && Comparator::lessThan(self::getVersion(), '8.6')) {
+            $this->logger()->info(dt("Using 'minimal' install profile since --config-dir option was provided."));
+            $profile = 'minimal';
+        }
+
         // Try to get profile from existing config if not provided as an argument.
         // @todo Arguably Drupal core [$boot->getKernel()->getInstallProfile()] could do this - https://github.com/drupal/drupal/blob/8.6.x/core/lib/Drupal/Core/DrupalKernel.php#L1606 reads from DB storage but not file storage.
         if (empty($profile) && $options['existing-config']) {
             FileCacheFactory::setConfiguration([FileCacheFactory::DISABLE_CACHE => true]);
-            $source_storage = new FileStorage(Settings::get('config_sync_directory'));
+            $source_storage = new FileStorage(drush_config_get_config_directory());
             if (!$source_storage->exists('core.extension')) {
                 throw new \Exception('Existing configuration directory not found or does not contain a core.extension.yml file.".');
             }
@@ -217,9 +221,30 @@ class SiteInstallCommands extends DrushCommands implements SiteAliasManagerAware
     }
 
     /**
+     * Post installation, run the configuration import.
+     *
+     * @hook post-command site-install
+     */
+    public function post($result, CommandData $commandData)
+    {
+        if ($config = $commandData->input()->getOption('config-dir') && Comparator::lessThan(self::getVersion(), '8.6')) {
+            // Set the destination site UUID to match the source UUID, to bypass a core fail-safe.
+            $source_storage = new FileStorage($config);
+            $options = array_merge(Drush::redispatchOptions(), ['yes' => true, 'strict' => 0]);
+            $selfRecord = $this->siteAliasManager()->getSelf();
+
+            $process = $this->processManager()->drush($selfRecord, 'config-set', ['system.site', 'uuid', $source_storage->read('system.site')['uuid']], $options);
+            $process->mustRun();
+
+            $process = $this->processManager()->drush($selfRecord, 'config-import', [], ['source' => $config] + $options);
+            $process->mustRun($process->showRealtime());
+        }
+    }
+
+    /**
      * Check to see if there are any .yml files in the provided config directory.
      */
-    protected function hasConfigFiles($config): bool
+    protected function hasConfigFiles($config)
     {
         $files = glob("$config/*.yml");
         return !empty($files);
@@ -228,7 +253,7 @@ class SiteInstallCommands extends DrushCommands implements SiteAliasManagerAware
     /**
      * @hook validate site-install
      */
-    public function validate(CommandData $commandData): void
+    public function validate(CommandData $commandData)
     {
         $bootstrapManager = Drush::bootstrapManager();
         if ($sites_subdir = $commandData->input()->getOption('sites-subdir')) {
@@ -285,7 +310,7 @@ class SiteInstallCommands extends DrushCommands implements SiteAliasManagerAware
      *
      * @hook pre-command site-install
      */
-    public function pre(CommandData $commandData): void
+    public function pre(CommandData $commandData)
     {
         $db_spec = [];
         if ($sql = SqlBase::create($commandData->input()->getOptions())) {
@@ -397,10 +422,9 @@ class SiteInstallCommands extends DrushCommands implements SiteAliasManagerAware
         // Find the dir from sites.php file
         $sites_file = $root . '/sites/sites.php';
         if (file_exists($sites_file)) {
-            /** @var array $sites */
-            $sites = [];
             include $sites_file;
-            if (!empty($sites) && array_key_exists($uri, $sites)) {
+            /** @var array $sites */
+            if (isset($sites) && array_key_exists($uri, $sites)) {
                 return $sites[$uri];
             }
         }
@@ -411,11 +435,17 @@ class SiteInstallCommands extends DrushCommands implements SiteAliasManagerAware
         return false;
     }
 
+    public static function getVersion()
+    {
+        $drupal_root = Drush::bootstrapManager()->getRoot();
+        return Drush::bootstrap()->getVersion($drupal_root);
+    }
+
     /**
      * Fake the necessary HTTP headers that the Drupal installer still needs:
      * @see https://github.com/drupal/drupal/blob/d260101f1ea8a6970df88d2f1899248985c499fc/core/includes/install.core.inc#L287
      */
-    public function serverGlobals($drupal_base_url): void
+    public function serverGlobals($drupal_base_url)
     {
         $drupal_base_url = parse_url($drupal_base_url);
 
@@ -456,7 +486,7 @@ class SiteInstallCommands extends DrushCommands implements SiteAliasManagerAware
      * @param $directory
      * @throws \Exception
      */
-    protected function validateConfigDir(CommandData $commandData, $directory): void
+    protected function validateConfigDir(CommandData $commandData, $directory)
     {
         if (!file_exists($directory)) {
             throw new \Exception(dt('The config source directory @config does not exist.', ['@config' => $directory]));

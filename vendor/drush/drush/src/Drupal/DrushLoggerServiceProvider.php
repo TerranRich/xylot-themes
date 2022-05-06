@@ -2,7 +2,6 @@
 
 namespace Drush\Drupal;
 
-use Drush\Log\DrushLog;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DependencyInjection\ServiceProviderInterface;
 use Drush\Log\LoggerDrupalToDrush;
@@ -13,9 +12,9 @@ class DrushLoggerServiceProvider implements ServiceProviderInterface
     /**
      * @inheritDoc
      */
-    public function register(ContainerBuilder $container): void
+    public function register(ContainerBuilder $container)
     {
-        $container->register('logger.drupaltodrush', DrushLog::class)
+        $container->register('logger.drupaltodrush', \Drush\Log\DrushLog::class)
             ->addArgument(new Reference('logger.log_message_parser'))
             ->addTag('logger');
     }

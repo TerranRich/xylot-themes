@@ -14,18 +14,24 @@ class PreflightLog
     {
         $this->output = $output ?: new StreamOutput(fopen('php://stderr', 'w'));
     }
-    public function getDebug(): ?bool
+    /**
+     * @return bool
+     */
+    public function getDebug()
     {
         return $this->debug;
     }
 
-    public function setDebug(bool $debug): self
+    /**
+     * @param bool $debug
+     */
+    public function setDebug($debug)
     {
         $this->debug = $debug;
         return $this;
     }
 
-    public function log($message): void
+    public function log($message)
     {
         if ($this->getDebug()) {
             $this->output->write(' [preflight] ' . $message . "\n");

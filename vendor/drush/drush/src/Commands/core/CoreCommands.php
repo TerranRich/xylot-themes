@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Commands\core;
 
 use Consolidation\OutputFormatters\StructuredData\PropertyList;
@@ -11,6 +10,7 @@ use Consolidation\SiteAlias\SiteAliasManagerAwareTrait;
 
 class CoreCommands extends DrushCommands implements SiteAliasManagerAwareInterface
 {
+
     use SiteAliasManagerAwareTrait;
 
     /**
@@ -27,13 +27,14 @@ class CoreCommands extends DrushCommands implements SiteAliasManagerAwareInterfa
      * @aliases core-global-options
      *
      * @filter-default-field name
+     * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
      */
-    public function globalOptions($options = ['format' => 'table']): RowsOfFields
+    public function globalOptions($options = ['format' => 'table'])
     {
         $application = Drush::getApplication();
         $def = $application->getDefinition();
         foreach ($def->getOptions() as $key => $value) {
-            $name = '--' . $key;
+            $name = '--'. $key;
             if ($value->getShortcut()) {
                 $name = '-' . $value->getShortcut() . ', ' . $name;
             }
@@ -45,18 +46,11 @@ class CoreCommands extends DrushCommands implements SiteAliasManagerAwareInterfa
 
         // Also document the keys that are recognized by PreflightArgs. It would be possible to redundantly declare
         // those as global options. We don't do that for now, to avoid confusion.
-        $ancient = [
-            'config' => 'Specify an additional config file to load. See example.drush.yml. Example: /path/file',
-            'alias-path' => 'Specifies additional paths where Drush will search for alias files. Example: /path/alias1:/path/alias2',
-            'include' => 'Additional directories to search for Drush commands. Commandfiles should be placed in a subdirectory called <info>Commands</info>. Example: path/dir',
-            'local' => 'Don\'t look outside the Composer project for Drush config.',
-            'strict' => 'Return an error on unrecognized options. --strict=0 allows unrecognized options.',
-            'ssh-options' => 'A string of extra options that will be passed to the ssh command. Example: -p 100',
-        ];
-        foreach ($ancient as $name => $description) {
+        $ancient = drush_get_global_options();
+        foreach (['config', 'alias-path', 'include', 'local', 'strict', 'ssh-options'] as $name) {
             $rows[] = [
                 'name' => '--' . $name,
-                'description' => $description,
+                'description' => $ancient[$name]['description'],
             ];
         }
         usort($rows, function ($a, $b) {
@@ -74,9 +68,10 @@ class CoreCommands extends DrushCommands implements SiteAliasManagerAwareInterfa
      * @field-labels
      *   drush-version: Drush version
      *
+     * @return \Consolidation\OutputFormatters\StructuredData\PropertyList
      *
      */
-    public function version($options = ['format' => 'table']): PropertyList
+    public function version($options = ['format' => 'table'])
     {
         return new PropertyList(['drush-version' => Drush::getVersion()]);
     }

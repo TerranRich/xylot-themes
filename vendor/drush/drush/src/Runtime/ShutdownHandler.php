@@ -1,9 +1,16 @@
 <?php
-
 namespace Drush\Runtime;
 
-use Drush\Commands\DrushCommands;
+/**
+ * @file
+ * Drush's error handler
+ */
+
 use Drush\Drush;
+use Drush\Log\LogLevel;
+use Drush\Commands\DrushCommands;
+use Webmozart\PathUtil\Path;
+
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 
@@ -22,12 +29,12 @@ class ShutdownHandler implements LoggerAwareInterface, HandlerInterface
 {
     use LoggerAwareTrait;
 
-    public function installHandler(): void
+    public function installHandler()
     {
         register_shutdown_function([$this, 'shutdownHandler']);
     }
 
-    public function shutdownHandler(): void
+    public function shutdownHandler()
     {
         // Avoid doing anything if our container has not been initialized yet.
         if (!Drush::hasContainer()) {
@@ -51,7 +58,7 @@ class ShutdownHandler implements LoggerAwareInterface, HandlerInterface
     /**
      * @deprecated. This function will be removed in Drush 10. Throw an exception to indicate an error.
      */
-    public function returnStatus(): void
+    public function returnStatus()
     {
         exit(Runtime::exitCode());
     }

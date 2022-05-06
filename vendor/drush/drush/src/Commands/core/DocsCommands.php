@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Commands\core;
 
 use Consolidation\AnnotatedCommand\CommandData;
@@ -22,7 +21,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../README.md
      */
-    public function readme(): void
+    public function readme()
     {
         self::printFileTopic($this->commandData);
     }
@@ -35,7 +34,20 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../examples/git-bisect.example.sh
      */
-    public function bisect(): void
+    public function bisect()
+    {
+        self::printFileTopic($this->commandData);
+    }
+
+    /**
+     * Bashrc customization examples for Drush.
+     *
+     * @command docs:bashrc
+     * @aliases docs-bashrc
+     * @hidden
+     * @topic ../../../examples/example.bashrc
+     */
+    public function bashrc()
     {
         self::printFileTopic($this->commandData);
     }
@@ -48,7 +60,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../docs/using-drush-configuration.md
      */
-    public function config(): void
+    public function config()
     {
         self::printFileTopic($this->commandData);
     }
@@ -61,7 +73,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../docs/hooks.md
      */
-    public function hooks(): void
+    public function hooks()
     {
         self::printFileTopic($this->commandData);
     }
@@ -74,7 +86,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../docs/config-exporting.md
      */
-    public function configExport(): void
+    public function configExport()
     {
         self::printFileTopic($this->commandData);
     }
@@ -88,7 +100,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic  ../../../docs/output-formats-filters.md
      */
-    public function outputFormatsFilters(): void
+    public function outputFormatsFilters()
     {
         self::printFileTopic($this->commandData);
     }
@@ -101,7 +113,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../docs/site-aliases.md
      */
-    public function siteAliases(): void
+    public function siteAliases()
     {
         self::printFileTopic($this->commandData);
     }
@@ -110,11 +122,11 @@ class DocsCommands extends DrushCommands
      * An example Drush script.
      *
      * @command docs:script
-     * @aliases docs-script
+     * @aliases docs-scipt
      * @hidden
      * @topic ../../../examples/helloworld.script
      */
-    public function script(): void
+    public function script()
     {
         self::printFileTopic($this->commandData);
     }
@@ -127,7 +139,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../docs/bootstrap.md
      */
-    public function bootstrap(): void
+    public function bootstrap()
     {
         self::printFileTopic($this->commandData);
     }
@@ -140,7 +152,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../docs/cron.md
      */
-    public function cron(): void
+    public function cron()
     {
         self::printFileTopic($this->commandData);
     }
@@ -153,7 +165,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../docs/commands.md
      */
-    public function commands(): void
+    public function commands()
     {
         self::printFileTopic($this->commandData);
     }
@@ -166,7 +178,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../docs/generators.md
      */
-    public function generators(): void
+    public function generators()
     {
         self::printFileTopic($this->commandData);
     }
@@ -179,7 +191,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../examples/Commands/ArtCommands.php
      */
-    public function exampleCommand(): void
+    public function exampleCommand()
     {
         self::printFileTopic($this->commandData);
     }
@@ -191,7 +203,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../docs/migrate.md
      */
-    public function migrate(): void
+    public function migrate()
     {
         self::printFileTopic($this->commandData);
     }
@@ -204,7 +216,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../examples/Commands/SyncViaHttpCommands.php
      */
-    public function syncHttp(): void
+    public function syncHttp()
     {
         self::printFileTopic($this->commandData);
     }
@@ -217,7 +229,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic ../../../examples/Commands/PolicyCommands.php
      */
-    public function policy(): void
+    public function policy()
     {
         self::printFileTopic($this->commandData);
     }
@@ -230,7 +242,7 @@ class DocsCommands extends DrushCommands
      * @hidden
      * @topic  ../../../docs/deploycommand.md
      */
-    public function deploy(): void
+    public function deploy()
     {
         self::printFileTopic($this->commandData);
     }

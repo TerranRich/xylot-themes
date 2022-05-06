@@ -1,5 +1,4 @@
 <?php
-
 namespace Drush\Commands\core;
 
 use Drush\Commands\DrushCommands;
@@ -43,7 +42,7 @@ class SiteCommands extends DrushCommands implements SiteAliasManagerAwareInterfa
      *   Without an argument, any existing site becomes unset.
      * @aliases use,site-set
      */
-    public function siteSet(string $site = '@none'): void
+    public function siteSet($site = '@none')
     {
         $filename = $this->getConfig()->get('runtime.site-file-current');
         if ($filename) {
@@ -102,8 +101,9 @@ class SiteCommands extends DrushCommands implements SiteAliasManagerAwareInterfa
      * @command site:alias
      *
      * @param string $site Site alias or site specification.
+     * @param array $options
      *
-     * @return UnstructuredListData
+     * @return \Consolidation\OutputFormatters\StructuredData\UnstructuredListData
      * @throws \Exception
      * @aliases sa
      * @filter-default-field id
@@ -112,8 +112,9 @@ class SiteCommands extends DrushCommands implements SiteAliasManagerAwareInterfa
      * @usage drush site:alias @dev
      *   Print an alias record for the alias 'dev'.
      * @topics docs:aliases
+     *
      */
-    public function siteAlias($site = null, array $options = ['format' => 'yaml'])
+    public function siteAlias($site = null, $options = ['format' => 'yaml'])
     {
         // First check to see if the user provided a specification that matches
         // multiple sites.
@@ -148,8 +149,9 @@ class SiteCommands extends DrushCommands implements SiteAliasManagerAwareInterfa
      * @bootstrap max
      * @aliases sa-convert,sac
      * @topics docs:aliases
+     * @return array
      */
-    public function siteAliasConvert($destination, $options = ['format' => 'yaml', 'sources' => self::REQ]): array
+    public function siteAliasConvert($destination, $options = ['format' => 'yaml', 'sources' => self::REQ])
     {
         /**
          * @todo
@@ -193,7 +195,7 @@ class SiteCommands extends DrushCommands implements SiteAliasManagerAwareInterfa
     /**
      * @hook interact site:alias-convert
      */
-    public function interactSiteAliasConvert(Input $input, Output $output): void
+    public function interactSiteAliasConvert(Input $input, Output $output)
     {
         if (!$input->getArgument('destination')) {
             $default = Path::join($this->getConfig()->home(), '.drush/sites');
@@ -206,9 +208,11 @@ class SiteCommands extends DrushCommands implements SiteAliasManagerAwareInterfa
     }
 
     /**
+     * @param array $aliasList
      * @param $options
+     * @return array
      */
-    protected function siteAliasExportList(array $aliasList, $options): array
+    protected function siteAliasExportList($aliasList, $options)
     {
         $result = array_map(
             function ($aliasRecord) {
