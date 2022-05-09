@@ -43,9 +43,6 @@
             "drupal/core-composer-scaffold": true,
             "drupal/core-project-message": true,
             "cweagans/composer-patches": true
-        },
-        "platform": {
-            "php": "7.3"
         }
     },
     "extra": {
