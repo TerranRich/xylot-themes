@@ -23,6 +23,7 @@
         "drupal/core-composer-scaffold": "^9.3",
         "drupal/core-project-message": "^9.3",
         "drupal/core-recommended": "^9.3",
+        "drupal/jquery_ui_touch_punch": "^1.0",
         "drupal/paragraphs": "^1.14",
         "drupal/pathauto": "^1.10",
         "drupal/rabbit_hole": "^1.0@beta",
