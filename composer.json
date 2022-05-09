@@ -16,6 +16,7 @@
     ],
     "require": {
         "composer/installers": "^1.9",
+        "cweagans/composer-patches": "^1.7",
         "drupal/admin_toolbar": "^3.1",
         "drupal/adminimal_admin_toolbar": "^1.11",
         "drupal/core-composer-scaffold": "^9.3",
@@ -96,6 +97,12 @@
                 "  * Remove the plugin that prints this message:",
                 "      composer remove drupal/core-project-message"
             ]
-        }
+        },
+        "patches": {
+            "drupal/entity_reference_revisions": {
+                "Allow views to recognize relationship to paragraphs host": "web/patches/entity_reference_revisions/2799479-172.patch"
+            }
+        },
+        "enable-patching": true
     }
 }

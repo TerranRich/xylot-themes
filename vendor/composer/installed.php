@@ -5,7 +5,7 @@
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'c88bac7f219628834fab89df50d138d56d5bb82e',
+        'reference' => 'f9a2163b9a73c479cc6a85a3841f033b3ccb87fb',
         'name' => 'drupal/recommended-project',
         'dev' => true,
     ),
@@ -125,6 +125,15 @@
             'install_path' => __DIR__ . '/../consolidation/site-process',
             'aliases' => array(),
             'reference' => '9ef08d471573d6a56405b06ef6830dd70c883072',
+            'dev_requirement' => false,
+        ),
+        'cweagans/composer-patches' => array(
+            'pretty_version' => '1.7.2',
+            'version' => '1.7.2.0',
+            'type' => 'composer-plugin',
+            'install_path' => __DIR__ . '/../cweagans/composer-patches',
+            'aliases' => array(),
+            'reference' => 'e9969cfc0796e6dea9b4e52f77f18e1065212871',
             'dev_requirement' => false,
         ),
         'dflydev/dot-access-data' => array(
@@ -802,7 +811,7 @@
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'c88bac7f219628834fab89df50d138d56d5bb82e',
+            'reference' => 'f9a2163b9a73c479cc6a85a3841f033b3ccb87fb',
             'dev_requirement' => false,
         ),
         'drupal/responsive_image' => array(
@@ -1183,8 +1192,8 @@
         'psr/container-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '1.0',
-                1 => '^1.0',
+                0 => '^1.0',
+                1 => '1.0',
             ),
         ),
         'psr/event-dispatcher-implementation' => array(
