@@ -1,0 +1,21 @@
+{
+  "name": "V7",
+  "description": "A custom theme built specifically for Xylot Themes 7.x that includes fluid typography and responsive layout.",
+  "type": "drupal-xylot-theme",
+  "license": "GPL-2.0",
+  "homepage": "https://xylotthemes.com",
+  "require": {
+    "composer/installers": "~1.0"
+  },
+  "authors": [
+    {
+      "name": "Richard Brum",
+      "homepage": "https://richardbrum.com",
+      "role": "Creator"
+    }
+  ],
+  "support": {
+    "issues": "https://www.drupal.org/issues",
+    "source": "https://github.com/TerranRich/xylot-themes"
+  }
+}

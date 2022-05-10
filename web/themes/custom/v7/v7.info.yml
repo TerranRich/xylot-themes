@@ -1,0 +1,20 @@
+name: V7 Theme
+type: theme
+description: "A custom base theme for Drupal 9 built for Xylot Themes 7.x"
+core_version_requirement: ^8.8 || ^9
+base theme: classy
+package: custom
+
+# Add additional third party libraries here
+libraries:
+  - v7/global-css
+  - v7/global-js
+stylesheets-remove:
+  - core/themes/stable/css/views/views.module.css
+  - core/themes/stable/css/system/components/align.module.css
+
+# Customize Regions here
+regions:
+  header: 'Header'
+  content: 'Main content'
+  footer: 'Footer'
