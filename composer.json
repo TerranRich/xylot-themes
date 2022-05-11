@@ -30,6 +30,7 @@
         "drupal/rabbit_hole": "^1.0@beta",
         "drupal/svg_image_field": "^2.1",
         "drupal/synonyms": "^2.1",
+        "drupal/user_registrationpassword": "^2.0@alpha",
         "drush/drush": "^11.0",
         "kint-php/kint": "^4.1"
     },

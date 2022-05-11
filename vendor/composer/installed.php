@@ -5,7 +5,7 @@
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '7f8f617a9102b63cb38ed8503ab22c0d1c822421',
+        'reference' => '69063e03952dd1afe63a2cec69414ca6214f7eee',
         'name' => 'drupal/recommended-project',
         'dev' => true,
     ),
@@ -919,7 +919,7 @@
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '7f8f617a9102b63cb38ed8503ab22c0d1c822421',
+            'reference' => '69063e03952dd1afe63a2cec69414ca6214f7eee',
             'dev_requirement' => false,
         ),
         'drupal/responsive_image' => array(
@@ -1068,6 +1068,15 @@
             'replaced' => array(
                 0 => '9.3.12',
             ),
+        ),
+        'drupal/user_registrationpassword' => array(
+            'pretty_version' => '2.0.0-alpha1',
+            'version' => '2.0.0.0-alpha1',
+            'type' => 'drupal-module',
+            'install_path' => __DIR__ . '/../../web/modules/contrib/user_registrationpassword',
+            'aliases' => array(),
+            'reference' => '2.0.0-alpha1',
+            'dev_requirement' => false,
         ),
         'drupal/views' => array(
             'dev_requirement' => false,
