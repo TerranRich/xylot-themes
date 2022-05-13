@@ -23,6 +23,7 @@
 // 4. Layout-related styling
 @import
   'layout/header', // should always be first
+  'layout/main',   // should always be second
   // 'layout/...',
   'layout/footer'; // should always be last
 
