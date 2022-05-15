@@ -1,0 +1,17 @@
+.aspect-auto {
+  aspect-ratio: auto;
+}
+
+.aspect-square,
+.aspect-1-1 {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-wide,
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-landscape {
+  aspect-ratio: 3 / 2;
+}
