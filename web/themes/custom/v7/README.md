@@ -18,3 +18,7 @@ _TBD_
 
 ## Fluid Typography
 V7 comes with a baseline implementation of fluid typography out of the box. Customizations can be made in the `_typography.scss` SCSS module. See [Verne Fluid Type](https://www.npmjs.com/package/verne-fluid-type) on npm.com for documentation.
+
+## Other Notes
+* Node version _must_ be `v10.16.0` (`nvm install 10.16.0`)
+* NPM version _must_ be `7.9.0` (`npm install -g npm@7.9.0`)
