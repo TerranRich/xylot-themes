@@ -1,0 +1,56 @@
+/**
+ * INTERACTIVITY > Scroll Margin
+ *
+ * Utilities for controlling the scroll offset around items in a snap container.
+ */
+
+$scroll-margin-sizes-map: $master-sizes-map;
+
+@each $size, $val in $scroll-margin-sizes-map {
+
+  .scroll-m-#{$size},
+  .scroll-mar-#{$size} {
+    scroll-margin: $val;
+  }
+
+  .scroll-mx-#{$size},
+  .scroll-mar-x-#{$size} {
+    scroll-margin-left: $val;
+    scroll-margin-right: $val;
+  }
+
+  .scroll-my-#{$size},
+  .scroll-mar-y-#{$size} {
+    scroll-margin-top: $val;
+    scroll-margin-bottom: $val;
+  }
+
+  .scroll-mt-#{$size},
+  .scroll-mar-top-#{$size} {
+    scroll-margin-top: $val;
+  }
+
+  .scroll-mb-#{$size},
+  .scroll-mar-bottom-#{$size} {
+    scroll-margin-bottom: $val;
+  }
+
+  .scroll-ml-#{$size},
+  .scroll-mar-l-#{$size},
+  .scroll-mar-left-#{$size},
+  .scroll-ms-#{$size},
+  .scroll-mar-s-#{$size},
+  .scroll-mar-start-#{$size} {
+    scroll-margin-left: $val;
+  }
+
+  .scroll-mr-#{$size},
+  .scroll-mar-r-#{$size},
+  .scroll-mar-right-#{$size},
+  .scroll-me-#{$size},
+  .scroll-mar-e-#{$size},
+  .scroll-mar-end-#{$size} {
+    scroll-margin-right: $val;
+  }
+
+} // end @each

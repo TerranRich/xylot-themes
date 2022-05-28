@@ -1,0 +1,16 @@
+/**
+ * BORDERS > Outline Color
+ *
+ * Utilities for controlling the color of an element's outline.
+ */
+
+$outline-color-values-map: $master-color-values-map;
+
+@each $label, $color in $outline-color-values-map {
+
+  .o-#{$label},
+  .outline-#{$label} {
+    outline-color: $color;
+  }
+
+} // end @each

@@ -1,0 +1,19 @@
+/**
+ * INTERACTIVITY > Touch Action
+ *
+ * Utilities for controlling how an element can be scrolled and zoomed on
+ * touchscreens.
+ */
+
+$touch-action-values: auto none pan-x pan-left pan-right pan-y
+  pan-up pan-down pinch-zoom manipulation;
+
+@each $val in $touch-action-values {
+
+  .ta-#{$val},
+  .touch-#{$val},
+  .touch-action-#{$val} {
+    touch-action: $val;
+  }
+
+} // end @each

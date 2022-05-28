@@ -1,0 +1,16 @@
+/**
+ * BORDERS > Outline Width
+ *
+ * Utilities for controlling the width of an element's outline.
+ */
+
+$outline-widths: 0 1 2 3 4 5 6 8 10 12;
+
+@each $width in $outline-widths {
+
+  .o-#{$width},
+  .outline-#{$width} {
+    outline-width: #{$width}px;
+  }
+
+} // end @each

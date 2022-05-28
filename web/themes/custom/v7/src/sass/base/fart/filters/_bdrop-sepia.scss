@@ -1,0 +1,25 @@
+/**
+ * FILTERS > Backdrop Sepia
+ *
+ * Utilities for applying backdrop sepia filters to an element.
+ */
+
+.bd-sepia-0,
+.bd-sepia-no,
+.bd-no-sepia,
+.bd-sepia-off,
+.backdrop-sepia-0,
+.backdrop-sepia-no,
+.backdrop-no-sepia,
+.backdrop-sepia-off {
+  backdrop-filter: sepia(0)
+}
+
+.bd-sepia,
+.bd-sepia-on,
+.bd-sepia-100,
+.backdrop-sepia,
+.backdrop-sepia-on,
+.backdrop-sepia-100 {
+  backdrop-filter: sepia(100%);
+}

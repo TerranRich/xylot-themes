@@ -1,0 +1,56 @@
+/**
+ * INTERACTIVITY > Scroll Padding
+ *
+ * Utilities for controlling an element's scroll offset within a snap container.
+ */
+
+$scroll-padding-sizes-map: $master-sizes-map;
+
+@each $size, $val in $scroll-padding-sizes-map {
+
+  .scroll-p-#{$size},
+  .scroll-pad-#{$size} {
+    scroll-padding: $val;
+  }
+
+  .scroll-px-#{$size},
+  .scroll-pad-x-#{$size} {
+    scroll-padding-left: $val;
+    scroll-padding-right: $val;
+  }
+
+  .scroll-py-#{$size},
+  .scroll-pad-y-#{$size} {
+    scroll-padding-top: $val;
+    scroll-padding-bottom: $val;
+  }
+
+  .scroll-pt-#{$size},
+  .scroll-pad-top-#{$size} {
+    scroll-padding-top: $val;
+  }
+
+  .scroll-pb-#{$size},
+  .scroll-pad-bottom-#{$size} {
+    scroll-padding-bottom: $val;
+  }
+
+  .scroll-pl-#{$size},
+  .scroll-pad-l-#{$size},
+  .scroll-pad-left-#{$size},
+  .scroll-ps-#{$size},
+  .scroll-pad-s-#{$size},
+  .scroll-pad-start-#{$size} {
+    scroll-padding-left: $val;
+  }
+
+  .scroll-pr-#{$size},
+  .scroll-pad-r-#{$size},
+  .scroll-pad-right-#{$size},
+  .scroll-pe-#{$size},
+  .scroll-pad-e-#{$size},
+  .scroll-pad-end-#{$size} {
+    scroll-padding-right: $val;
+  }
+
+} // end @each

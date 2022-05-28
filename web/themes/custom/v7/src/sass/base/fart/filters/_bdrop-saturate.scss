@@ -1,0 +1,16 @@
+/**
+ * FILTERS > Backdrop Saturate
+ *
+ * Utilities for applying backdrop saturation filters to an element.
+ */
+
+@each $val in $saturation-values {
+
+  .bd-sat-#{$val},
+  .bd-saturate-#{$val},
+  .backdrop-sat-#{$val},
+  .backdrop-saturate-#{$val} {
+    backdrop-filter: saturate(#{$val / 100});
+  }
+
+} // end @each

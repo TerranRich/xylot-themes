@@ -1,0 +1,16 @@
+/**
+ * LAYOUT > Isolation
+ *
+ * Utilities for controlling whether an element should explicitly create a new
+ * stacking context.
+ */
+
+.iso,
+.isolate {
+  isolation: isolate;
+}
+.iso-auto,
+.isolate-auto,
+.isolation-auto {
+  isolation: auto;
+}

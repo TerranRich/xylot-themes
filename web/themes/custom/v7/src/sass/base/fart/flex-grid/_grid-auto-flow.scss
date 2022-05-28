@@ -1,0 +1,22 @@
+/**
+ * FLEXBOX & GRID > Grid Auto Flow
+ *
+ * Utilities for controlling how elements in a grid are auto-placed.
+ */
+
+$grid-auto-flow-values: (
+  row: 'row',
+  col: 'column',
+  row-dense: 'row dense',
+  col-dense: 'column dense',
+);
+
+@each $key, $val in $grid-auto-flow-values {
+
+  .gf-#{$key},
+  .g-flow-#{$key},
+  .grid-flow-#{$key} {
+    grid-auto-flow: unquote($val);
+  }
+
+} // end @each

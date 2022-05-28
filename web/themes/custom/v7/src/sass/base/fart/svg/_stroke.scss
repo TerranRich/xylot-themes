@@ -1,0 +1,16 @@
+/**
+ * SVG > Stroke
+ *
+ * Utilities for styling the stroke of SVG elements.
+ */
+
+$svg-stroke-colors-map: $master-color-values-map;
+
+@each $label, $color in $svg-stroke-colors-map {
+
+  .stroke-#{$label},
+  .svg-stroke-#{$label} {
+    stroke: $color;
+  }
+
+} // end @each

@@ -1,0 +1,23 @@
+/**
+ * FILTERS > Hue Rotate
+ *
+ * Utilities for applying hue-rotate filters to an element.
+ */
+
+@each $angle in $hue-rotation-angles {
+
+  // Positive values
+  .hr-#{$angle},
+  .hue-#{$angle},
+  .hue-rotate-#{$angle} {
+    filter: hue-rotate(#{$angle}deg);
+  }
+
+  // Negative values
+  .-hr-#{$angle},
+  .-hue-#{$angle},
+  .-hue-rotate-#{$angle} {
+    filter: hue-rotate(-#{$angle}deg);
+  }
+
+} // end @each

@@ -1,0 +1,17 @@
+/**
+ * TYPOPGRAPHY > Whitespace
+ *
+ * Utilities for controlling an element's white-space property.
+ */
+
+$whitespace-values: normal nowrap pre pre-line pre-wrap;
+
+@each $value in $whitespace-values {
+
+  .ws-#{$value},
+  .whitespace-#{$value},
+  .white-space-#{$value} {
+    white-space: $value;
+  }
+
+} // end @each

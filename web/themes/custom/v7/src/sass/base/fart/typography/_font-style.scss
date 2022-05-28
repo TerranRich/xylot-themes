@@ -1,0 +1,25 @@
+/**
+ * TYPOGRAPHY > Font Style
+ *
+ * Utilities for controlling the style of text.
+ */
+
+.italic,
+.fs-italic,
+.font-italic,
+.font-style-italic {
+  font-style: italic;
+}
+
+.not-italic,
+.fs-not-italic,
+.font-not-italic,
+
+.roman,
+.fs-roman,
+.font-roman,
+
+.font-normal,
+.font-style-normal {
+  font-style: normal;
+}

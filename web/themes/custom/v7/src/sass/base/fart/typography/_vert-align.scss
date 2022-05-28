@@ -1,0 +1,21 @@
+/**
+ * TYPOGRAPHY > Vertical Alignment
+ *
+ * Utilities for controlling the vertical alignment of an inline or table-cell
+ * box.
+ */
+
+$vertical-alignments: baseline top middle bottom text-top text-bottom sub super;
+
+@each $alignment in $vertical-alignments {
+
+  .va-#{$alignment},
+  .align-#{$alignment},
+  .v-align-#{$alignment},
+  .text-align-#{$alignment},
+  .vert-align-#{$alignment},
+  .vertical-align-#{$alignment} {
+    vertical-align: $alignment;
+  }
+
+} // end @each

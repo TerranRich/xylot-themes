@@ -1,0 +1,17 @@
+/**
+ * LAYOUT > Position
+ *
+ * Utilities for controlling how an element is positioned in the DOM.
+ */
+
+$position-values: static fixed absolute relative sticky;
+
+@each $val in $position-values {
+
+  .#{$val},
+  .pos-#{$val},
+  .position-#{$val} {
+    position: $val;
+  }
+
+} // end @each

@@ -1,0 +1,17 @@
+/**
+ * FLEXBOX & GRID > Flex Basis
+ *
+ * Utilities for controlling the initial size of flex items.
+ */
+
+$flex-basis-values: $master-sizes-map-extended;
+
+@each $size, $val in $flex-basis-values {
+
+  .fb-#{$size},
+  .basis-#{$size},
+  .flex-basis-#{$size} {
+    flex-basis: $val;
+  }
+
+} // end @each

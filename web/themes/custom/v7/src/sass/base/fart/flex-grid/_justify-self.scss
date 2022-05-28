@@ -1,0 +1,15 @@
+/**
+ * FLEXBOX & GRID > Justify Self
+ *
+ * Utilities for controlling how an individual grid item is aligned along its
+ * inline axis.
+ */
+
+@each $val in $justify-self-alignment-values {
+
+  .js-#{$val},
+  .justify-self-#{$val} {
+    justify-self: $val;
+  }
+
+} // end @each

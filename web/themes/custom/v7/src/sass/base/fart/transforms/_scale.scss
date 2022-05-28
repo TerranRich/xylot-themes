@@ -1,0 +1,26 @@
+/**
+ * TRANSFORMS > Scale
+ *
+ * Utilities for scaling elements with transform.
+ */
+
+$scale-values: 0 25 50 75 90 95 100 105 110 125 150 175 200;
+
+@each $value in $scale-values {
+
+  .scale-#{$value},
+  .transform-scale-#{$value} {
+    transform: scale(#{$value / 100});
+  }
+
+  .scale-x-#{$value},
+  .transform-scale-x-#{$value} {
+    transform: scaleX(#{$value / 100});
+  }
+
+  .scale-y-#{$value},
+  .transform-scale-y-#{$value} {
+    transform: scaleY(#{$value / 100});
+  }
+
+} // end @each

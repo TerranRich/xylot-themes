@@ -1,0 +1,40 @@
+/**
+ * BORDERS > Divide Width
+ *
+ * Utilities for controlling the border width between elements.
+ */
+
+$divide-width-values-map: $border-width-values-map;
+
+@each $label, $val in $divide-width-values-map {
+
+  $width: suffixize($label);
+
+  // Horizontal divide
+  .dx-x#{$width} > * ~ *,
+  .divide-x#{$width} > * ~ * {
+    --divide-x-reverse: 0;
+    border-left-width: calc($val * calc(1 - var(--divide-x-reverse)));
+    border-right-width: calc($val * var(--divide-x-reverse));
+  }
+
+  // Vertical divide
+  .dy-y#{$width} > * ~ *,
+  .divide-y#{$width} > * ~ * {
+    --divide-y-reverse: 0;
+    border-top-width: calc($val * calc(1 - var(--divide-y-reverse)));
+    border-bottom-width: calc($val * var(--divide-y-reverse));
+  }
+
+} // end @each
+
+// Handle reverse cases
+.dx-reverse > * ~ *,
+.divide-x-reverse > * ~ * {
+  --divide-x-reverse: 1;
+}
+
+.dy-reverse > * ~ *,
+.divide-y-reverse > * ~ * {
+  --divide-y-reverse: 1;
+}

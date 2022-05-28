@@ -1,0 +1,30 @@
+/**
+ * BORDERS > Outline Style
+ *
+ * Utilities for controlling the style of an element's outline.
+ */
+
+$outline-styles: $border-styles;
+
+// The `outline-none` uses transparent outline under the hood to ensure elements
+// are still visibly focused to Windows high contrast mode users.
+.o-none,
+.outline-none {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+// Base setting
+.o,
+.outline {
+  outline-style: solid;
+}
+
+@each $style in $outline-styles {
+
+  .o-#{$style},
+  .outline-#{$style} {
+    outline-style: $style;
+  }
+
+} // end @each

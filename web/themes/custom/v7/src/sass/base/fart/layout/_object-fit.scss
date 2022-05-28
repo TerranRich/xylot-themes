@@ -1,0 +1,17 @@
+/**
+ * LAYOUT > Object Fit
+ *
+ * Utilities for controlling how a replaced element's content should be resized.
+ */
+
+$object-fit-values: contain cover fill none scale-down;
+
+@each $val in $object-fit-values {
+
+  .of-#{$val},
+  .object-#{$val},
+  .object-fit-#{$val} {
+    object-fit: $val;
+  }
+
+} // end @each

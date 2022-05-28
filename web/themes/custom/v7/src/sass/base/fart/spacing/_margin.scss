@@ -1,0 +1,56 @@
+/**
+ * SPACING > Margin
+ *
+ * Utilities for controlling an element's margin.
+ */
+
+$margin-sizes-map: $master-sizes-map;
+
+@each $size, $val in $margin-sizes-map {
+
+  .m-#{$size},
+  .mar-#{$size} {
+    margin: $val;
+  }
+
+  .mx-#{$size},
+  .mar-x-#{$size} {
+    margin-left: $val;
+    margin-right: $val;
+  }
+
+  .my-#{$size},
+  .mar-y-#{$size} {
+    margin-top: $val;
+    margin-bottom: $val;
+  }
+
+  .mt-#{$size},
+  .mar-top-#{$size} {
+    margin-top: $val;
+  }
+
+  .mb-#{$size},
+  .mar-bottom-#{$size} {
+    margin-bottom: $val;
+  }
+
+  .ml-#{$size},
+  .mar-l-#{$size},
+  .mar-left-#{$size},
+  .ms-#{$size},
+  .mar-s-#{$size},
+  .mar-start-#{$size} {
+    margin-left: $val;
+  }
+
+  .mr-#{$size},
+  .mar-r-#{$size},
+  .mar-right-#{$size},
+  .me-#{$size},
+  .mar-e-#{$size},
+  .mar-end-#{$size} {
+    margin-right: $val;
+  }
+
+} // end @each

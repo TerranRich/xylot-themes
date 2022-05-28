@@ -1,0 +1,18 @@
+/**
+ * FILTERS > Sepia
+ *
+ * Utilities for applying sepia filters to an element.
+ */
+
+.sepia-0,
+.sepia-no,
+.no-sepia,
+.sepia-off {
+  filter: sepia(0)
+}
+
+.sepia,
+.sepia-on,
+.sepia-100 {
+  filter: sepia(100%);
+}

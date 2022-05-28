@@ -1,0 +1,16 @@
+/**
+ * FILTERS > Backdrop Contrast
+ *
+ * Utilities for applying backdrop contrast filters to an element.
+ */
+
+@each $value in $contrast-values {
+
+  .bd-cont-#{$value},
+  .bd-contrast-#{$value},
+  .backdrop-cont-#{$value},
+  .backdrop-contrast-#{$value} {
+    backdrop-filter: contrast(#{$value / 100});
+  }
+
+} // end @each

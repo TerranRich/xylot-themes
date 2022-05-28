@@ -1,0 +1,47 @@
+/**
+ * FLEXBOX & GRID > Flex Direction
+ *
+ *  Utilities for controlling the direction of flex items.
+ */
+
+.fd-row,
+.dir-row,
+.flex-row,
+.flex-dir-row,
+.flex-direction-row {
+  flex-direction: row;
+}
+
+.fd-row-reverse,
+.dir-row-reverse,
+.flex-row-reverse,
+.flex-dir-row-reverse,
+.flex-direction-row-reverse {
+  flex-direction: row-reverse;
+}
+
+.fd-col,
+.dir-col,
+.flex-col,
+.flex-dir-col,
+.flex-direction-col,
+.fd-column,
+.dir-column,
+.flex-column,
+.flex-dir-column,
+.flex-direction-column {
+  flex-direction: column;
+}
+
+.fd-col-reverse,
+.dir-col-reverse,
+.flex-col-reverse,
+.flex-dir-col-reverse,
+.flex-direction-col-reverse,
+.fd-column-reverse,
+.dir-column-reverse,
+.flex-column-reverse,
+.flex-dir-column-reverse,
+.flex-direction-column-reverse {
+  flex-direction: column-reverse;
+}

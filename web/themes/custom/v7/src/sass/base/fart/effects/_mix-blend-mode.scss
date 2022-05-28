@@ -1,0 +1,18 @@
+/**
+ * EFFECTS > Mix Blend Mode
+ *
+ * Utilities for controlling how an element should blend with the background.
+ */
+
+$mix-blend-modes: $blend-modes;
+
+@each $mode in $mix-blend-modes {
+
+  .mb-#{$mode},
+  .mbm-#{$mode},
+  .mix-blend-#{$mode},
+  .mix-blend-mode-#{$mode} {
+    mix-blend-mode: $mode;
+  }
+
+} // end @each

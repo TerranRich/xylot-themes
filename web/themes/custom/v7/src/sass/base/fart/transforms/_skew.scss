@@ -1,0 +1,19 @@
+/**
+ * TRANSFORMS > Skew
+ *
+ * Utilities for skewing elements with transform.
+ */
+
+$skew-values: 0 1 2 3 6 9 12 15;
+
+@each $val in $skew-values {
+
+  .skew-x-#{$val} {
+    transform: skewX(#{$val}deg);
+  }
+
+  .skew-y-#{$val} {
+    transform: skewY(#{$val}deg);
+  }
+
+} // end @each

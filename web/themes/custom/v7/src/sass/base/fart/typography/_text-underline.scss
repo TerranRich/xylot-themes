@@ -1,0 +1,16 @@
+/**
+ * TYPOGRAPHY > Text Underline Offset
+ *
+ * Utilities for controlling the offset of a text underline.
+ */
+
+$underline-offset-values: auto 0 1 2 3 4 5 6 8 10;
+
+@each $offset in $underline-offset-values {
+
+  .tuo-#{$offset},
+  .underline-offset-#{$offset} {
+    text-underline-offset: #{$offset}#{if(is-alpha($offset), '', 'px')};
+  }
+
+} // end @each

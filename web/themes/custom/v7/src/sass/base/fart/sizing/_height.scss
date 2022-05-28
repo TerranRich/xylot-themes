@@ -1,0 +1,45 @@
+/**
+ * SIZING > Height, Min-Height, Max-Height
+ *
+ * Utilities for setting the height, minimum height, and maximum height of an
+ * element.
+ */
+
+// Height
+@each $size, $val in $master-sizes-map-height {
+
+  .h-#{$size},
+  .height-#{$size} {
+    height: $val;
+  }
+
+} // end @each height
+
+// Min Height
+$min-height-sizes-map: (
+  '0':      0px,
+  'full':   100%,
+  'screen': 100vh,
+  'min':    min-content,
+  'max':    max-content,
+  'fit':    fit-content,
+);
+
+@each $size, $val in $min-height-sizes-map {
+
+  .min-h-#{$size},
+  .min-height-#{$size} {
+    min-height: $val;
+  }
+
+} // end @each min-height
+
+// Max Height
+@each $size, $val in $master-sizes-map-max-height {
+
+  .max-h-#{$size},
+  .max-height-#{$size} {
+    max-height: $val;
+  }
+
+} // end @each max-height

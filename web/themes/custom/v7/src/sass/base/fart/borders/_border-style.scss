@@ -1,0 +1,14 @@
+/**
+ * BORDERS > Border Style
+ *
+ * Utilities for controlling the style of an element's borders.
+ */
+
+@each $style in $border-styles {
+
+  .bs-#{$style},
+  .border-#{$style} {
+    border-style: $style;
+  }
+
+} // end @each

@@ -1,0 +1,15 @@
+/**
+ * FILTERS > Blur
+ *
+ * Utilities for applying blur filters to an element.
+ */
+
+@each $label, $size in $blur-size-maps {
+
+  $label-suffix: suffixize($label);
+
+  .blur#{$label-suffix} {
+    filter: blur(#{$size});
+  }
+
+} // end @each

@@ -1,0 +1,16 @@
+/**
+ * FLEXBOX & GRID > Justify Content
+ *
+ * Utilities for controlling how flex and grid items are positioned along a
+ * container's main axis.
+ */
+
+@each $pos, $val in $flexbox-position-values {
+
+  .jc-#{$pos},
+  .justify-#{$pos},
+  .justify-content-#{$pos} {
+    justify-content: $val;
+  }
+
+} // end @each

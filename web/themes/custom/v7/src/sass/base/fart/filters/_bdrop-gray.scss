@@ -1,0 +1,36 @@
+/**
+ * FILTERS > Backdrop Grayscale
+ *
+ * Utilities for applying backdrop grayscale filters to an element.
+ */
+
+.bd-gray-0,
+.bd-gray-no,
+.bd-no-gray,
+.bd-gray-off,
+.bd-gray-none,
+.backdrop-grayscale-0,
+.backdrop-grayscale-no,
+.backdrop-no-grayscale,
+.backdrop-grayscale-off,
+.backdrop-grayscale-none {
+  backdrop-filter: grayscale(0);
+}
+
+.bd-gray-50,
+.bd-gray-half,
+.backdrop-grayscale-50,
+.backdrop-grayscale-half {
+  backdrop-filter: grayscale(50%);
+}
+
+.bd-gray,
+.bd-gray-on,
+.bd-gray-100,
+.bd-gray-full,
+.backdrop-grayscale,
+.backdrop-grayscale-on,
+.backdrop-grayscale-100,
+.backdrop-grayscale-full {
+  backdrop-filter: grayscale(100%);
+}

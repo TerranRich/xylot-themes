@@ -1,0 +1,80 @@
+/**
+ * FLEXBOX & GRID > Grid Column Start / End
+ *
+ * Utilities for controlling how elements are sized and placed across grid
+ * columns.
+ */
+
+.gc-auto,
+.col-auto,
+.column-auto,
+.grid-col-auto,
+.grid-column-auto {
+  grid-column: auto;
+}
+
+/// SPAN ///
+
+@for $val from 1 through 12 {
+
+  .gc-span-#{$val},
+  .col-span-#{$val},
+  .column-span-#{$val},
+  .grid-col-span-#{$val},
+  .grid-column-span-#{$val} {
+    grid-column: span $val / span $val;
+  }
+
+} // end @each
+
+.gc-span-full,
+.col-span-full,
+.column-span-full,
+.grid-col-span-full,
+.grid-column-span-full {
+  grid-column: 1 / -1;
+}
+
+/// START ///
+
+@for $val from 1 through 13 {
+
+  .gc-start-#{$val},
+  .col-start-#{$val},
+  .column-start-#{$val},
+  .grid-col-start-#{$val},
+  .grid-column-start-#{$val} {
+    grid-column-start: $val;
+  }
+
+} // end @each
+
+.gc-start-auto,
+.col-start-auto,
+.column-start-auto,
+.grid-col-start-auto,
+.grid-column-start-auto {
+  grid-column-start: auto;
+}
+
+/// END ///
+
+@for $val from 1 through 13 {
+
+  .gc-end-#{$val},
+  .col-end-#{$val},
+  .column-end-#{$val},
+  .grid-col-end-#{$val},
+  .grid-column-end-#{$val} {
+    grid-column-end: $val;
+  }
+
+} // end @each
+
+.gc-end-auto,
+.col-end-auto,
+.column-end-auto,
+.grid-col-end-auto,
+.grid-column-end-auto {
+  grid-column-end: auto;
+}

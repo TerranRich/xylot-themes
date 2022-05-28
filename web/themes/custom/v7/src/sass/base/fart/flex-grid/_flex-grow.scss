@@ -1,0 +1,19 @@
+/**
+ * FLEXBOX & GRID > Flex Grow
+ *
+ * Utilities for controlling how flex items grow.
+ */
+
+.grow,
+.f-grow,
+.f-grow-1,
+.flex-grow,
+.flex-grow-1 {
+  flex-grow: 1;
+}
+
+.grow-0,
+.f-grow-0,
+.flex-grow-0 {
+  flex-grow: 0;
+}

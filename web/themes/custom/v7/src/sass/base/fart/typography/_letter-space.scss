@@ -1,0 +1,26 @@
+/**
+ * TYPOGRAPHY > Letter Spacing
+ *
+ * Utilities for controlling the tracking (letter spacing) of an element.
+ */
+
+$tracking-values-map: (
+  tightest: -0.1em,
+  tighter:  -0.05em,
+  tight:    -0.025em,
+  normal:    0em,
+  wide:      0.025em,
+  wider:     0.05em,
+  widest:    0.1em,
+);
+
+@each $label, $value in $tracking-values-map {
+
+  .ls-#{$label},
+  .spacing-#{$label},
+  .tracking-#{$label},
+  .letter-spacing-#{$label} {
+    letter-spacing: $value;
+  }
+
+} // end @each

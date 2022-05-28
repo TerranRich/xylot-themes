@@ -1,0 +1,16 @@
+/**
+ * FILTERS > Backdrop Blur
+ *
+ * Utilities for applying backdrop blur filters to an element.
+ */
+
+@each $label, $size in $blur-size-maps {
+
+  $label-suffix: suffixize($label);
+
+  .bd-blur#{$label-suffix},
+  .backdrop-blur#{$label-suffix} {
+    backdrop-filter: blur(#{$size});
+  }
+
+} // end @each

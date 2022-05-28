@@ -1,0 +1,17 @@
+/**
+ * TRANSITIONS & ANIMATION > Transition Delay
+ *
+ * Utilities for controlling the delay of CSS transitions.
+ */
+
+$delay-values: 50 75 100 150 200 300 400 500 600 700 800 900 1000;
+
+@each $value in $delay-values {
+
+  .delay-#{$value},
+  .trans-delay-#{$value},
+  .transition-delay-#{$value} {
+    transition-delay: #{$value}ms;
+  }
+
+} // end @each

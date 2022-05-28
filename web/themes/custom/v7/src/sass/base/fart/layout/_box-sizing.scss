@@ -1,0 +1,19 @@
+/**
+ * LAYOUT > Box Sizing
+ *
+ * Utilities for controlling how the browser should calculate an element's total
+ * size.
+ */
+
+.bs-box,
+.box-border,
+.border-box,
+.box-sizing-border {
+  box-sizing: border-box;
+}
+.bs-content,
+.box-content,
+.content-box,
+.box-sizing-content {
+  box-sizing: content-box;
+}

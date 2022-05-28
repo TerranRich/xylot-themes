@@ -1,0 +1,20 @@
+/**
+ * TRANSITIONS & ANIMATION > Transition Duration
+ *
+ * Utilities for controlling the duration of CSS transitions.
+ */
+
+$duration-values: 50 75 100 150 200 300 400 500 600 700 800 900 1000;
+
+@each $value in $duration-values {
+
+  .dur-#{$value},
+  .duration-#{$value},
+  .trans-dur-#{$value},
+  .trans-duration-#{$value},
+  .transition-dur-#{$value},
+  .transition-duration-#{$value} {
+    transition-duration: #{$value}ms;
+  }
+
+} // end @each

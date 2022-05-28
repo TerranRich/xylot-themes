@@ -1,0 +1,11 @@
+/**
+ * TYPOGRAPHY > Content
+ *
+ * Utilities for controlling the content of the before & after pseudo-elements.
+ */
+
+.content-none,
+.after-content-none::after,
+.before-content-none::before {
+  content: none;
+}

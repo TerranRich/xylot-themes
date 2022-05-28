@@ -1,0 +1,26 @@
+/**
+ * FLEXBOX & GRID > Gap
+ *
+ * Utilities for controlling gutters between grid and flexbox items.
+ */
+
+$gap-size-values: $master-sizes-map;
+
+@each $size, $val in $gap-size-values {
+
+  .g-#{$size},
+  .gap-#{$size} {
+    gap: $val;
+  }
+
+  .g-x-#{$size},
+  .gap-x-#{$size} {
+    column-gap: $val;
+  }
+
+  .g-y-#{$size},
+  .gap-y-#{$size} {
+    row-gap: $val;
+  }
+
+} // end @each

@@ -1,0 +1,21 @@
+/**
+ * BACKGROUNDS > Background Clip
+ *
+ * Utilies for controlling the bounding box of an element's background.
+ */
+
+$bg-clip-values-map: (
+  border:  border-box,
+  padding: padding-box,
+  content: content-box,
+  text:    text,
+);
+
+@each $label, $value in $bg-clip-values-map {
+
+  .bg-clip-#{$label},
+  .background-clip-#{$label} {
+    background-clip: $value;
+  }
+
+} // end @each

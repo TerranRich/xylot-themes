@@ -1,0 +1,15 @@
+/**
+ * FLEXBOX & GRID > Place Content
+ *
+ * Utilities for controlling how content is justified and aligned at the same
+ * time.
+ */
+
+@each $pos, $val in $flexbox-placement-values {
+
+  .pc-#{$pos},
+  .place-content-#{$pos} {
+    place-content: $val;
+  }
+
+} // end @each

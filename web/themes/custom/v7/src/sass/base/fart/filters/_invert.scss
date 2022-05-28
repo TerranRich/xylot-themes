@@ -1,0 +1,27 @@
+/**
+ * FILTERS > Invert
+ *
+ * Utilities for applying invert filters to an element.
+ */
+
+.inv-0,
+.inv-no,
+.no-inv,
+.inv-off,
+.inv-none,
+.invert-0,
+.no-invert,
+.invert-no,
+.invert-off,
+.invert-none {
+  filter: invert(0);
+}
+
+.inv,
+.inv-on,
+.inv-100,
+.invert,
+.invert-on,
+.invert-100 {
+  filter: invert(100%);
+}

@@ -1,0 +1,63 @@
+/**
+ * SPACING > Padding
+ *
+ * Utilities for controlling an element's padding.
+ */
+
+$padding-sizes-map: $master-sizes-map;
+
+@each $size, $val in $padding-sizes-map {
+
+  // All sides
+  .p-#{$size},
+  .pad-#{$size} {
+    padding: $val;
+  }
+
+  // Along X axis (left, right)
+  .px-#{$size},
+  .pad-x-#{$size} {
+    padding-left: $val;
+    padding-right: $val;
+  }
+
+  // Along Y axis (top, bottom)
+  .py-#{$size},
+  .pad-y-#{$size} {
+    padding-top: $val;
+    padding-bottom: $val;
+  }
+
+  // Top
+  .pt-#{$size},
+  .pad-top-#{$size} {
+    padding-top: $val;
+  }
+
+  // Bottom
+  .pb-#{$size},
+  .pad-bottom-#{$size} {
+    padding-bottom: $val;
+  }
+
+  // Left (start)
+  .pl-#{$size},
+  .pad-l-#{$size},
+  .pad-left-#{$size},
+  .ps-#{$size},
+  .pad-s-#{$size},
+  .pad-start-#{$size} {
+    padding-left: $val;
+  }
+
+  // Right (end)
+  .pr-#{$size},
+  .pad-r-#{$size},
+  .pad-right-#{$size},
+  .pe-#{$size},
+  .pad-e-#{$size},
+  .pad-end-#{$size} {
+    padding-right: $val;
+  }
+
+} // end @each

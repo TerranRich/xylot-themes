@@ -1,0 +1,14 @@
+/**
+ * FILTERS > Saturate
+ *
+ * Utilities for applying saturation filters to an element.
+ */
+
+@each $val in $saturation-values {
+
+  .sat-#{$val},
+  .saturate-#{$val} {
+    filter: saturate(#{$val / 100});
+  }
+
+} // end @each

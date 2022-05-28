@@ -1,0 +1,16 @@
+/**
+ * BORDERS > Divide Color
+ *
+ * Utilities for controlling the border color between elements.
+ */
+
+$divide-color-values-map: $master-color-values-map;
+
+@each $label, $color in $divide-color-values-map {
+
+  .dc-#{$label} > * ~ *,
+  .divide-#{$label} > * ~ * {
+    border-color: $color;
+  }
+
+} // end @each

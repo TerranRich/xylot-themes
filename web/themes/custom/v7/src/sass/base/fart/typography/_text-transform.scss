@@ -1,0 +1,24 @@
+/**
+ * TYPOGRAPHY > Text Transform
+ *
+ * Utilities for controlling the transformation of text.
+ */
+
+$text-transforms-map: (
+  uppercase:   uppercase,
+  lowercase:   lowercase,
+  capitalize:  capitalize,
+  normal-case: none,
+);
+
+@each $label, $value in $text-transforms-map {
+
+  .#{$label},
+  .tt-#{$label},
+  .text-#{$label},
+  .transform-#{$label},
+  .text-transform-#{$value} {
+    text-transform: $value;
+  }
+
+} // end @each

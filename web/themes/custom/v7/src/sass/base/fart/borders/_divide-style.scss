@@ -1,0 +1,16 @@
+/**
+ * BORDERS > Divide Style
+ *
+ * Utilities for controlling the border style between elements.
+ */
+
+$divide-styles: $border-styles;
+
+@each $style in $divide-styles {
+
+  .ds-#{$style} > * ~ *,
+  .divide-#{$style} > * ~ * {
+    border-style: $style;
+  }
+
+} // end @each

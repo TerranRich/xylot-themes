@@ -1,0 +1,16 @@
+/**
+ * BACKGROUNDS > Background Origin
+ *
+ * Utilities for controlling how an element's background is positioned relative
+ * to borders, padding, and content.
+ */
+
+$bg-origin-values: border padding content;
+
+@each $value in $bg-origin-values {
+
+  .bg-origin-#{$value} {
+    background-origin: #{$value}-box;
+  }
+
+} // end @each

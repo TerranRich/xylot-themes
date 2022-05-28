@@ -1,0 +1,17 @@
+/**
+ * TYPOGRAPHY > Text Color
+ *
+ * Utilities for controlling the text color of an element.
+ */
+
+$text-color-values-map: $master-color-values-map;
+
+@each $label, $value in $text-color-values-map {
+
+  .text-#{$label},
+  .color-#{$label},
+  .text-color-#{$label} {
+    color: $value;
+  }
+
+} // end @each

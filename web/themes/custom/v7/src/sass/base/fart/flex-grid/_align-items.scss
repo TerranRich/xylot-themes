@@ -1,0 +1,15 @@
+/**
+ * FLEXBOX & GRID > Justify Items
+ *
+ * Utilities for controlling how grid items are aligned along their inline axis.
+ */
+
+@each $align, $val in $align-items-alignment-values {
+
+  .ai-#{$align},
+  .items-#{$align},
+  .align-items-#{$align} {
+    align-items: $val;
+  }
+
+} // end @each

@@ -1,0 +1,53 @@
+/**
+ * LAYOUT > Breakpoints
+ */
+
+// Define breakpoint values
+$breakpoints: (
+  "phone":     600px,
+  "portrait":  900px,
+  "landscape": 1200px,
+  "desktop":   1800px,
+);
+
+// Mixin to easily grab a value (e.g. bp(phone) => 600px)
+@function bp($breakpoint-value) {
+  @return map-get($breakpoints, $breakpoint-value);
+}
+
+// Media mixins for breakpoints
+@mixin media-up-to($breakpoint-value) {
+  @media (max-width: #{bp($breakpoint-value) - 1}) { @content; }
+}
+@mixin media-and-up($breakpoint-value) {
+  @media (min-width: bp($breakpoint-value)) { @content; }
+}
+@mixin media-between($breakpoint-min, $breakpoint-max) {
+  @media (min-width: bp($breakpoint-min)) and (max-width: #{bp($breakpoint-max) - 1}) { @content; }
+}
+
+// Shortcuts for certain breakpoint values/ranges
+@mixin for-phone() {
+  // 0 - 599
+  @include media-up-to(phone) { @content; }
+}
+@mixin for-desktop() {
+  // 1200 +
+  @include media-and-up(landscape) { @content; }
+}
+@mixin for-desktop-lg() {
+  // 1600 +
+  @include media-and-up(desktop) { @content; }
+}
+@mixin for-devices() {
+  // 0 - 1200
+  @include media-up-to(landscape) { @content; }
+}
+@mixin for-devices-lg() {
+  // 600 - 1200
+  @include media-between(phone, landscape) { @content; }
+}
+@mixin for-vertical() {
+  // 0 - 900
+  @include media-up-to(portrait) { @content; }
+}

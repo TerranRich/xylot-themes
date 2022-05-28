@@ -1,0 +1,18 @@
+/**
+ * TRANSFORMS > Rotate
+ *
+ * Utilities for rotating elements with transform.
+ */
+
+$rotation-values: 0 1 2 3 6 12 30 45 60 90 135 180;
+
+@each $val in $rotation-values {
+
+  .r-#{$val},
+  .rot-#{$val},
+  .rotate-#{$val},
+  .transform-rotate-#{$val} {
+    transform: rotate(#{$val}deg);
+  }
+
+} // end @each

@@ -1,0 +1,22 @@
+/**
+ * INTERACTIVITY > Resize
+ *
+ * Utilities for controlling how an element can be resized.
+ */
+
+$resize-values-map: (
+  none: none,
+  y:    vertical,
+  x:    horizontal,
+  _:    both,
+);
+
+@each $label, $value in $resize-values-map {
+
+  $label-suffix: suffixize($label);
+
+  .resize#{$label-suffix} {
+    resize: $value;
+  }
+
+} // end @each

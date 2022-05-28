@@ -1,0 +1,66 @@
+/**
+ * FLEXBOX & GRID > Grid Column Start / End
+ *
+ * Utilities for controlling how elements are sized and placed across grid
+ * columns.
+ */
+
+.gr-auto,
+.row-auto,
+.grid-row-auto {
+  grid-row: auto;
+}
+
+/// SPAN ///
+
+@for $val from 1 through 12 {
+
+  .gr-span-#{$val},
+  .row-span-#{$val},
+  .grid-row-span-#{$val} {
+    grid-row: span $val / span $val;
+  }
+
+} // end @each
+
+.gr-span-full,
+.row-span-full,
+.grid-row-span-full {
+  grid-row: 1 / -1;
+}
+
+/// START ///
+
+@for $val from 1 through 13 {
+
+  .gr-start-#{$val},
+  .row-start-#{$val},
+  .grid-row-start-#{$val} {
+    grid-row-start: $val;
+  }
+
+} // end @each
+
+.gr-start-auto,
+.row-start-auto,
+.grid-row-start-auto {
+  grid-row-start: auto;
+}
+
+/// END ///
+
+@for $val from 1 through 13 {
+
+  .gr-end-#{$val},
+  .row-end-#{$val},
+  .grid-row-end-#{$val} {
+    grid-row-end: $val;
+  }
+
+} // end @each
+
+.gr-end-auto,
+.row-end-auto,
+.grid-row-end-auto {
+  grid-row-end: auto;
+}

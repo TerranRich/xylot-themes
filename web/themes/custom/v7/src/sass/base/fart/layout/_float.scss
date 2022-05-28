@@ -1,0 +1,17 @@
+/**
+ * LAYOUT > Floats
+ *
+ * Utilities for controlling the wrapping of content around an element.
+ */
+
+$float-values: left right none;
+
+// For: .f[loat]-{value}
+@each $val in $float-values {
+
+  .f-#{$val},
+  .float-#{$val} {
+    float: $val;
+  }
+
+} // end @each

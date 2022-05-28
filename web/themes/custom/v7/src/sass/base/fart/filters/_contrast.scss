@@ -1,0 +1,14 @@
+/**
+ * FILTERS > Contrast
+ *
+ * Utilities for applying contrast filters to an element.
+ */
+
+@each $value in $contrast-values {
+
+  .cont-#{$value},
+  .contrast-#{$value} {
+    filter: contrast(#{$value / 100});
+  }
+
+} // end @each
