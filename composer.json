@@ -24,8 +24,6 @@
         "drupal/core-project-message": "^9.3",
         "drupal/core-recommended": "^9.3",
         "drupal/devel": "^4.1",
-        "drupal/gin": "^3.0@beta",
-        "drupal/gin_toolbar": "^1.0@beta",
         "drupal/jquery_ui_touch_punch": "^1.0",
         "drupal/paragraphs": "^1.14",
         "drupal/pathauto": "^1.10",
@@ -48,7 +46,8 @@
             "drupal/core-composer-scaffold": true,
             "drupal/core-project-message": true,
             "cweagans/composer-patches": true
-        }
+        },
+        "platform-check": false
     },
     "extra": {
         "drupal-scaffold": {
