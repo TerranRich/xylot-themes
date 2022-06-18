@@ -64,7 +64,7 @@ class AdminFunctionalityTest extends BrowserTestBase {
     $edit = [
       'include_entity_label' => TRUE,
     ];
-    $this->drupalPostForm(NULL, $edit, 'Save');
+    $this->submitForm($edit, 'Save');
 
     // Confirm the change.
     $session = $this->assertSession();

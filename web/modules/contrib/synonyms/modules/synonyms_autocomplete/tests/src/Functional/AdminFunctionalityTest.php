@@ -69,7 +69,7 @@ class AdminFunctionalityTest extends BrowserTestBase {
     $edit = [
       'default_wording' => 'Test wording',
     ];
-    $this->drupalPostForm(NULL, $edit, 'Save');
+    $this->submitForm($edit, 'Save');
 
     // Confirm the change.
     $session = $this->assertSession();
@@ -100,7 +100,7 @@ class AdminFunctionalityTest extends BrowserTestBase {
     $edit = [
       'autocomplete_status' => 1,
     ];
-    $this->drupalPostForm(NULL, $edit, 'Save');
+    $this->submitForm($edit, 'Save');
 
     // Confirm the change.
     $session = $this->assertSession();

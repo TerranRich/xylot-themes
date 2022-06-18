@@ -98,7 +98,7 @@ class AdminFunctionalityTest extends BrowserTestBase {
     $edit = [
       'wording_type' => 'none',
     ];
-    $this->drupalPostForm(NULL, $edit, 'Save');
+    $this->submitForm($edit, 'Save');
 
     // Confirm the change.
     $session = $this->assertSession();
