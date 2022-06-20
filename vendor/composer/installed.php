@@ -5,7 +5,7 @@
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '5494705ad7e9a81554b131f943d212a99e3f620e',
+        'reference' => '6ba9b4e014f2c2db863eabb2f971a1303ec09ee7',
         'name' => 'drupal/recommended-project',
         'dev' => true,
     ),
@@ -724,6 +724,15 @@
                 0 => '9.4.0',
             ),
         ),
+        'drupal/inline_entity_form' => array(
+            'pretty_version' => '1.0.0-rc11',
+            'version' => '1.0.0.0-RC11',
+            'type' => 'drupal-module',
+            'install_path' => __DIR__ . '/../../web/modules/contrib/inline_entity_form',
+            'aliases' => array(),
+            'reference' => '8.x-1.0-rc11',
+            'dev_requirement' => false,
+        ),
         'drupal/inline_form_errors' => array(
             'dev_requirement' => false,
             'replaced' => array(
@@ -949,7 +958,7 @@
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '5494705ad7e9a81554b131f943d212a99e3f620e',
+            'reference' => '6ba9b4e014f2c2db863eabb2f971a1303ec09ee7',
             'dev_requirement' => false,
         ),
         'drupal/responsive_image' => array(
