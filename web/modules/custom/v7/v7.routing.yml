@@ -1,0 +1,7 @@
+v7.settings_form:
+  path: '/admin/config/system/v7'
+  defaults:
+    _title: 'Xylot Themes V7 General Use Module (GUM) settings'
+    _form: 'Drupal\v7\Form\SettingsForm'
+  requirements:
+    _permission: 'administer v7 configuration'
