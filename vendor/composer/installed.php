@@ -5,7 +5,7 @@
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '6965e0d1734a718be4ad6bcb15d22466d5319f0c',
+        'reference' => '0bd8daa6dad7ef9b22f4c5748acb5ea5ac905546',
         'name' => 'drupal/recommended-project',
         'dev' => true,
     ),
@@ -718,6 +718,15 @@
                 0 => '9.4.0',
             ),
         ),
+        'drupal/ief_popup' => array(
+            'pretty_version' => '1.13.0',
+            'version' => '1.13.0.0',
+            'type' => 'drupal-module',
+            'install_path' => __DIR__ . '/../../web/modules/contrib/ief_popup',
+            'aliases' => array(),
+            'reference' => '8.x-1.13',
+            'dev_requirement' => false,
+        ),
         'drupal/image' => array(
             'dev_requirement' => false,
             'replaced' => array(
@@ -958,7 +967,7 @@
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '6965e0d1734a718be4ad6bcb15d22466d5319f0c',
+            'reference' => '0bd8daa6dad7ef9b22f4c5748acb5ea5ac905546',
             'dev_requirement' => false,
         ),
         'drupal/responsive_image' => array(

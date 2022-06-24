@@ -1,0 +1,230 @@
+<?php
+
+/**
+ * @file
+ * Contains ief_popup.module.
+ */
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function ief_popup_preprocess_page(&$variables) {
+  $variables['#attached']['library'][] = 'ief_popup/ief_popup';
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function ief_popup_form_alter(&$form, &$form_state, $form_id) {
+  $triggering_element = $form_state->getTriggeringElement();
+
+  if (isset($triggering_element["#ief_row_form"]) && $triggering_element["#ief_row_form"] == "remove") {
+    $ief_field = $triggering_element["#parents"][0];
+    $ief_row_delta = $triggering_element["#ief_row_delta"];
+
+    $entity = $form_state->getformObject()->getEntity();
+
+    if ($entity->getEntityTypeId() == "node") {
+      $bundle = $entity->getType();
+      $bundle_label = \Drupal::entityTypeManager()
+        ->getStorage('node_type')
+        ->load($bundle)
+        ->label();
+
+      $parameters = [
+        "parent_bundle" => $bundle,
+        "parent_bundle_label" => $bundle_label,
+        "parent_entity_title" => $entity->getTitle(),
+      ];
+    }
+
+    if ($entity->getEntityTypeId() == "taxonomy_term") {
+      $bundle = $entity->bundle();
+
+      $vocabulary = \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary')->load($bundle);
+      $bundle_label = $vocabulary->label();
+
+      $parameters = [
+        "parent_bundle" => $bundle,
+        "parent_bundle_label" => $bundle_label,
+        "parent_entity_title" => $entity->getName(),
+      ];
+    }
+
+    if ($entity->getEntityTypeId() == "user") {
+      $parameters = [
+        "parent_bundle" => "user",
+        "parent_bundle_label" => "user",
+        "parent_entity_title" => $entity->getDisplayName()
+      ];
+    }
+
+    _process_ief_form($form[$ief_field]["widget"]["entities"][$ief_row_delta]["form"], "remove", $parameters);
+  }
+
+  if (isset($triggering_element["#ief_form"]) && $triggering_element["#ief_form"] == "ief_add_existing") {
+    $ief_field = $triggering_element["#parents"][0];
+    _process_ief_form($form[$ief_field]["widget"]["form"], "existing");
+  }
+}
+
+/**
+ * Implements hook_inline_entity_form_alter().
+ */
+function ief_popup_inline_entity_form_entity_form_alter(&$ief_form, &$form_state) {
+
+  /* only process IEF popup if complex IEF widget */
+  $is_complex_widget = FALSE;
+  foreach ($ief_form["#process"] as $process_item) {
+    /*
+     * Probably:
+     * - Drupal\inline_entity_form\Plugin\Field\FieldWidget\InlineEntityFormComplex or
+     * - Drupal\ief_table_view_mode\Plugin\Field\FieldWidget\InlineEntityFormComplexTableViewMode
+     */
+    if (is_string($process_item[0]) && strpos($process_item[0], "\Plugin\Field\FieldWidget\InlineEntityFormComplex") !== false) {
+      $is_complex_widget = TRUE;
+    }
+  }
+
+  if ($is_complex_widget == TRUE) {
+    /* add ief-popup-wrapper and ui-dialog to IEF */
+    _process_ief_form($ief_form, $ief_form["#op"]);
+  }
+}
+
+/**
+ * Function that makes the actual adaptation to the IEF form.
+ *
+ * @param array $ief_form
+ *   The IEF form that needs to be processed.
+ * @param string $ief_action
+ *   The IEF action (add, remove, existing, edit, duplicate).
+ * @param array $parameters
+ *   Parameters for $ief_action "remove".
+ */
+function _process_ief_form(&$ief_form, $ief_action, $parameters = []) {
+
+  /* add wrapper to the IEF form */
+  $ief_wrapper_classes = [
+    "ief-popup-wrapper",
+    "ief-popup-wrapper-" . $ief_action,
+    "ief-popup-wrapper-" . $ief_form["#ief_labels"]["singular"],
+    "ui-dialog",
+  ];
+  $ief_form["#prefix"] = '<div class="' . implode(" ", $ief_wrapper_classes) . '">';
+
+  /* action buttons are added after the form_alter hook so altering action buttons happens in the after_build hook */
+  $ief_form["#after_build"][] = "_ief_form_after_build";
+
+  /* set popup_title for the title bar */
+  if ($ief_action == "edit") {
+    $entity_title = $ief_form["title"]["widget"][0]["value"]["#default_value"];
+    $popup_title = t("Edit @type %title",
+      [
+        "@type" => $ief_form["#ief_labels"]["singular"],
+        "%title" => $entity_title,
+      ]);
+  }
+  elseif ($ief_action == "duplicate") {
+    $entity_title = $ief_form["title"]["widget"][0]["value"]["#default_value"];
+    $popup_title = t("Duplicate @type %title",
+      [
+        "@type" => $ief_form["#ief_labels"]["singular"],
+        "%title" => $entity_title,
+      ]);
+  }
+  elseif ($ief_action == "add") {
+    $popup_title = t('Add @type', ["@type" => $ief_form["#ief_labels"]["singular"]]);
+  }
+  elseif ($ief_action == "remove") {
+    $popup_title = t('Remove');
+  }
+  elseif ($ief_action == "existing") {
+    $popup_title = $ief_form["#title"];
+
+    /* remove the default titlebar in the ief_add_existing form */
+    unset($ief_form["#title"]);
+  }
+
+  /* improve markup for remove form */
+  if ($ief_action == "remove") {
+    $entity_title = "";
+    if ($ief_form["#entity"]->getEntityTypeId() == "user") {
+      $entity_title = $ief_form["#entity"]->getDisplayName();
+    }
+    if ($ief_form["#entity"]->getEntityTypeId() == "node") {
+      $entity_title = $ief_form["#entity"]->getTitle();
+    }
+    if ($ief_form["#entity"]->getEntityTypeId() == "taxonomy_term") {
+      $entity_title = $ief_form["#entity"]->getName();
+    }
+
+    if ($parameters["parent_bundle_label"] != "" || $parameters["parent_entity_title"] != "") {
+      $ief_form["message"]["#markup"] =
+        t("Are you sure you want to remove %entity_title from this @parent_bundle_label %parent_entity_title?",
+          [
+            "%entity_title" => $entity_title,
+            "@parent_bundle_label" => strtolower($parameters["parent_bundle_label"]),
+            "%parent_entity_title" => $parameters["parent_entity_title"],
+          ]);
+    }
+    else {
+      $ief_form["message"]["#markup"] =
+        t("Are you sure you want to remove %entity_title?",
+          ["%entity_title" => $entity_title]);
+    }
+
+    $ief_form["delete"]["#title"] = t("Delete @type_singular <strong>permanent</strong> from the system.",
+      array("@type_singular" => $entity_title));
+  }
+
+  /* add title bar before first_field */
+  $ief_form["first"]["#weight"] = -1000;
+  $ief_form["first"]["#markup"] = '<div class="ui-dialog-titlebar ui-corner-all ui-widget-header ui-helper-clearfix"><span id="ui-id-3" class="ui-dialog-title">' . $popup_title . '</span><a class="ief-popup-close" href="#"><i class="fas fa-times"></i></a></div>';
+
+  /* add wrapper around form fields */
+  $ief_form["first"]["#markup"] .= '<div class="ui-dialog-content ui-widget-content">';
+}
+
+/**
+ * Callback IEF after_build hook.
+ */
+function _ief_form_after_build($ief_form) {
+
+  /*
+   * add some extra classes on the actions wrapper and buttons
+   * .ief-popup-cancel is used in the javascript to close the popup via the 'X'
+   */
+  $ief_form["actions"]["#attributes"]["class"][] = "ief-popup-actions";
+
+  $primary_buttons = [
+    "ief_edit_save",
+    "ief_add_save",
+    "ief_reference_save",
+    "ief_remove_confirm",
+    "ief_duplicate_save",
+  ];
+  foreach ($primary_buttons as $primary_button) {
+    if (isset($ief_form["actions"][$primary_button])) {
+      $ief_form["actions"][$primary_button]["#attributes"]["class"][] = "button--primary";
+    }
+  }
+
+  $cancel_buttons = [
+    "ief_edit_cancel",
+    "ief_add_cancel",
+    "ief_reference_cancel",
+    "ief_remove_cancel",
+    "ief_duplicate_cancel",
+  ];
+  foreach ($cancel_buttons as $cancel_button) {
+    if (isset($ief_form["actions"][$cancel_button])) {
+      $ief_form["actions"][$cancel_button]["#attributes"]["class"][] = "ief-popup-cancel";
+    }
+  }
+
+  // Close wrapper around form fields.
+  $ief_form["actions"]["#prefix"] = '</div>';
+
+  return $ief_form;
+}

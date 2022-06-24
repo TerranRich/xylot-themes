@@ -26,6 +26,7 @@
         "drupal/devel": "^4.1",
         "drupal/gin": "^3.0@beta",
         "drupal/gin_toolbar": "^1.0@beta",
+        "drupal/ief_popup": "^1.13",
         "drupal/inline_entity_form": "^1.0@RC",
         "drupal/jquery_ui_touch_punch": "^1.0",
         "drupal/paragraphs": "^1.14",
