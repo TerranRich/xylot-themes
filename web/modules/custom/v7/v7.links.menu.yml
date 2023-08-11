@@ -1,6 +1,6 @@
 v7.settings_form:
-  title: 'Xylot Themes V7 General Use Module (GUM)'
-  description: 'Configure Xylot Themes V7 General Use Module (GUM).'
+  title: 'V7 custom module settings'
+  description: 'Configure the Xylot Themes V7 General Use Module (GUM).'
   parent: system.admin_config_system
   route_name: v7.settings_form
   weight: 10

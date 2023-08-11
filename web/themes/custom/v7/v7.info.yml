@@ -1,7 +1,7 @@
 name: V7
 type: theme
-description: "A custom base theme for Drupal 9 built for Xylot Themes 7.x"
-core_version_requirement: ^8.8 || ^9
+description: "A custom base theme for Drupal 9/10 built for Xylot Themes 7.x"
+core_version_requirement: ^9 || ^10
 base theme: classy
 package: custom
 

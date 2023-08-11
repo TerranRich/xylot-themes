@@ -1,5 +1,11 @@
 name: Xylot Themes V7 General Use Module (GUM)
-type: module
 description: Provides additional functionality for the Xylot Themes V7 site.
 package: Custom
+
+type: module
 core_version_requirement: ^9 || ^10
+
+dependencies:
+  - drupal:inline_entity_form
+
+configure: v7.settings

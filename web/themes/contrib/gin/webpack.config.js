@@ -9,7 +9,9 @@ const postcssRTLCSS = require('postcss-rtlcss');
 
 module.exports = {
   entry: {
+    // ################################################
     // Javascript
+    // ################################################
     'accent': ['./js/accent.js'],
     'description_toggle': ['./js/description_toggle.js'],
     'edit_form': ['./js/edit_form.js'],
@@ -17,7 +19,12 @@ module.exports = {
     'init': ['./js/init.js'],
     'messages': ['./js/messages.js'],
     'settings': ['./js/settings.js'],
+    'sidebar': ['./js/sidebar.js'],
+    'sticky': ['./js/sticky.js'],
     'toolbar': ['./js/toolbar.js'],
+    // ################################################
+    // CSS
+    // ################################################
     // Base
     'base/gin': ['./styles/gin.scss'],
     // Components
@@ -27,6 +34,7 @@ module.exports = {
     'components/breadcrumb': ['./styles/components/breadcrumb.scss'],
     'components/chosen': ['./styles/components/chosen.scss'],
     'components/ckeditor': ['./styles/components/ckeditor.scss'],
+    'components/ckeditor5': ['./styles/components/ckeditor5.scss'],
     'components/coffee': ['./styles/components/coffee.scss'],
     'components/contextual_links': ['./styles/components/contextual_links.scss'],
     'components/description_toggle': ['./styles/components/description_toggle.scss'],
@@ -37,6 +45,7 @@ module.exports = {
     'components/entity_reference_layout': ['./styles/components/entity_reference_layout.scss'],
     'components/inline_entity_form': ['./styles/components/inline_entity_form.scss'],
     'components/layout_paragraphs': ['./styles/components/layout_paragraphs.scss'],
+    'components/layout_paragraphs_2.0': ['./styles/components/layout_paragraphs_2.0.scss'],
     'components/linkit': ['./styles/components/linkit.scss'],
     'components/media_library': ['./styles/components/media_library.scss'],
     'components/module_filter': ['./styles/components/module_filter.scss'],
@@ -48,6 +57,9 @@ module.exports = {
     'components/settings_tray': ['./styles/components/settings_tray.scss'],
     'components/settings_tray_edit': ['./styles/components/settings_tray_edit.scss'],
     'components/settings': ['./styles/components/settings.scss'],
+    'components/sidebar': ['./styles/components/sidebar.scss'],
+    'components/tableselect': ['./styles/components/tableselect.scss'],
+    'components/tabs': ['./styles/components/tabs.scss'],
     'components/toolbar': ['./styles/components/toolbar.scss'],
     'components/toolbar_secondary': ['./styles/components/toolbar_secondary.scss'],
     'components/upgrade_status': ['./styles/components/upgrade_status.scss'],
@@ -63,6 +75,7 @@ module.exports = {
     'theme/dialog': ['./styles/theme/dialog.scss'],
     'theme/font': ['./styles/theme/font.scss'],
     'theme/variables': ['./styles/theme/variables.scss'],
+    'theme/legacy': ['./styles/theme/legacy.scss'],
   },
   output: {
     filename: 'js/[name].js',
@@ -160,9 +173,10 @@ module.exports = {
               // Global SCSS imports:
               additionalData: `
                 @use "sass:color";
-                @import "node_modules/breakpoint-sass/stylesheets/breakpoint";
-                @import "styles/helpers/_tools.scss";
+                @use "sass:math";
+                @import "styles/helpers/_mq.scss";
                 @import "styles/helpers/_vars.scss";
+                @import "styles/helpers/_tools.scss";
               `,
             },
           },

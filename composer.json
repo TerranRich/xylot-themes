@@ -18,25 +18,32 @@
         "composer/installers": "^1.9",
         "cweagans/composer-patches": "^1.7",
         "drupal/admin_toolbar": "^3.1",
-        "drupal/adminimal_admin_toolbar": "^1.11",
-        "drupal/better_exposed_filters": "^5.0",
+        "drupal/better_exposed_filters": "^6.0",
+        "drupal/classy": "^1.0",
         "drupal/core-composer-scaffold": "^9.3",
         "drupal/core-project-message": "^9.3",
         "drupal/core-recommended": "^9.3",
-        "drupal/devel": "^4.1",
+        "drupal/devel": "^5.1",
         "drupal/gin": "^3.0@beta",
         "drupal/gin_toolbar": "^1.0@beta",
-        "drupal/ief_popup": "^1.13",
+        "drupal/ief_popup": "^2.1",
+        "drupal/ief_table_view_mode": "^2.3",
         "drupal/inline_entity_form": "^1.0@RC",
         "drupal/jquery_ui_touch_punch": "^1.0",
         "drupal/paragraphs": "^1.14",
         "drupal/pathauto": "^1.10",
         "drupal/rabbit_hole": "^1.0@beta",
+        "drupal/search_kint": "^2.0@alpha",
         "drupal/svg_image_field": "^2.1",
         "drupal/synonyms": "^2.1",
+        "drupal/upgrade_status": "^4.0",
         "drupal/user_registrationpassword": "^2.0@alpha",
-        "drush/drush": "^11.0",
-        "kint-php/kint": "^4.1"
+        "drush/drush": "^11.6",
+        "kint-php/kint": "^4.1",
+        "mglaman/drupal-check": "^1.4",
+        "mglaman/phpstan-drupal": "^1.1",
+        "phpstan/phpstan": "^1.10",
+        "symfony/dotenv": "^6.0"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -49,7 +56,8 @@
             "composer/installers": true,
             "drupal/core-composer-scaffold": true,
             "drupal/core-project-message": true,
-            "cweagans/composer-patches": true
+            "cweagans/composer-patches": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
         },
         "platform-check": false
     },
@@ -115,5 +123,8 @@
             }
         },
         "enable-patching": true
+    },
+    "require-dev": {
+        "drupal/core-dev": "9.5.10"
     }
 }

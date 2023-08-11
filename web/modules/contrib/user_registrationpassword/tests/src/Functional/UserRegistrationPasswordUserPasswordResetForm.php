@@ -28,14 +28,14 @@ class UserRegistrationPasswordUserPasswordResetForm extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'user_registrationpassword',
   ];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     global $base_url;
     $this->base_url = $base_url;
@@ -51,20 +51,22 @@ class UserRegistrationPasswordUserPasswordResetForm extends BrowserTestBase {
     $edit1['mail'] = $edit1['name'] . '@example.com';
     $edit1['pass[pass1]'] = $new_pass = $this->randomMachineName();
     $edit1['pass[pass2]'] = $new_pass;
-    $this->drupalPostForm('user/register', $edit1, 'Create new account');
-    $this->assertText('A welcome message with further instructions has been sent to your email address.', 'User registered successfully.');
+    $this->drupalGet('user/register');
+    $this->submitForm($edit1, 'Create new account');
+    $this->assertSession()->pageTextContains('A welcome message with further instructions has been sent to your email address.');
 
     // Request a new activation email.
     $edit2 = [];
     $edit2['name'] = $edit1['name'];
-    $this->drupalPostForm('user/password', $edit2, 'Submit');
-    $this->assertText('Further instructions have been sent to your email address.', 'Password reset form submitted successfully.');
+    $this->drupalGet('user/password');
+    $this->submitForm($edit2, 'Submit');
+    $this->assertSession()->pageTextContains('Further instructions have been sent to your email address.');
 
     $_emails = $this->getMails();
     $email = end($_emails);
     $this->assertNotEmpty($email['subject']);
     $this->assertNotEmpty($email['body']);
-    $this->assertNotEqual($email['send'], 0);
+    $this->assertNotEquals($email['send'], 0);
   }
 
   /**
@@ -77,7 +79,7 @@ class UserRegistrationPasswordUserPasswordResetForm extends BrowserTestBase {
     $form = \Drupal::formBuilder()->getForm($form_object);
 
     // Test values.
-    $this->assertEqual($form['#validate'][0], '_user_registrationpassword_user_pass_validate', 'Validate handler correctly changed.');
-    $this->assertEqual($form['#submit'][0], '_user_registrationpassword_user_pass_submit', 'Submit handler correctly changed.');
+    $this->assertEquals($form['#validate'][0], '_user_registrationpassword_user_pass_validate', 'Validate handler correctly changed.');
+    $this->assertEquals($form['#submit'][0], '_user_registrationpassword_user_pass_submit', 'Submit handler correctly changed.');
   }
 }

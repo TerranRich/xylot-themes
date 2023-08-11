@@ -46,11 +46,10 @@ abstract class ArrayUtils
     /**
      * Test whether an array contains one or more string keys
      *
-     * @param  mixed $value
      * @param  bool  $allowEmpty    Should an empty array() return true
      * @return bool
      */
-    public static function hasStringKeys($value, $allowEmpty = false)
+    public static function hasStringKeys(mixed $value, $allowEmpty = false)
     {
         if (! is_array($value)) {
             return false;
@@ -66,11 +65,10 @@ abstract class ArrayUtils
     /**
      * Test whether an array contains one or more integer keys
      *
-     * @param  mixed $value
      * @param  bool  $allowEmpty    Should an empty array() return true
      * @return bool
      */
-    public static function hasIntegerKeys($value, $allowEmpty = false)
+    public static function hasIntegerKeys(mixed $value, $allowEmpty = false)
     {
         if (! is_array($value)) {
             return false;
@@ -93,11 +91,10 @@ abstract class ArrayUtils
      * - a float: 2.2120, -78.150999
      * - a string with float:  '4000.99999', '-10.10'
      *
-     * @param  mixed $value
      * @param  bool  $allowEmpty    Should an empty array() return true
      * @return bool
      */
-    public static function hasNumericKeys($value, $allowEmpty = false)
+    public static function hasNumericKeys(mixed $value, $allowEmpty = false)
     {
         if (! is_array($value)) {
             return false;
@@ -126,11 +123,10 @@ abstract class ArrayUtils
      * );
      * </code>
      *
-     * @param  mixed $value
      * @param  bool  $allowEmpty    Is an empty list a valid list?
      * @return bool
      */
-    public static function isList($value, $allowEmpty = false)
+    public static function isList(mixed $value, $allowEmpty = false)
     {
         if (! is_array($value)) {
             return false;
@@ -168,11 +164,10 @@ abstract class ArrayUtils
      * );
      * </code>
      *
-     * @param  mixed $value
      * @param  bool  $allowEmpty    Is an empty array() a valid hash table?
      * @return bool
      */
-    public static function isHashTable($value, $allowEmpty = false)
+    public static function isHashTable(mixed $value, $allowEmpty = false)
     {
         if (! is_array($value)) {
             return false;
@@ -193,12 +188,11 @@ abstract class ArrayUtils
      * non-strict check is implemented. if $strict = -1, the default in_array
      * non-strict behaviour is used.
      *
-     * @param mixed $needle
      * @param array $haystack
      * @param int|bool $strict
      * @return bool
      */
-    public static function inArray($needle, array $haystack, $strict = false)
+    public static function inArray(mixed $needle, array $haystack, $strict = false)
     {
         if (! $strict) {
             if (is_int($needle) || is_float($needle)) {
@@ -217,18 +211,19 @@ abstract class ArrayUtils
     }
 
     /**
-     * Convert an iterator to an array.
-     *
      * Converts an iterator to an array. The $recursive flag, on by default,
      * hints whether or not you want to do so recursively.
      *
-     * @param  array|Traversable  $iterator     The array or Traversable object to convert
-     * @param  bool               $recursive    Recursively check all nested structures
+     * @template TKey
+     * @template TValue
+     * @param  iterable<TKey, TValue> $iterator  The array or Traversable object to convert
+     * @param  bool                   $recursive Recursively check all nested structures
      * @throws Exception\InvalidArgumentException If $iterator is not an array or a Traversable object.
-     * @return array
+     * @return array<TKey, TValue>
      */
     public static function iteratorToArray($iterator, $recursive = true)
     {
+        /** @psalm-suppress DocblockTypeContradiction */
         if (! is_array($iterator) && ! $iterator instanceof Traversable) {
             throw new Exception\InvalidArgumentException(__METHOD__ . ' expects an array or Traversable object');
         }
@@ -246,7 +241,10 @@ abstract class ArrayUtils
             && ! $iterator instanceof Iterator
             && method_exists($iterator, 'toArray')
         ) {
-            return $iterator->toArray();
+            /** @psalm-var array<TKey, TValue> $array */
+            $array = $iterator->toArray();
+
+            return $array;
         }
 
         $array = [];
@@ -268,6 +266,8 @@ abstract class ArrayUtils
 
             $array[$key] = $value;
         }
+
+        /** @psalm-var array<TKey, TValue> $array */
 
         return $array;
     }
@@ -312,7 +312,6 @@ abstract class ArrayUtils
     /**
      * @deprecated Since 3.2.0; use the native array_filter methods
      *
-     * @param array $data
      * @param callable $callback
      * @param null|int $flag
      * @return array

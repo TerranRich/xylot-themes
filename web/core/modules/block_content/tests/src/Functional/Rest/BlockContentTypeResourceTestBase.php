@@ -18,7 +18,7 @@ abstract class BlockContentTypeResourceTestBase extends ConfigEntityResourceTest
   protected static $entityTypeId = 'block_content_type';
 
   /**
-   * @var \Drupal\block_content\Entity\BlockContentTypeInterface
+   * @var \Drupal\block_content\BlockContentTypeInterface
    */
   protected $entity;
 
@@ -66,6 +66,7 @@ abstract class BlockContentTypeResourceTestBase extends ConfigEntityResourceTest
    */
   protected function getNormalizedPostEntity() {
     // @todo Update in https://www.drupal.org/node/2300677.
+    return [];
   }
 
 }

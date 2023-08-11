@@ -2,13 +2,14 @@
 
 namespace Drupal\svg_image_field\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
+use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use enshrined\svgSanitize\Sanitizer;
 
@@ -30,6 +31,20 @@ class SvgImageFieldFormatter extends FormatterBase implements ContainerFactoryPl
    * @var \Drupal\Core\Logger\LoggerChannelInterface
    */
   public $logger;
+
+  /**
+   * The module handler service.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
+   * The file URL generator.
+   *
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   */
+  protected $fileUrlGenerator;
 
   /**
    * {@inheritdoc}
@@ -82,11 +97,6 @@ class SvgImageFieldFormatter extends FormatterBase implements ContainerFactoryPl
       '#type' => 'checkbox',
       '#title' => $this->t('Apply dimensions.'),
       '#default_value' => $this->getSetting('apply_dimensions'),
-      '#states' => [
-        'visible' => [
-          ':input[name$="' . $inline_name . '"]' => ['checked' => TRUE],
-        ],
-      ],
     ];
     $dimensions_name = '[settings_edit_form][settings][apply_dimensions]';
     $form['width'] = [
@@ -95,7 +105,6 @@ class SvgImageFieldFormatter extends FormatterBase implements ContainerFactoryPl
       '#default_value' => $this->getSetting('width'),
       '#states' => [
         'visible' => [
-          ':input[name$="' . $inline_name . '"]' => ['checked' => TRUE],
           ':input[name$="' . $dimensions_name . '"]' => ['checked' => TRUE],
         ],
       ],
@@ -106,7 +115,6 @@ class SvgImageFieldFormatter extends FormatterBase implements ContainerFactoryPl
       '#default_value' => $this->getSetting('height'),
       '#states' => [
         'visible' => [
-          ':input[name$="' . $inline_name . '"]' => ['checked' => TRUE],
           ':input[name$="' . $dimensions_name . '"]' => ['checked' => TRUE],
         ],
       ],
@@ -162,10 +170,6 @@ class SvgImageFieldFormatter extends FormatterBase implements ContainerFactoryPl
       '#type' => 'checkbox',
       '#title' => $this->t('Enable title attribute.'),
       '#default_value' => $this->getSetting('enable_title'),
-    ];
-    $form['notice'] = [
-      '#type' => 'markup',
-      '#markup' => '<div><small>' . $this->t('Alt and title attributes will be created from an image filename by removing file extension and replacing eventual underscores and dashes with spaces.') . '</small></div>',
     ];
 
     return $form;
@@ -228,14 +232,14 @@ class SvgImageFieldFormatter extends FormatterBase implements ContainerFactoryPl
         continue;
       }
       $uri = $item->entity->getFileUri();
-      if (file_exists($uri) === FALSE) {
+      $stageFileProxy = $this->moduleHandler->moduleExists('stage_file_proxy');
+      if (file_exists($uri) === FALSE && !$stageFileProxy) {
         $this->logger->error('The specified file %file could not be displayed by image formatter due file not exists.', ['%file' => $uri]);
         continue;
       }
-      $filename = $item->entity->getFilename();
-      $alt = !empty($item->alt) ? $item->alt : $this->generateAltAttribute($filename);
       if ($this->getSetting('enable_alt')) {
-        if ($alt == '""') {
+        $alt = $item->alt;
+        if ($alt == '""' || empty($alt)) {
           $alt = '';
         }
         $attributes['alt'] = $alt;
@@ -249,7 +253,9 @@ class SvgImageFieldFormatter extends FormatterBase implements ContainerFactoryPl
         $svg_file = file_get_contents($uri);
         $dom = new \DOMDocument();
         libxml_use_internal_errors(TRUE);
-        $dom->loadXML($svg_file);
+        if (!empty($svg_file)) {
+          $dom->loadXML($svg_file);
+        }
         if ($this->getSetting('force_fill')) {
           $dom->documentElement->setAttribute('fill', 'currentColor');
         }
@@ -279,7 +285,7 @@ class SvgImageFieldFormatter extends FormatterBase implements ContainerFactoryPl
         // context to ensure different file URLs are generated for different
         // sites in a multisite setup, including HTTP and HTTPS versions of the
         // same site. Fix in https://www.drupal.org/node/2646744.
-        $url = Url::fromUri(file_create_url($uri));
+        $url = $this->fileUrlGenerator->generate($uri);
         $cache_contexts[] = 'url.site';
       }
 
@@ -301,15 +307,6 @@ class SvgImageFieldFormatter extends FormatterBase implements ContainerFactoryPl
   }
 
   /**
-   * Generate alt attribute from an image filename.
-   */
-  private function generateAltAttribute($filename) {
-    $alt = str_replace(['.svg', '-', '_'], ['', ' ', ' '], $filename);
-    $alt = ucfirst($alt);
-    return $alt;
-  }
-
-  /**
    * Constructs a SvgImageFieldFormatter object.
    *
    * @param string $plugin_id
@@ -328,6 +325,10 @@ class SvgImageFieldFormatter extends FormatterBase implements ContainerFactoryPl
    *   Any third party settings.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger
    *   Logger.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler service.
+   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
+   *   The file URL generator.
    */
   public function __construct(
     $plugin_id,
@@ -337,9 +338,13 @@ class SvgImageFieldFormatter extends FormatterBase implements ContainerFactoryPl
     $label,
     $view_mode,
     array $third_party_settings,
-    LoggerChannelFactoryInterface $logger
+    LoggerChannelFactoryInterface $logger,
+    ModuleHandlerInterface $module_handler,
+    FileUrlGeneratorInterface $file_url_generator
   ) {
     $this->logger = $logger->get('svg_image_field');
+    $this->moduleHandler = $module_handler;
+    $this->fileUrlGenerator = $file_url_generator;
     parent::__construct($plugin_id, $plugin_definition, $field_definition,
       $settings, $label, $view_mode, $third_party_settings);
   }
@@ -361,7 +366,9 @@ class SvgImageFieldFormatter extends FormatterBase implements ContainerFactoryPl
       $configuration['label'],
       $configuration['view_mode'],
       $configuration['third_party_settings'],
-      $container->get('logger.factory')
+      $container->get('logger.factory'),
+      $container->get('module_handler'),
+      $container->get('file_url_generator')
     );
   }
 

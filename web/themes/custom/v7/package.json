@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "webpack --watch --config=webpack.config.dev.js --mode=development",
-    "build:prod": "webpack --config=webpack.config.prod.js --mode=production --optimize-minimize",
+    "build": "webpack --config=webpack.config.prod.js --mode=production --optimize-minimize",
     "build:dev": "webpack --config=webpack.config.dev.js --mode=development"
   },
   "repository": {

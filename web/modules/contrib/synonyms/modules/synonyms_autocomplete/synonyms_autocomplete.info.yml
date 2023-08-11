@@ -7,7 +7,7 @@ configure: synonyms_autocomplete.settings
 dependencies:
   - synonyms:synonyms
 
-# Information added by Drupal.org packaging script on 2022-05-30
-version: '2.1.1'
+# Information added by Drupal.org packaging script on 2022-10-14
+version: '2.1.2'
 project: 'synonyms'
-datestamp: 1653944809
+datestamp: 1665785029

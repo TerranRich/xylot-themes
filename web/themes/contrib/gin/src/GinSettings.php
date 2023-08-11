@@ -6,9 +6,9 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\user\UserDataInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Service to handle overridden user settings.
@@ -223,6 +223,11 @@ class GinSettings implements ContainerInjectionInterface {
       $value = $value === TRUE || $value === 'true' ||  $value === '1' || $value === 1 ? 'classic' : $value;
     }
 
+    // Layout density check.
+    if ($name === 'layout_density') {
+      $value = $value === '0' ? 'default' : $value;
+    }
+
     // Logo legacy settings check.
     if ($name === 'icon_default' && is_null($value)) {
       $value = $this->get('logo.use_default');
@@ -270,10 +275,12 @@ class GinSettings implements ContainerInjectionInterface {
    *   The theme setting form elements.
    */
   public function getSettingsForm(AccountInterface $account = NULL): array {
+    $experimental_label = ' (EXPERIMENTAL)';
     $beta_label = ' (BETA)';
+
     $form['enable_darkmode'] = [
       '#type' => 'radios',
-      '#title' => $this->t('Appearance') . $beta_label,
+      '#title' => $this->t('Appearance'),
       '#description' => $this->t('Enables Darkmode for the admin interface.'),
       '#default_value' => (string) ($account ? $this->get('enable_darkmode', $account) : $this->getDefault('enable_darkmode')),
       '#options' => [
@@ -364,7 +371,7 @@ class GinSettings implements ContainerInjectionInterface {
     // Focus color group.
     $form['focus_group'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Custom Focus color (BETA)'),
+      '#title' => $this->t('Custom Focus color') . $beta_label,
       '#description' => $this->t('Use with caution, values should meet a11y criteria.'),
       '#states' => [
         // Show if met.
@@ -387,7 +394,7 @@ class GinSettings implements ContainerInjectionInterface {
     // Custom Focus color setting.
     $form['focus_color'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Custom Focus color (BETA)'),
+      '#title' => $this->t('Custom Focus color') . $beta_label,
       '#title_display' => 'invisible',
       '#placeholder' => '#777777',
       '#maxlength' => 7,
@@ -402,7 +409,7 @@ class GinSettings implements ContainerInjectionInterface {
     // High contrast mode.
     $form['high_contrast_mode'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Increase contrast (EXPERIMENTAL)'),
+      '#title' => $this->t('Increase contrast') . $experimental_label,
       '#description' => $this->t('Enables high contrast mode.'),
       '#default_value' => $account ? $this->get('high_contrast_mode', $account) : $this->getDefault('high_contrast_mode'),
     ];
@@ -432,6 +439,20 @@ class GinSettings implements ContainerInjectionInterface {
       ];
     }
 
+    // Layout density setting.
+    $form['layout_density'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Layout density') . $beta_label,
+      '#description' => $this->t('Changes the layout density for tables in the admin interface.'),
+      '#default_value' => (string) ($account ? $this->get('layout_density', $account) : $this->getDefault('layout_density')),
+      '#options' => [
+        'default' => $this->t('Default'),
+        'medium' => $this->t('Compact'),
+        'small' => $this->t('Narrow'),
+      ],
+    ];
+
+    // Description toggle.
     $form['show_description_toggle'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Enable form description toggle'),

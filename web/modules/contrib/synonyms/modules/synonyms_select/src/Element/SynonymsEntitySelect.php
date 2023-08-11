@@ -92,7 +92,7 @@ class SynonymsEntitySelect extends Select {
       $synonyms = \Drupal::service('synonyms.behavior.select')->selectGetSynonymsMultiple(array_intersect_key($entities, $entity_ids));
 
       $bundle_key = isset($bundle_info[$bundle]) ? $bundle_info[$bundle]['label'] : $bundle;
-      $bundle_key = (string)$bundle_key;
+      $bundle_key = (string) $bundle_key;
 
       $options[$bundle_key] = [];
 
@@ -108,6 +108,12 @@ class SynonymsEntitySelect extends Select {
     if (count($options) == 1) {
       // Strip the bundle nesting if there is only 1 bundle after all.
       $options = reset($options);
+    }
+
+    // Optionally sort the select options.
+    $sort = \Drupal::service('config.factory')->get('synonyms_select.settings')->get('sort_select');
+    if ($sort) {
+      natcasesort($options);
     }
 
     // Now we can "mutate" into a simple "select" element type.

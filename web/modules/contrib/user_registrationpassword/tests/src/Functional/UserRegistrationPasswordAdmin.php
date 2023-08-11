@@ -23,7 +23,7 @@ class UserRegistrationPasswordAdmin extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['user_registrationpassword'];
+  protected static $modules = ['user_registrationpassword'];
 
   /**
    * The admin user.
@@ -42,7 +42,7 @@ class UserRegistrationPasswordAdmin extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     // User to add and remove language.
     $this->adminUser = $this->drupalCreateUser(['administer account settings', 'administer users']);
@@ -61,7 +61,8 @@ class UserRegistrationPasswordAdmin extends BrowserTestBase {
     // Test the default options.
     $this->drupalGet('admin/config/people/accounts');
     $edit_first = ['user_register' => UserInterface::REGISTER_VISITORS, 'user_registrationpassword_registration' => UserRegistrationPassword::VERIFICATION_PASS];
-    $this->drupalPostForm('admin/config/people/accounts', $edit_first, 'Save configuration');
+    $this->drupalGet('admin/config/people/accounts');
+    $this->submitForm($edit_first, 'Save configuration');
 
     // Load config.
     $user_config = \Drupal::configFactory()->get('user.settings');
@@ -78,7 +79,8 @@ class UserRegistrationPasswordAdmin extends BrowserTestBase {
       'user_register' => UserInterface::REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL,
       'user_registrationpassword_registration' => UserRegistrationPassword::VERIFICATION_PASS,
     ];
-    $this->drupalPostForm('admin/config/people/accounts', $edit_second, 'Save configuration');
+    $this->drupalGet('admin/config/people/accounts');
+    $this->submitForm($edit_second, 'Save configuration');
 
     // Load config.
     $user_config = \Drupal::configFactory()->get('user.settings');
@@ -95,7 +97,8 @@ class UserRegistrationPasswordAdmin extends BrowserTestBase {
       'user_register' => UserInterface::REGISTER_ADMINISTRATORS_ONLY,
       'user_registrationpassword_registration' => UserRegistrationPassword::VERIFICATION_PASS,
     ];
-    $this->drupalPostForm('admin/config/people/accounts', $edit_third, 'Save configuration');
+    $this->drupalGet('admin/config/people/accounts');
+    $this->submitForm($edit_third, 'Save configuration');
 
     // Load config.
     $user_config = \Drupal::configFactory()->get('user.settings');

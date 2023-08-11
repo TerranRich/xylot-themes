@@ -9,4 +9,3 @@ ief_popup:
     - core/jquery
     - core/drupal
     - core/drupal.dialog
-    - core/jquery.once

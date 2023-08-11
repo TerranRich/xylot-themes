@@ -4,6 +4,7 @@
  * @file
  * Install, update and uninstall functions for svg_image_field module.
  */
+
 declare(strict_types = 1);
 
 /**

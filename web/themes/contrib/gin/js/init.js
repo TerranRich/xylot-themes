@@ -40,25 +40,61 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Sidebar Check.
+// Toolbar Check.
 if (localStorage.getItem('Drupal.gin.toolbarExpanded')) {
   const style = document.createElement('style');
   const className = 'gin-toolbar-inline-styles';
   style.className = className;
 
-  // Sidebar Check.
   if (localStorage.getItem('Drupal.gin.toolbarExpanded') === 'true') {
     style.innerHTML = `
     @media (min-width: 976px) {
-      body.gin--vertical-toolbar:not([data-toolbar-menu=open]) {
-        padding-inline-start: 240px;
-        transition: none;
+      /* Small CSS hack to make sure this has the highest priority */
+      body.gin--vertical-toolbar.gin--vertical-toolbar.gin--vertical-toolbar {
+        padding-inline-start: 256px !important;
+        transition: none !important;
       }
 
       .gin--vertical-toolbar .toolbar-menu-administration {
-        min-width: var(--ginToolbarWidth, 240px);
+        min-width: var(--gin-toolbar-width, 256px);
         transition: none;
       }
+
+      .gin--vertical-toolbar .toolbar-menu-administration > .toolbar-menu > .menu-item > .toolbar-icon,
+      .gin--vertical-toolbar .toolbar-menu-administration > .toolbar-menu > .menu-item > .toolbar-box > .toolbar-icon {
+        min-width: calc(var(--gin-toolbar-width, 256px) - 16px);
+      }
+    }
+    `;
+
+    const scriptTag = document.querySelector('script');
+    scriptTag.parentNode.insertBefore(style, scriptTag);
+  } else if (document.getElementsByClassName(className).length > 0) {
+    document.getElementsByClassName(className)[0].remove();
+  }
+}
+
+// Sidebar check.
+if (localStorage.getItem('Drupal.gin.sidebarExpanded.desktop')) {
+  const style = document.createElement('style');
+  const className = 'gin-sidebar-inline-styles';
+  style.className = className;
+
+  if (window.innerWidth < 1024 || localStorage.getItem('Drupal.gin.sidebarExpanded.desktop') === 'false') {
+    style.innerHTML = `
+    body {
+      --gin-sidebar-offset: 0px;
+      padding-inline-end: 0;
+      transition: none;
+    }
+
+    .layout-region-node-secondary {
+      transform: translateX(var(--gin-sidebar-width, 360px));
+      transition: none;
+    }
+
+    .meta-sidebar__overlay {
+      display: none;
     }
     `;
 

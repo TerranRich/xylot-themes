@@ -5,6 +5,9 @@ synonyms_select.settings:
     default_wording:
       type: string
       label: 'Default wording for this widget'
+    sort_select:
+      type: boolean
+      label: 'Sort dropdown values'
 
 synonyms_select.behavior.*:
   type: config_entity

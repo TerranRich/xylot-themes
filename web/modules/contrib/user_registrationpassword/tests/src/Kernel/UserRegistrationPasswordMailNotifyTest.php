@@ -21,7 +21,7 @@ class UserRegistrationPasswordMailNotifyTest extends EntityKernelTestBase {
    *
    * @var array
    */
-  public static $modules = ['user_registrationpassword'];
+  protected static $modules = ['user_registrationpassword'];
 
   /**
    * Data provider for user mail testing.
@@ -51,7 +51,7 @@ class UserRegistrationPasswordMailNotifyTest extends EntityKernelTestBase {
     $edit = [];
     $edit['name'] = $this->randomMachineName();
     $edit['mail'] = $edit['name'] . '@example.com';
-    $edit['pass'] = user_password();
+    $edit['pass'] = \Drupal::service('password_generator')->generate();
     $edit['status'] = 0;
     /** @var \Drupal\user\UserInterface $account */
     $account = $this->createUser($edit);

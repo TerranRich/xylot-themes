@@ -22,7 +22,7 @@ class UserRegistrationPasswordAccountSettingFormTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['user_registrationpassword'];
+  protected static $modules = ['user_registrationpassword'];
 
   /**
    * User with administer account settings privileges.
@@ -34,7 +34,7 @@ class UserRegistrationPasswordAccountSettingFormTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->adminUser = $this->drupalCreateUser(['administer account settings']);
     $this->drupalLogin($this->adminUser);
@@ -52,7 +52,8 @@ class UserRegistrationPasswordAccountSettingFormTest extends BrowserTestBase {
     ] as $option) {
       $edit = [];
       $edit['user_registrationpassword_registration'] = $option;
-      $this->drupalPostForm('admin/config/people/accounts', $edit, 'Save configuration');
+      $this->drupalGet('admin/config/people/accounts');
+      $this->submitForm($edit, 'Save configuration');
 
       $this->assertSession()->pageTextNotContains('An illegal choice has been detected. Please contact the site administrator.');
       $this->assertSession()->pageTextContains('The configuration options have been saved.');

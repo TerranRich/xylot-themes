@@ -157,6 +157,14 @@ class GinContentFormHelper implements ContainerInjectionInterface {
       unset($form['gin_actions']['actions']['delete']);
       unset($form['gin_actions']['actions']['delete_translation']);
 
+      // Add sidebar toggle.
+      $hide_panel = t('Hide sidebar panel');
+      $form['gin_actions']['gin_sidebar_toggle'] = [
+        '#markup' => '<a href="#toggle-sidebar" class="meta-sidebar__trigger trigger" role="button" title="' . $hide_panel . '" aria-controls="gin_sidebar"><span class="visually-hidden">' . $hide_panel . '</span></a>',
+        '#weight' => '999',
+      ];
+      $form['#attached']['library'][] = 'gin/sidebar';
+
       // Create gin_sidebar group.
       $form['gin_sidebar'] = [
         '#group' => 'meta',
@@ -182,6 +190,16 @@ class GinContentFormHelper implements ContainerInjectionInterface {
         $form['gin_sidebar']['actions']['delete_translation']['#attributes']['class'][] = 'button--danger';
         $form['gin_sidebar']['actions']['delete_translation']['#attributes']['class'][] = 'action-link';
       }
+
+      // Sidebar close button.
+      $close_sidebar_translation = t('Close sidebar panel');
+      $form['gin_sidebar']['gin_sidebar_close'] = [
+        '#markup' => '<a href="#close-sidebar" class="meta-sidebar__close trigger" role="button" title="' . $close_sidebar_translation . '"><span class="visually-hidden">' . $close_sidebar_translation . '</span></a>',
+      ];
+
+      $form['gin_sidebar_overlay'] = [
+        '#markup' => '<div class="meta-sidebar__overlay trigger"></div>',
+      ];
     }
 
     // Specify necessary node form theme and library.
@@ -190,6 +208,9 @@ class GinContentFormHelper implements ContainerInjectionInterface {
     // Attach libraries.
     $form['#attached']['library'][] = 'claro/node-form';
     $form['#attached']['library'][] = 'gin/edit_form';
+
+    // Add a class that allows the logic in edit_form.js to identify the form.
+    $form['#attributes']['class'][] = 'gin-node-edit-form';
 
     // If not logged in hide changed and author node info on add forms.
     $not_logged_in = $this->currentUser->isAnonymous();

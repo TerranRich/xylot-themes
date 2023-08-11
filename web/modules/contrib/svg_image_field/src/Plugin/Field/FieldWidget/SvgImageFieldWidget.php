@@ -12,6 +12,7 @@ use Drupal\Core\Render\ElementInfoManagerInterface;
 use Drupal\file\Entity\File;
 use Drupal\file\Plugin\Field\FieldWidget\FileWidget;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Plugin implementation of the 'image_image' widget.
@@ -25,7 +26,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class SvgImageFieldWidget extends FileWidget {
-
+  use StringTranslationTrait;
   /**
    * The renderer service.
    *
@@ -48,7 +49,6 @@ class SvgImageFieldWidget extends FileWidget {
     $this->renderer = $renderer;
     $this->entityRepository = $entity_repository;
   }
-
 
   /**
    * {@inheritdoc}
@@ -83,13 +83,13 @@ class SvgImageFieldWidget extends FileWidget {
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $element = parent::settingsForm($form, $form_state);
     $element['preview_image_max_width'] = [
-      '#title' => t('Preview image max width'),
+      '#title' => $this->t('Preview image max width'),
       '#type' => 'number',
       '#default_value' => $this->getSetting('preview_image_max_width'),
       '#weight' => 15,
     ];
     $element['preview_image_max_height'] = [
-      '#title' => t('Preview image max height'),
+      '#title' => $this->t('Preview image max height'),
       '#type' => 'number',
       '#default_value' => $this->getSetting('preview_image_max_height'),
       '#weight' => 16,
@@ -103,8 +103,8 @@ class SvgImageFieldWidget extends FileWidget {
    */
   public function settingsSummary() {
     $summary = parent::settingsSummary();
-    $preview_image_max_width = t('Preview image width: @width', ['@width' => $this->getSetting('preview_image_max_width')]);
-    $preview_image_max_height = t('Preview image height: @height', ['@height' => $this->getSetting('preview_image_max_height')]);
+    $preview_image_max_width = $this->t('Preview image width: @width', ['@width' => $this->getSetting('preview_image_max_width')]);
+    $preview_image_max_height = $this->t('Preview image height: @height', ['@height' => $this->getSetting('preview_image_max_height')]);
 
     array_unshift($summary, $preview_image_max_width);
     array_unshift($summary, $preview_image_max_height);
@@ -243,25 +243,35 @@ class SvgImageFieldWidget extends FileWidget {
     $element['alt'] = [
       '#title' => t('Alternative text'),
       '#type' => 'textfield',
-      '#default_value' => isset($item['alt']) ? $item['alt'] : '',
+      '#default_value' => $item['alt'] ?? '',
       '#description' => t('This text will be used by screen readers, search engines, or when the image cannot be loaded.'),
         // @see https://www.drupal.org/node/465106#alt-text
       '#maxlength' => 512,
       '#weight' => -12,
       '#access' => (bool) $item['fids'] && $element['#alt_field'],
       '#required' => $element['#alt_field_required'],
-      '#element_validate' => $element['#alt_field_required'] == 1 ? [[get_called_class(), 'validateRequiredFields']] : [],
+      '#element_validate' => $element['#alt_field_required'] == 1 ? [
+        [
+          get_called_class(),
+          'validateRequiredFields',
+        ],
+      ] : [],
     ];
     $element['title'] = [
       '#type' => 'textfield',
       '#title' => t('Title'),
-      '#default_value' => isset($item['title']) ? $item['title'] : '',
+      '#default_value' => $item['title'] ?? '',
       '#description' => t('The title is used as a tool tip when the user hovers the mouse over the image.'),
       '#maxlength' => 1024,
       '#weight' => -11,
       '#access' => (bool) $item['fids'] && $element['#title_field'],
       '#required' => $element['#title_field_required'],
-      '#element_validate' => $element['#title_field_required'] == 1 ? [[get_called_class(), 'validateRequiredFields']] : [],
+      '#element_validate' => $element['#title_field_required'] == 1 ? [
+        [
+          get_called_class(),
+          'validateRequiredFields',
+        ],
+      ] : [],
     ];
 
     return parent::process($element, $form_state, $form);
@@ -283,7 +293,7 @@ class SvgImageFieldWidget extends FileWidget {
       $image_field = NestedArray::getValue($form_state->getUserInput(), $parents);
       // We check for the array key, so that it can be NULL (like if the user
       // submits the form without using the "upload" button).
-      if (!array_key_exists($field, $image_field)) {
+      if (empty($image_field) || !is_array($image_field) || !array_key_exists($field, $image_field)) {
         return;
       }
     }

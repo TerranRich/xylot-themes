@@ -7,6 +7,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\file\Entity\File;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Entity\FieldConfig;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Svg Image Field module unit tests.
@@ -14,6 +15,7 @@ use Drupal\field\Entity\FieldConfig;
  * @group svg_image_field
  */
 class FileValidationTest extends FieldKernelTestBase {
+  use StringTranslationTrait;
   /**
    * Test files directory path.
    *
@@ -31,12 +33,12 @@ class FileValidationTest extends FieldKernelTestBase {
    *
    * @var array
    */
-  public static $modules = ['file', 'svg_image_field'];
+  protected static $modules = ['file', 'svg_image_field'];
 
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  public function setUp(): void {
     $this->testDataDirPath = dirname(__FILE__) . '/test_data';
     parent::setUp();
     $this->installEntitySchema('file');
@@ -71,7 +73,7 @@ class FileValidationTest extends FieldKernelTestBase {
         ]);
         $file->setFilename($file_name);
         $this->assertEquals(TRUE, count(svg_image_field_validate_mime_type($file)) === 0,
-        t("Check that %file_name is valid", ['%file_name' => $file_name]));
+        $this->t("Check that %file_name is valid", ['%file_name' => $file_name]));
       }
       elseif (strpos($file_name, 'invalid_svg') === 0) {
         $file_path = realpath($this->testDataDirPath . '/' . $file_name);
@@ -82,7 +84,7 @@ class FileValidationTest extends FieldKernelTestBase {
         ]);
         $file->setFilename($file_name);
         $this->assertEquals(TRUE, count(svg_image_field_validate_mime_type($file)) > 0,
-        t("Check that %file_name is invalid", ['%file_name' => $file_name]));
+        $this->t("Check that %file_name is invalid", ['%file_name' => $file_name]));
       }
     }
   }

@@ -63,11 +63,14 @@ class AdminFunctionalityTest extends BrowserTestBase {
     $session->pageTextContains('Specify the wording');
     $session->pageTextContains('@field_label: The lowercase label of the provider field');
     $session->pageTextContains('This will also serve as a fallback wording');
+    $session->pageTextContains('Sort dropdown values');
+    $session->checkboxNotChecked('sort_select');
     $session->buttonExists('Save configuration');
 
     // Edit settings.
     $edit = [
       'default_wording' => 'Test wording',
+      'sort_select' => TRUE,
     ];
     $this->submitForm($edit, 'Save');
 
@@ -77,6 +80,8 @@ class AdminFunctionalityTest extends BrowserTestBase {
     $session->addressEquals('admin/structure/synonyms_select/settings');
     $session->pageTextContains('Synonyms select widget settings');
     $session->fieldValueEquals('default_wording', 'Test wording');
+    $session->pageTextContains('Sort dropdown values');
+    $session->checkboxChecked('sort_select');
     $session->buttonExists('Save configuration');
 
     // Confirm the change at the main admin page.

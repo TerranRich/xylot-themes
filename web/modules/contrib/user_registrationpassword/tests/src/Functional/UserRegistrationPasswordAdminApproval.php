@@ -23,7 +23,7 @@ class UserRegistrationPasswordAdminApproval extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['user_registrationpassword'];
+  protected static $modules = ['user_registrationpassword'];
 
   /**
    * Implements testing admin approval.

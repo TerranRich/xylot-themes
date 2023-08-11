@@ -23,7 +23,7 @@ class UserRegistrationPassword extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['user_registrationpassword'];
+  protected static $modules = ['user_registrationpassword'];
 
   /**
    * Implements testRegistrationWithEmailVerificationAndPassword().
@@ -36,7 +36,8 @@ class UserRegistrationPassword extends BrowserTestBase {
     $edit['pass[pass1]'] = $new_pass = $this->randomMachineName();
     $edit['pass[pass2]'] = $new_pass;
     $pass = $new_pass;
-    $this->drupalPostForm('user/register', $edit, 'Create new account');
+    $this->drupalGet('user/register');
+    $this->submitForm($edit, 'Create new account');
     $this->assertSession()->pageTextContains('A welcome message with further instructions has been sent to your email address.');
 
     // Load the new user.
@@ -44,6 +45,7 @@ class UserRegistrationPassword extends BrowserTestBase {
       ->condition('name', $name)
       ->condition('mail', $mail)
       ->condition('status', 0)
+      ->accessCheck(FALSE)
       ->execute();
     /** @var \Drupal\user\UserInterface $account */
     $account = \Drupal::entityTypeManager()->getStorage('user')->load(reset($accounts));
@@ -68,7 +70,8 @@ class UserRegistrationPassword extends BrowserTestBase {
       'name' => $name,
       'pass' => $pass,
     ];
-    $this->drupalPostForm('user/login', $auth, 'Log in');
+    $this->drupalGet('user/login');
+    $this->submitForm($auth, 'Log in');
     $this->assertSession()->pageTextContains('The username ' . $name . ' has not been activated or is blocked.');
 
     // Timestamp can not be smaller than current. (== registration time).
@@ -94,7 +97,7 @@ class UserRegistrationPassword extends BrowserTestBase {
     $another_account = $this->drupalCreateUser();
     $this->drupalLogin($another_account);
     $this->drupalGet("user/registrationpassword/" . $account->id() . "/$timestamp/" . user_pass_rehash($account, $timestamp));
-    $this->assertRaw(new FormattableMarkup(
+    $this->assertSession()->responseContains(new FormattableMarkup(
       'Another user (%other_user) is already logged into the site on this computer, but you tried to use a one-time link for user %resetting_user. Please <a href=":logout">log out</a> and try using the link again.',
       ['%other_user' => $another_account->getAccountName(), '%resetting_user' => $account->getAccountName(), ':logout' => Url::fromRoute('user.logout')->toString()]
     ));
@@ -120,7 +123,8 @@ class UserRegistrationPassword extends BrowserTestBase {
       'name' => $name,
       'pass' => $pass,
     ];
-    $this->drupalPostForm('user/login', $auth, 'Log in');
+    $this->drupalGet('user/login');
+    $this->submitForm($auth, 'Log in');
     $this->assertSession()->pageTextContains('Member for');
 
     // Logout the user.
@@ -133,7 +137,8 @@ class UserRegistrationPassword extends BrowserTestBase {
     $edit['pass[pass1]'] = $new_pass = $this->randomMachineName();
     $edit['pass[pass2]'] = $new_pass;
     $pass = $new_pass;
-    $this->drupalPostForm('user/register', $edit, 'Create new account');
+    $this->drupalGet('user/register');
+    $this->submitForm($edit, 'Create new account');
     $this->assertSession()->pageTextContains('A welcome message with further instructions has been sent to your email address.');
 
     // Load the new user.
@@ -141,6 +146,7 @@ class UserRegistrationPassword extends BrowserTestBase {
       ->condition('name', $name)
       ->condition('mail', $mail)
       ->condition('status', 0)
+      ->accessCheck(FALSE)
       ->execute();
     /** @var \Drupal\user\UserInterface $account */
     $another_account = \Drupal::entityTypeManager()->getStorage('user')->load(reset($accounts));
@@ -165,25 +171,29 @@ class UserRegistrationPassword extends BrowserTestBase {
     $edit1['mail'] = $edit1['name'] . '@example.com';
     $edit1['pass[pass1]'] = $new_pass = $this->randomMachineName();
     $edit1['pass[pass2]'] = $new_pass;
-    $this->drupalPostForm('user/register', $edit1, 'Create new account');
+    $this->drupalGet('user/register');
+    $this->submitForm($edit1, 'Create new account');
     $this->assertSession()->pageTextContains('A welcome message with further instructions has been sent to your email address.');
 
     // Request a new activation email.
     $edit2 = [];
     $edit2['name'] = $edit1['name'];
-    $this->drupalPostForm('user/password', $edit2, 'Submit');
+    $this->drupalGet('user/password');
+    $this->submitForm($edit2, 'Submit');
     $this->assertSession()->pageTextContains('Further instructions have been sent to your email address.');
 
     // Request a new activation email for a non-existing user name.
     $edit3 = [];
     $edit3['name'] = $this->randomMachineName();
-    $this->drupalPostForm('user/password', $edit3, 'Submit');
+    $this->drupalGet('user/password');
+    $this->submitForm($edit3, 'Submit');
     $this->assertSession()->pageTextContains($edit3['name'] . ' is not recognized as a username or an email address.');
 
     // Request a new activation email for a non-existing user email.
     $edit4 = [];
     $edit4['name'] = $this->randomMachineName() . '@example.com';
-    $this->drupalPostForm('user/password', $edit4, 'Submit');
+    $this->drupalGet('user/password');
+    $this->submitForm($edit4, 'Submit');
     $this->assertSession()->pageTextContains($edit4['name'] . ' is not recognized as a username or an email address.');
   }
 
@@ -199,13 +209,15 @@ class UserRegistrationPassword extends BrowserTestBase {
     $edit['mail'] = $mail = $edit['name'] . '@example.com';
     $edit['pass[pass1]'] = $new_pass = $this->randomMachineName();
     $edit['pass[pass2]'] = $new_pass;
-    $this->drupalPostForm('user/register', $edit, 'Create new account');
+    $this->drupalGet('user/register');
+    $this->submitForm($edit, 'Create new account');
 
     // Load the new user.
     $accounts = \Drupal::entityQuery('user')
       ->condition('name', $name)
       ->condition('mail', $mail)
       ->condition('status', 0)
+      ->accessCheck(FALSE)
       ->execute();
     /** @var \Drupal\user\UserInterface $account */
     $account = \Drupal::entityTypeManager()->getStorage('user')->load(reset($accounts));
@@ -228,7 +240,8 @@ class UserRegistrationPassword extends BrowserTestBase {
 
     // Try to request a new activation email.
     $edit2['name'] = $edit['name'];
-    $this->drupalPostForm('user/password', $edit2, 'Submit');
+    $this->drupalGet('user/password');
+    $this->submitForm($edit2, 'Submit');
     $this->assertSession()->pageTextContains($edit2['name'] . ' is blocked or has not been activated yet.');
   }
 

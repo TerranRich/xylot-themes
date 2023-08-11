@@ -1,4 +1,4 @@
-(function($, Drupal, drupalSettings) {
+(function ($, Drupal, drupalSettings) {
 
     //$("body").append("<div class='ief-popup-overlay'></div>");
 
@@ -11,17 +11,16 @@
                 $(".toolbar").css("z-index",  1);
             }
             else {
-                // $(".toolbar").css("z-index",  "unset");
+                $(".toolbar").css("z-index",  "unset");
             }
-
+          $(".toolbar").css("z-index",  "unset");
             /* fire click event on cancel button if .ief-popup-close is clicked */
-            $(".ief-popup-close").click(function(e) {
+            $(".ief-popup-close").click(function (e) {
                 e.preventDefault();
                 form_wrapper = $(this).closest(".form-wrapper");
                 form_wrapper.find(".ief-popup-cancel").mousedown();
                 e.stopImmediatePropagation();
             });
-
 
             /* move drupal messages from IEF to .ief-popup-wrapper */
             if ($(context).attr("data-drupal-messages") !== undefined &&

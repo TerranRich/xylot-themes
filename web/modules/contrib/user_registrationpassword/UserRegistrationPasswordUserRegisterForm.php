@@ -18,12 +18,12 @@ class UserRegistrationPasswordUserRegisterForm extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['user_registrationpassword'];
+  protected static $modules = ['user_registrationpassword'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $user_config = \Drupal::configFactory()->getEditable('user.settings');
@@ -60,7 +60,7 @@ class UserRegistrationPasswordUserRegisterForm extends BrowserTestBase {
    */
   public function testUserRegisterFormCompatibility() {
     // Test submit callback.
-    $this->assertEqual($this->registerForm['actions']['submit']['#submit'][2], 'user_registrationpassword_form_user_register_submit', 'Submit handler correctly changed.');
+    $this->assertEquals($this->registerForm['actions']['submit']['#submit'][2], 'user_registrationpassword_form_user_register_submit', 'Submit handler correctly changed.');
   }
 
 }

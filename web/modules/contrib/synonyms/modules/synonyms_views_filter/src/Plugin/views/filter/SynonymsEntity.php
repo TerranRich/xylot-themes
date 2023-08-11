@@ -178,7 +178,9 @@ class SynonymsEntity extends FilterPluginBase {
         break;
 
       case '=':
-        $target_ids = $target_ids['target_id'];
+        if (array_key_exists('target_id', $target_ids)) {
+          $target_ids = $target_ids['target_id'];
+        }
         break;
     }
 

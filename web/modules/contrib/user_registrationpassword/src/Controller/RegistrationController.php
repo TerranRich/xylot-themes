@@ -142,6 +142,7 @@ class RegistrationController extends ControllerBase {
         ->condition('uid', $uid)
         ->condition('status', 0)
         ->condition('access', 0)
+        ->accessCheck(FALSE)
         ->execute();
 
       // Timestamp can not be larger than current.

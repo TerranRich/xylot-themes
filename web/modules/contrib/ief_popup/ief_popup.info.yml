@@ -2,12 +2,12 @@ name: IEF Complex Widget Dialog
 type: module
 description: Extend IEF Complex Widget with add/edit Dialog
 core: 8.x
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^8 || ^9 || ^10
 package: Custom
 dependencies:
   - inline_entity_form:inline_entity_form
 
-# Information added by Drupal.org packaging script on 2021-12-11
-version: '8.x-1.13'
+# Information added by Drupal.org packaging script on 2023-04-17
+version: '2.1.0'
 project: 'ief_popup'
-datestamp: 1639215995
+datestamp: 1681733438

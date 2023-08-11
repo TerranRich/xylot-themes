@@ -44,6 +44,14 @@ class SettingsForm extends ConfigFormBase {
       '#description' => $description,
     ];
 
+    // Option for sorting select dropdown options.
+    $form['sort_select'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Sort dropdown values'),
+      '#default_value' => $this->config('synonyms_select.settings')->get('sort_select'),
+      '#description' => $this->t('Sorts the select options using the natcasesort() function'),
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -53,6 +61,7 @@ class SettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->config('synonyms_select.settings')
       ->set('default_wording', $form_state->getValue('default_wording'))
+      ->set('sort_select', $form_state->getValue('sort_select'))
       ->save();
 
     parent::submitForm($form, $form_state);
