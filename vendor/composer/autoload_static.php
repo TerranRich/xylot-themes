@@ -198,12 +198,8 @@ class ComposerStaticInitdccf4a65b3623eead7958713718b6aff
             'DrupalCheck\\' => 12,
             'Doctrine\\Persistence\\' => 21,
             'Doctrine\\Instantiator\\' => 22,
-            'Doctrine\\Inflector\\' => 19,
             'Doctrine\\Deprecations\\' => 22,
             'Doctrine\\Common\\Lexer\\' => 22,
-            'Doctrine\\Common\\Inflector\\' => 26,
-            'Doctrine\\Common\\Collections\\' => 28,
-            'Doctrine\\Common\\Cache\\' => 22,
             'Doctrine\\Common\\Annotations\\' => 28,
             'Doctrine\\Common\\' => 16,
             'Dflydev\\DotAccessData\\' => 22,
@@ -616,15 +612,11 @@ class ComposerStaticInitdccf4a65b3623eead7958713718b6aff
         ),
         'Doctrine\\Persistence\\' => 
         array (
-            0 => __DIR__ . '/..' . '/doctrine/persistence/lib/Doctrine/Persistence',
+            0 => __DIR__ . '/..' . '/doctrine/persistence/src/Persistence',
         ),
         'Doctrine\\Instantiator\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/instantiator/src/Doctrine/Instantiator',
-        ),
-        'Doctrine\\Inflector\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/doctrine/inflector/lib/Doctrine/Inflector',
         ),
         'Doctrine\\Deprecations\\' => 
         array (
@@ -634,28 +626,15 @@ class ComposerStaticInitdccf4a65b3623eead7958713718b6aff
         array (
             0 => __DIR__ . '/..' . '/doctrine/lexer/lib/Doctrine/Common/Lexer',
         ),
-        'Doctrine\\Common\\Inflector\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/doctrine/inflector/lib/Doctrine/Common/Inflector',
-        ),
-        'Doctrine\\Common\\Collections\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/doctrine/collections/lib/Doctrine/Common/Collections',
-        ),
-        'Doctrine\\Common\\Cache\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/doctrine/cache/lib/Doctrine/Common/Cache',
-        ),
         'Doctrine\\Common\\Annotations\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/annotations/lib/Doctrine/Common/Annotations',
         ),
         'Doctrine\\Common\\' => 
         array (
-            0 => __DIR__ . '/..' . '/doctrine/common/lib/Doctrine/Common',
+            0 => __DIR__ . '/..' . '/doctrine/reflection/lib/Doctrine/Common',
             1 => __DIR__ . '/..' . '/doctrine/event-manager/src',
-            2 => __DIR__ . '/..' . '/doctrine/persistence/lib/Doctrine/Common',
-            3 => __DIR__ . '/..' . '/doctrine/reflection/lib/Doctrine/Common',
+            2 => __DIR__ . '/..' . '/doctrine/common/src',
         ),
         'Dflydev\\DotAccessData\\' => 
         array (
