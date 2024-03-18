@@ -7,7 +7,7 @@ package: Custom
 dependencies:
   - inline_entity_form:inline_entity_form
 
-# Information added by Drupal.org packaging script on 2023-04-17
-version: '2.1.0'
+# Information added by Drupal.org packaging script on 2023-12-28
+version: '2.1.1'
 project: 'ief_popup'
-datestamp: 1681733438
+datestamp: 1703758571

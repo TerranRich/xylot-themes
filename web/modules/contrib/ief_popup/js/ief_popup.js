@@ -11,7 +11,7 @@
                 $(".toolbar").css("z-index",  1);
             }
             else {
-                $(".toolbar").css("z-index",  "unset");
+                $(".toolbar").css('z-index',  '');
             }
           $(".toolbar").css("z-index",  "unset");
             /* fire click event on cancel button if .ief-popup-close is clicked */

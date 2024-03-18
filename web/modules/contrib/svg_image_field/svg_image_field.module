@@ -136,6 +136,13 @@ function svg_image_field_preprocess_media__media_library(&$variables) {
 }
 
 /**
+ * Prepares variables for `svg-image-field-formatter.html.twig`.
+ */
+function svg_image_field_preprocess_svg_image_field_formatter(&$variables) {
+  $variables['twig_debug'] = \Drupal::service('twig')->isDebug();
+}
+
+/**
  * Prepares variables for image style templates.
  *
  * @see template_preprocess_image_style()

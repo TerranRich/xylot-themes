@@ -39,8 +39,10 @@ function ief_popup_field_widget_single_element_inline_entity_form_complex_form_a
     // Special case for the Layout builder.
     $formObject = $form_state->getFormObject();
     if ($formObject instanceof ConfigureBlockFormBase) {
-      $component = $formObject->getCurrentComponent();
-      $entity = unserialize($component->get('configuration')['block_serialized']);
+      $entity = $items->getParent()->getEntity();
+      if (!isset($element['entities'][$ief_row_delta]['form']['#entity']) && isset($element['entities'][$ief_row_delta]['#entity'])) {
+        $element['entities'][$ief_row_delta]['form']['#entity'] = $element['entities'][$ief_row_delta]['#entity'];
+      }
     }
     else {
       $entity = $formObject->getEntity();
@@ -127,8 +129,11 @@ function _process_ief_form(&$ief_form, $ief_action, $parameters = []) {
   $ief_wrapper_classes = [
     "ief-popup-wrapper",
     "ief-popup-wrapper-" . $ief_action,
-    "ief-popup-wrapper-" . $ief_form["#ief_labels"]["singular"],
   ];
+
+  if (!empty($ief_form['#ief_labels']['singular'])) {
+    $ief_wrapper_classes[] = 'ief-popup-wrapper-' . $ief_form['#ief_labels']['singular'];
+  }
 
   $ief_dialog_classes = [
     "ui-dialog",
@@ -205,35 +210,35 @@ $ief_form["#suffx"] = '
   /* improve markup for remove form */
   if ($ief_action == 'remove') {
     $entity = $ief_form['#entity'];
-    $entityTypeId = $entity->getEntityTypeId();
-    switch ($entityTypeId) {
-      case 'block_content':
-        $entity_title = $entity->label();
-        $entity_bundle = "block_content";
-        break;
+    $entity_title = '';
+    $entity_bundle = '';
+    if ($entity) {
+      $entityTypeId = $entity->getEntityTypeId();
+      switch ($entityTypeId) {
+        case 'block_content':
+          $entity_title = $entity->label();
+          $entity_bundle = 'block_content';
+          break;
 
-      case 'user':
-        $entity_title = $entity->getDisplayName();
-        $entity_bundle = "user";
-        break;
+        case 'user':
+          $entity_title = $entity->getDisplayName();
+          $entity_bundle = 'user';
+          break;
 
-      case 'node':
-        $entity_title = $entity->getTitle();
-        $entity_bundle = $ief_form["#entity"]->bundle();
-        break;
+        case 'node':
+          $entity_title = $entity->getTitle();
+          $entity_bundle = $entity->bundle();
+          break;
 
-      case 'taxonomy_term':
-        $entity_title = $entity->getName();
-        $entity_bundle = $ief_form["#entity"]->bundle();
-        break;
-
-      default:
-        $entity_title = '';
-        $entity_bundle = '';
-        break;
+        case 'taxonomy_term':
+          $entity_title = $entity->getName();
+          $entity_bundle = $entity->bundle();
+          break;
+      }
     }
-    if ($parameters["parent_bundle_label"] != "" || $parameters["parent_entity_title"] != "") {
-      if ($ief_form["message"]["#overriden"] == FALSE) {
+
+    if ($parameters['parent_bundle_label'] !== '' || $parameters['parent_entity_title'] !== '') {
+      if (isset($ief_form['message']['#overriden']) && ($ief_form['message']['#overriden'] === FALSE)) {
         $ief_form["message"]["#markup"] =
           t("Are you sure you want to remove this @entity_bundle from this @parent_bundle_label?",
             [
@@ -264,7 +269,7 @@ $ief_form["#suffx"] = '
             <span class="ui-button-icon-space"> </span>Close
         </a>
     </div>';
- 
+
   /* add wrapper around form fields */
   $ief_form["first"]["#markup"] .= '<div class="ui-dialog-content ui-widget-content">';
 }

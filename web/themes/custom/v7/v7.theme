@@ -1,5 +1,0 @@
-<?php
-
-include_once('src/php/v7.preprocess.php');
-include_once('src/php/v7.suggestions.php');
-// include_once('src/php/v7.alters.php');

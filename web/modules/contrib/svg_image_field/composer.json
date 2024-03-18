@@ -9,6 +9,12 @@
       "homepage": "https://www.drupal.org/node/2863622/committers"
     }
   ],
+  "repositories": [
+    {
+        "type": "composer",
+        "url": "https://packages.drupal.org/8"
+    }
+  ],
   "support": {
     "issues": "https://www.drupal.org/project/issues/svg_image_field",
     "source": "https://git.drupalcode.org/project/svg_image_field"
@@ -16,6 +22,10 @@
   "license": "GPL-2.0+",
   "minimum-stability": "dev",
   "require": {
-    "enshrined/svg-sanitize": "~0.15"
+    "enshrined/svg-sanitize": "~0.15",
+    "php": ">=8.0"
+  },
+  "require-dev": {
+    "drupal/stage_file_proxy": "^2.0"
   }
 }

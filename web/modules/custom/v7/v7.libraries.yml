@@ -1,0 +1,10 @@
+admin_overrides:
+  js:
+    js/admin_overrides.js: {}
+  css:
+    theme:
+      css/admin_overrides.css: {}
+  dependencies:
+    - core/drupalSettings
+    - core/once
+    - core/jquery

@@ -9,57 +9,24 @@ use Drupal\Core\Entity\EntityStorageInterface;
 
 /**
  * Implements hook_form_alter().
- *
- * Form alters:
- *  - Rename "Name" field to "Admin Label" for OTU/BTU term.
- *  - Rename "Name" field to "Full Title" for Theme Track term.
  */
 function v7_inline_entity_form_entity_form_alter(array &$entity_form, FormStateInterface &$form_state) {
-  $entity_type = $entity_form['#entity_type'];
-  $ief_id = $entity_form['#ief_id'];
+  // $entity_type = $entity_form['#entity_type'];
+  // $ief_id = $entity_form['#ief_id'];
 
   /// Taxnomy terms ///
-  switch ($entity_type) {
+  // switch ($entity_type) {
 
-    case 'taxonomy_term':
-      $vocab = $entity_form['#bundle'];
+  //   case 'taxonomy_term':
+  //     $vocab = $entity_form['#bundle'];
 
-      switch ($vocab) {
+  //     switch ($vocab) {
 
-        // Check for Original/Borrowed Theme Usage vocabularies.
-        case 'theme_usages':
-        case 'borrowed_usages':
-          // Rename "Name" field (IEF "Add Theme Track") to "Admin Label".
-          // TODO: CHANGE THESE TO CONFIG[URABLE] VALUES
-          $entity_form['name']['widget'][0]['value']['#title'] = t('Admin Label');
-          $entity_form['name']['widget'][0]['value']['#description'] = t('Enter something memorable here, so you can reference it in case this Usage needs to be borrowed later. For example, <strong>&ldquo;Bob Smith 4th WCW&rdquo;</strong> or <strong>&ldquo;Jane Doe 3rd Impact (b: Sally Jones 2nd)&rdquo;</strong>.');
-        break;
+  //     } // end switch
 
-      } // end switch
+  //   break;
 
-    break;
-
-    // DECIDED TO SCRAP THE FOLLOWING IN FAVOR OF NAME = FULL TITLE + SUBTITLE.
-    // case 'media':
-    //   $media_type = $entity_form['#bundle'];
-
-    //   switch ($media_type) {
-
-    //     case 'theme':
-    //       // Rename "Name" field (IEF "Add usage") to "Full Title".
-    //       // TODO: CHANGE THESE TO CONFIG[URABLE] VALUES
-    //       $entity_form['name']['widget'][0]['value']['#title'] = t('Full Title');
-    //       $entity_form['name']['widget'][0]['value']['#description'] = t('If the title is not known, enter a short description of this theme (e.g. "Unknown guitar rock theme") in the Full Title field &mdash; at the very least, enter in "Unknown title".');
-    //     break;
-
-    //   }
-    // break;
-
-    // default:
-    //   dmp($entity_type);
-
-  } // end switch
-
+  // } // end switch
 }
 
 /**
@@ -70,7 +37,7 @@ function v7_inline_entity_form_entity_form_alter(array &$entity_form, FormStateI
 function v7_field_widget_media_library_widget_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $context) {
   /* */
   // $entity = $form_state->getFormObject()->getEntity();
-  $title  = $form['#title'];
+  $title = $form['#title'];
 
   switch ($title) {
 
@@ -82,73 +49,16 @@ function v7_field_widget_media_library_widget_form_alter(&$form, \Drupal\Core\Fo
       $button_text = t('Add profile image');
       break;
 
-    case 'Theme Track':
-      $button_text = t('Add theme track');
-      break;
-
     default:
       $button_text = t('Add ' . strtolower($title));
 
   }
 
   $form['open_button']['#value'] = $button_text;
-  /* */
-  // die(implode("<br>\n ", array_keys($form_state->getValues())));
-  // die(implode("<br>\n ", array_keys($context['form']['#title'])));
 }
 
-/**
- * Implements hook_ENTITY_TYPE_presave().
- *
- * Wrestler/Team: Assigns the Owner field of each OTU/BTU term to the current
- * node.
- */
-function v7_node_presave(EntityInterface $entity) {
-  switch ($entity->bundle()) {
-
-    case 'wrestler':
-      dmp($entity->get('field_themes_list'));
-      break;
-
-  }
-}
-
-/**
- * Implements hook_ENTITY_TYPE_presave().
- *
- * Theme Track: Combine Full Title and Subtitle into built-in Name field, taking
- * "Is the Title Known?" field value into account (parentheses vs. quotes).
- */
-function v7_media_presave(EntityStorageInterface $media) {
-  dmpk($media->get('field_full_title'));
-}
-
-function dmpk($out, $sep = "\n") {
-  dmp(kys($out, $sep));
-}
-
-function kys($array, $sep = '<br>') {
-  if (!is_array($array) || !array_keys($array)) {
-    // Treat it as regular output
-    dmp($array);
-  }
-  return implode($sep, array_keys($array));
-}
-
-function dmp($out, $exit = true, $nada_msg = '! NULL !') {
-  echo '<pre>';
-  if (is_object($out) || is_array($out)) {
-    // echo print_r($out, true);
-    var_dump($out);
-  }
-  elseif ($out) {
-    echo $out;
-  }
-  else {
-    echo '[', $nada_msg, ']';
-  }
-  echo '</pre>', PHP_EOL;
-  if ($exit === true) {
-    die();
+function v7_preprocess_page(&$variables) {
+  if (\Drupal::service('router.admin_context')->isAdminRoute()) {
+    $variables['#attached']['library'][] = 'v7/admin_overrides';
   }
 }
