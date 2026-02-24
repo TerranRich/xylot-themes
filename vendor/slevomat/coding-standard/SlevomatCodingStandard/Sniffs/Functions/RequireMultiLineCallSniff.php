@@ -28,8 +28,7 @@ class RequireMultiLineCallSniff extends AbstractLineCall
 
 	public const CODE_REQUIRED_MULTI_LINE_CALL = 'RequiredMultiLineCall';
 
-	/** @var int */
-	public $minLineLength = 121;
+	public int $minLineLength = 121;
 
 	/**
 	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
@@ -61,7 +60,7 @@ class RequireMultiLineCallSniff extends AbstractLineCall
 			$phpcsFile,
 			[T_COMMA, T_OPEN_PARENTHESIS, T_CLOSE_PARENTHESIS, T_OPEN_SHORT_ARRAY, T_CLOSE_SHORT_ARRAY],
 			$parenthesisOpenerPointer + 1,
-			$parenthesisCloserPointer
+			$parenthesisCloserPointer,
 		);
 		foreach ($pointers as $pointer) {
 			if (in_array($tokens[$pointer]['code'], [T_OPEN_PARENTHESIS, T_OPEN_SHORT_ARRAY], true)) {
@@ -108,7 +107,7 @@ class RequireMultiLineCallSniff extends AbstractLineCall
 			$lineEnd = $this->getLineEnd($phpcsFile, $parenthesisCloserPointer);
 			$lineLength = strlen($lineStart . $call . $lineEnd);
 		} else {
-			$lineEnd = $this->getLineEnd($phpcsFile, $parenthesisOpenerPointer);
+			$lineEnd = $this->getLineEnd($phpcsFile, $parenthesisOpenerPointer + 1);
 			$lineLength = strlen($lineStart . $lineEnd);
 		}
 
@@ -121,7 +120,7 @@ class RequireMultiLineCallSniff extends AbstractLineCall
 			$lineStart,
 			$lineEnd,
 			count($parametersPointers),
-			strlen(IndentationHelper::convertTabsToSpaces($phpcsFile, $oneIndentation))
+			strlen(IndentationHelper::convertTabsToSpaces($phpcsFile, $oneIndentation)),
 		)) {
 			return;
 		}
@@ -168,11 +167,15 @@ class RequireMultiLineCallSniff extends AbstractLineCall
 	private function shouldBeSkipped(File $phpcsFile, int $stringPointer, int $parenthesisCloserPointer): bool
 	{
 		$tokens = $phpcsFile->getTokens();
-		$nameTokenCodes = TokenHelper::getOnlyNameTokenCodes();
 
 		$searchStartPointer = TokenHelper::findFirstNonWhitespaceOnLine($phpcsFile, $stringPointer);
 		while (true) {
-			$stringPointerBefore = TokenHelper::findNext($phpcsFile, $nameTokenCodes, $searchStartPointer, $stringPointer);
+			$stringPointerBefore = TokenHelper::findNext(
+				$phpcsFile,
+				TokenHelper::ONLY_NAME_TOKEN_CODES,
+				$searchStartPointer,
+				$stringPointer,
+			);
 
 			if ($stringPointerBefore === null) {
 				break;
@@ -192,7 +195,12 @@ class RequireMultiLineCallSniff extends AbstractLineCall
 		$lastPointerOnLine = TokenHelper::findLastTokenOnLine($phpcsFile, $parenthesisCloserPointer);
 		$searchStartPointer = $parenthesisCloserPointer + 1;
 		while (true) {
-			$stringPointerAfter = TokenHelper::findNext($phpcsFile, $nameTokenCodes, $searchStartPointer, $lastPointerOnLine + 1);
+			$stringPointerAfter = TokenHelper::findNext(
+				$phpcsFile,
+				TokenHelper::ONLY_NAME_TOKEN_CODES,
+				$searchStartPointer,
+				$lastPointerOnLine + 1,
+			);
 
 			if ($stringPointerAfter === null) {
 				break;
@@ -205,7 +213,7 @@ class RequireMultiLineCallSniff extends AbstractLineCall
 				&& $tokens[$tokens[$pointerAfterStringPointerAfter]['parenthesis_closer']]['line'] === $tokens[$stringPointer]['line']
 				&& $tokens[$pointerAfterStringPointerAfter]['parenthesis_closer'] !== TokenHelper::findNextEffective(
 					$phpcsFile,
-					$pointerAfterStringPointerAfter + 1
+					$pointerAfterStringPointerAfter + 1,
 				)
 			) {
 				return true;

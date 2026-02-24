@@ -10,5 +10,7 @@
     "issues": "http://drupal.org/project/issues/user_registrationpassword",
     "source": "http://cgit.drupalcode.org/user_registrationpassword"
   },
-  "require": { }
+  "require-dev": {
+    "drupal/hal": "^1.0 || ^2.0"
+  }
 }

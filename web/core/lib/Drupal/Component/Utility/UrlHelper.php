@@ -80,6 +80,9 @@ class UrlHelper {
    *   The data compressed into a URL-safe string.
    */
   public static function compressQueryParameter(string $data): string {
+    if (!\extension_loaded('zlib')) {
+      return $data;
+    }
     // Use 'base64url' encoding. Note that the '=' sign is only used for padding
     // on the right of the string, and is otherwise not part of the data.
     // @see https://datatracker.ietf.org/doc/html/rfc4648#section-5
@@ -96,13 +99,23 @@ class UrlHelper {
    *   A string as compressed by
    *   \Drupal\Component\Utility\UrlHelper::compressQueryParameter().
    *
-   * @return string|bool
-   *   The uncompressed data or FALSE on failure.
+   * @return string
+   *   The uncompressed data, or the original string if it cannot be
+   *   uncompressed.
    */
-  public static function uncompressQueryParameter(string $compressed): string|bool {
+  public static function uncompressQueryParameter(string $compressed): string {
+    if (!\extension_loaded('zlib')) {
+      return $compressed;
+    }
     // Because this comes from user data, suppress the PHP warning that
     // gzcompress() throws if the base64-encoded string is invalid.
-    return @gzuncompress(base64_decode(str_replace(['-', '_'], ['+', '/'], $compressed)));
+    $return = @gzuncompress(base64_decode(str_replace(['-', '_'], ['+', '/'], $compressed)));
+
+    // If we failed to uncompress the query parameter, it may be a stale link
+    // from before compression was implemented with the URL parameter
+    // uncompressed already, or it may be an incorrectly formatted URL.
+    // In either case, pass back the original string to the caller.
+    return $return === FALSE ? $compressed : $return;
   }
 
   /**
@@ -187,9 +200,10 @@ class UrlHelper {
     // appears in front of the '?' query argument delimiter.
     $scheme_delimiter_position = strpos($url, '://');
     $query_delimiter_position = strpos($url, '?');
-    if ($scheme_delimiter_position !== FALSE && ($query_delimiter_position === FALSE || $scheme_delimiter_position < $query_delimiter_position)) {
+    $fragment_delimiter_position = strpos($url, '#');
+    if ($scheme_delimiter_position !== FALSE && ($query_delimiter_position === FALSE || $scheme_delimiter_position < $query_delimiter_position) && ($fragment_delimiter_position === FALSE || $scheme_delimiter_position < $fragment_delimiter_position)) {
       // Split off the fragment, if any.
-      if (str_contains($url, '#')) {
+      if ($fragment_delimiter_position !== FALSE) {
         [$url, $options['fragment']] = explode('#', $url, 2);
       }
 

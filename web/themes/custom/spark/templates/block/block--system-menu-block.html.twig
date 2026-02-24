@@ -33,7 +33,8 @@
 #}
 {%
   set classes = [
-    'block', 'block-menu', 'navigation', 'ms-auto',
+    'block', 'block-menu', 'ms-auto',
+    'navigation', 'navbar-expand-sm', 'text-align-center',
     'menu--' ~ derivative_plugin_id|clean_class,
   ]
 %}
@@ -47,8 +48,22 @@
   <h5{{ title_attributes.setAttribute('id', heading_id) }}>{{ configuration.label }}</h5>
   {{ title_suffix }}
 
+  {# Expand button for smaller devices. #}
+  <button class="navbar-toggler mx-auto p-1"
+          data-bs-toggle="collapse"
+          data-bs-target="#{{ attributes.id }}-container"
+          data-bs-theme="light"
+          aria-controls="{{ attributes.id }}-container"
+          aria-expanded="false"
+          aria-label="{{ 'Toggle menu'|t }}"
+  >
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
   {# Menu. #}
-  {% block content %}
-    {{ content }}
-  {% endblock %}
+  <div class="navbar-collapse collapse pt-2 pt-sm-0" id="{{ attributes.id }}-container">
+    {% block content %}
+      {{ content }}
+    {% endblock %}
+  </div>
 </nav>

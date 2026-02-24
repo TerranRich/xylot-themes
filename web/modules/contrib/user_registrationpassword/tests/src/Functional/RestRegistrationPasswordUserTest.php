@@ -2,13 +2,14 @@
 
 namespace Drupal\Tests\user_registrationpassword\Functional;
 
-use Drupal\Tests\rest\Functional\CookieResourceTestTrait;
-use Drupal\Tests\rest\Functional\ResourceTestBase;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Test\AssertMailTrait;
 use Drupal\Core\Url;
+use Drupal\Tests\rest\Functional\CookieResourceTestTrait;
+use Drupal\Tests\rest\Functional\ResourceTestBase;
 use Drupal\user\UserInterface;
-use GuzzleHttp\RequestOptions;
 use Drupal\user_registrationpassword\UserRegistrationPassword;
+use GuzzleHttp\RequestOptions;
 
 /**
  * Tests user registration via REST resource.
@@ -86,7 +87,7 @@ class RestRegistrationPasswordUserTest extends ResourceTestBase {
     $response = $this->registerRequest('user2', FALSE);
     $this->assertResourceErrorResponse(422, "No password provided.", $response);
 
-    // Attempt to register with a password when e-mail verification is on, but
+    // Attempt to register with a password when email verification is on, but
     // verify_mail and register are configured incorrectly.
     $config->set('register', UserInterface::REGISTER_VISITORS);
     $config->set('verify_mail', 1);
@@ -222,12 +223,6 @@ class RestRegistrationPasswordUserTest extends ResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function getExpectedUnauthorizedAccessMessage($method) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function getExpectedBcUnauthorizedAccessMessage($method) {
   }
 
@@ -235,6 +230,9 @@ class RestRegistrationPasswordUserTest extends ResourceTestBase {
    * {@inheritdoc}
    */
   protected function getExpectedUnauthorizedAccessCacheability() {
+    // There is cacheability metadata to check as file uploads only allows POST
+    // requests, which will not return cacheable responses.
+    return new CacheableMetadata();
   }
 
 }

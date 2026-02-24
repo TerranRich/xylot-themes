@@ -60,7 +60,10 @@ class UserRegistrationPasswordAdmin extends BrowserTestBase {
 
     // Test the default options.
     $this->drupalGet('admin/config/people/accounts');
-    $edit_first = ['user_register' => UserInterface::REGISTER_VISITORS, 'user_registrationpassword_registration' => UserRegistrationPassword::VERIFICATION_PASS];
+    $edit_first = [
+      'user_register' => UserInterface::REGISTER_VISITORS,
+      'user_registrationpassword_registration' => UserRegistrationPassword::VERIFICATION_PASS,
+    ];
     $this->drupalGet('admin/config/people/accounts');
     $this->submitForm($edit_first, 'Save configuration');
 

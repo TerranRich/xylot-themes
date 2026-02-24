@@ -5,23 +5,272 @@
  * Functions to support theming in the Spark theme.
  */
 
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\file\Entity\File;
+use Drupal\user\Entity\User;
+
+
 /**
  * Implements hook_preprocess_HOOK() for html.html.twig.
  */
 function spark_preprocess_html(array &$variables): void {
-
+  // Set extra classes for node pages.
+  if ($node = \Drupal::request()->attributes->get('node')) {
+    $variables['attributes']['class'][] = 'page-node-' . $node->bundle();
+  }
+  // Set term ID variable for taxonomy term pages.
+  if (\Drupal::routeMatch()->getRouteName() == 'entity.taxonomy_term.canonical') {
+    $term_id = \Drupal::routeMatch()->getRawParameter('taxonomy_term');
+    $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($term_id);
+    $variables['attributes']['class'][] = 'page-term-' . $term->bundle();
+  }
 }
 
 /**
- * Implements hook_preprocess_HOOK() for page.html.twig.
+ * Implements hook_preprocess_HOOK() for block.html.twig.
  */
-function spark_preprocess_page(array &$variables): void {
-
+function spark_preprocess_menu_local_task(array &$variables): void {
+  // Add appropriate Bootstrap .nav-link class to local task links.
+  $variables['link']['#attributes']['class'][] = 'nav-link';
+  // Check if link is active and add .active class if so.
+  if ($variables['element']['#active']) {
+    $variables['link']['#attributes']['class'][] = 'active';
+  }
 }
 
 /**
- * Implements hook_preprocess_HOOK() for node.html.twig.
+ * Add URL to user profile picture to account menu block.
  */
-function spark_preprocess_node(array &$variables): void {
+function spark_preprocess_block(array &$variables): void {
+  switch ($variables['plugin_id']) {
+    case 'system_menu_block:account':
+      $user = \Drupal::currentUser();
+      $account = User::load($user->id());
+      if ($account->hasField('user_picture') && !$account->get('user_picture')->isEmpty()) {
+        $user_pic = $account->get('user_picture')->entity;
+        $variables['user_picture'] = \Drupal::service('file_url_generator')->generateString($user_pic->getFileUri());
+      } else {
+        // Get default value for user picture field.
+        /** @var FieldConfig $field_config */
+        $field_config = FieldConfig::loadByName('user', 'user', 'user_picture');
+        $file_uuid = $field_config->getSetting('default_image')['uuid'];
+        if (!$file_uuid) {
+          /** @var FieldStorageConfig $field_storage_config */
+          $field_storage_config = FieldStorageConfig::loadByName('user', 'user_picture');
+          $file_uuid = $field_storage_config->getSetting('default_image')['uuid'];
+        }
+        $file = \Drupal::service('entity.repository')->loadEntityByUuid('file', $file_uuid);
+        $variables['user_picture'] = \Drupal::service('file_url_generator')->generateString($file->getFileUri());
+      }
+      break;
 
+    case 'system_menu_block:anonymous':
+      // Get default value for user picture field.
+      /** @var FieldConfig $field_config */
+      $field_config = FieldConfig::loadByName('user', 'user', 'user_picture');
+      $file_uuid = $field_config->getSetting('default_image')['uuid'];
+      if (!$file_uuid) {
+        /** @var FieldStorageConfig $field_storage_config */
+        $field_storage_config = FieldStorageConfig::loadByName('user', 'user_picture');
+        $file_uuid = $field_storage_config->getSetting('default_image')['uuid'];
+      }
+      $file = \Drupal::service('entity.repository')->loadEntityByUuid('file', $file_uuid);
+      $variables['user_picture'] = \Drupal::service('file_url_generator')->generateString($file->getFileUri());
+      break;
+
+  }
+}
+
+/**
+ * Implements hook_preprocess_form_element().
+ */
+function spark_preprocess_form_element(array &$variables) {
+  if (empty($variables['label'])) {
+    return;
+  }
+  $element = $variables['element'];
+
+  if (!empty($element['#form_id'])) {
+    $variables['label']['#form_id'] = $element['#form_id'];
+  }
+  if (!empty($element['#type'])) {
+    $variables['label']['#form_element_type'] = $element['#type'];
+    // Apply extra suggestion to label.
+    $variables['label']['#theme'] = 'form_element_label__' . $element['#type'];
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function spark_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Attach form ID to all form elements and children.
+  _spark_attach_form_id($form, $form_id);
+}
+
+/**
+ * Attach form ID to all form elements and children, recursively.
+ */
+function _spark_attach_form_id(array &$form, $form_id) {
+  foreach (Element::children($form) as $key) {
+    if (is_array($form[$key])) {
+      $form[$key]['#form_id'] = $form_id;
+      _spark_attach_form_id($form[$key], $form_id);
+    }
+  }
+}
+
+/*** TEMPLATE SUGGESTIONS ***/
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter().
+ * 
+ * Add custom template theme suggestions for taxonomy term pages.
+ * 
+ * @inheritdoc
+ */
+function spark_theme_suggestions_taxonomy_term_alter(array &$suggestions, array &$variables) {
+  $term = $variables['elements']['#taxonomy_term'];
+  $sanitized_view_mode = strtr($variables['elements']['#view_mode'], '.', '_');
+  $suggestions[] = 'taxonomy_term__' . $sanitized_view_mode;
+  $suggestions[] = 'taxonomy_term__' . $term->bundle() . '__' . $sanitized_view_mode;
+  $suggestions[] = 'taxonomy_term__' . $term->id() . '__' . $sanitized_view_mode;
+}
+
+/**
+ * Implementes hook_theme_suggestions_HOOK_alter().
+ * 
+ * Add views template suggestions for form elements in general.
+ * 
+ * @inheritdoc
+ */
+function spark_theme_suggestions_form_element_alter(array &$suggestions, array $variables) {
+  $suggestions[] = 'form_element__' . $variables['element']['#type'];
+  // Include element name, if available.
+  if (!empty($variables['element']['#name'])) {
+    $suggestions[] = 'form_element__' . $variables['element']['#name'];
+    $suggestions[] = 'form_element__' . $variables['element']['#type'] . '__' . $variables['element']['#name'];
+  }
+  // Include form ID, if available.
+  if (!empty($variables['element']['#form_id'])) {
+    $suggestions[] = 'form_element__' . $variables['element']['#form_id'];
+    $suggestions[] = 'form_element__' . $variables['element']['#form_id'] . '__' . $variables['element']['#type'];
+    // And the name, too, if available.
+    if (!empty($variables['element']['#name'])) {
+      $suggestions[] = 'form_element__' . $variables['element']['#form_id'] . '__' . $variables['element']['#type'] . '__' . $variables['element']['#name'];
+    }
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter().
+ * 
+ * Add custom template suggestions for form element labels.
+ * 
+ * @inheritdoc
+ */
+function spark_theme_suggestions_form_element_label_alter(array &$suggestions, array $variables) {
+  $element = $variables['element'];
+  if (!empty($element['#form_element_type'])) {
+    $suggestions[] = 'form_element_label__' . $element['#form_element_type'];
+    // Account for Asc/Desc Better Exposed Filters labels.
+    if (strpos($element['#id'], 'sort-bef-combine') !== FALSE) {
+      $suggestions[] = 'form_element_label__' . $element['#form_element_type'] . '__sort_bef_combine';
+    }
+  }
+  if (!empty($element['#form_id'])) {
+    $suggestions[] = 'form_element_label__' . $element['#form_id'];
+  }
+  if (!empty($element['#form_element_type']) && !empty($element['#form_id'])) {
+    $suggestions[] = 'form_element_label__' . $element['#form_id'] . '__' . $element['#form_element_type'];
+  }
+  // Account for Asc/Desc Better Exposed Filters labels.
+  if (strpos($element['#id'], 'sort-bef-combine') !== FALSE) {
+    $suggestions[] = 'form_element_label__sort_bef_combine';
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter().
+ *
+ * Add views template suggestions.
+ * 
+ * @inheritdoc
+ */
+function spark_theme_suggestions_views_view_alter(array &$suggestions, array $variables) {
+  $suggestions[] = 'views_view__' . $variables['view']->id();
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter().
+ *
+ * Add views unformatted template suggestions.
+ * 
+ * @inheritdoc
+ */
+function spark_theme_suggestions_views_view_unformatted_alter(array &$suggestions, array $variables) {
+  $suggestions[] = 'views_view_unformatted__' . $variables['view']->id();
+}
+
+/**
+ * Implementes hook_theme_suggestions_HOOK_alter().
+ *
+ * Add views template suggestions for exposed forms.
+ * 
+ * @inheritdoc
+ */
+function spark_theme_suggestions_views_exposed_form_alter(array &$suggestions, array $variables) {
+  $form = $variables['form'];
+  // Suggestions are already stored in this variable.
+  foreach ($form['#theme'] as $theme) {
+    $suggestions[] = $theme;
+  }
+}
+
+/**
+ * Implementes hook_theme_suggestions_HOOK_alter().
+ *
+ * Add views template suggestions for list displays.
+ * 
+ * @inheritdoc
+ */
+function spark_theme_suggestions_views_view_list_alter(array &$suggestions, array $variables) {
+  $view = $variables['view'];
+  $suggestions[] = 'views_view_list__' . $view->id();
+  // Add a more specific template suggestion for the list display.
+  $suggestions[] = 'views_view_list__' . $view->id() . '__' . $view->getDisplay()->display['id'];
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter().
+ * 
+ * Add views template suggestions for form input elements.
+ * 
+ * @inheritdoc
+ */
+function spark_theme_suggestions_input_alter(array &$suggestions, array $variables) {
+  $element = $variables['element'];
+  $suggestions[] = 'input__' . $element['#type'];
+  if (!empty($element['#name'])) {
+    $suggestions[] = 'input__' . $element['#type'] . '__' . $element['#name'];
+  }
+}
+
+/**
+ * Implements hook_help().
+ * 
+ * Provides help text for the V7 module.
+ * 
+ * @inheritdoc
+ */
+function spark_help($route_name, RouteMatchInterface $route_match) {
+  $output = '';
+  switch ($route_name) {
+    case 'help.page':
+      $output = '<p>' . t('The Spark theme is a custom theme for the Spark project.') . '</p>';
+      break;
+  }
 }

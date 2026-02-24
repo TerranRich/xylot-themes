@@ -6,20 +6,21 @@ namespace OpenTelemetry\SDK\Common\Attribute;
 
 use function array_key_exists;
 use IteratorAggregate;
+use JsonSerializable;
 use Traversable;
 
-final class Attributes implements AttributesInterface, IteratorAggregate
+/**
+ * @psalm-suppress MissingTemplateParam
+ */
+final class Attributes implements AttributesInterface, IteratorAggregate, JsonSerializable
 {
-    private array $attributes;
-    private int $droppedAttributesCount;
-
     /**
      * @internal
      */
-    public function __construct(array $attributes, int $droppedAttributesCount)
-    {
-        $this->attributes = $attributes;
-        $this->droppedAttributesCount = $droppedAttributesCount;
+    public function __construct(
+        private readonly array $attributes,
+        private readonly int $droppedAttributesCount,
+    ) {
     }
 
     public static function create(iterable $attributes): AttributesInterface
@@ -46,6 +47,11 @@ final class Attributes implements AttributesInterface, IteratorAggregate
     public function count(): int
     {
         return \count($this->attributes);
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return $this->attributes;
     }
 
     public function getIterator(): Traversable

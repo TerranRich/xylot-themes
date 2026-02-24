@@ -2,14 +2,18 @@
 
 namespace Drupal\user_registrationpassword\Controller;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\Session\SessionManagerInterface;
 use Drupal\Core\Url;
 use Drupal\user\UserStorageInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Drupal\Component\Datetime\TimeInterface;
 
 /**
  * User registration password controller class.
@@ -44,6 +48,28 @@ class RegistrationController extends ControllerBase {
    */
   protected $time;
 
+
+  /**
+   * The session manager service.
+   *
+   * @var \Drupal\Core\Session\SessionManagerInterface
+   */
+  protected $sessionManager;
+
+  /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountProxyInterface
+   */
+  protected $account;
+
+  /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected RequestStack $requestStack;
+
   /**
    * Constructs a UserController object.
    *
@@ -55,12 +81,21 @@ class RegistrationController extends ControllerBase {
    *   A logger instance.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
+   * @param \Drupal\Core\Session\SessionManagerInterface $session_manager
+   *   The session manager service.
+   * @param \Drupal\Core\Session\AccountProxyInterface $account
+   *   The current user.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack.
    */
-  public function __construct(DateFormatterInterface $date_formatter, UserStorageInterface $user_storage, LoggerInterface $logger, TimeInterface $time) {
+  public function __construct(DateFormatterInterface $date_formatter, UserStorageInterface $user_storage, LoggerInterface $logger, TimeInterface $time, SessionManagerInterface $session_manager, AccountProxyInterface $account, RequestStack $request_stack) {
     $this->dateFormatter = $date_formatter;
     $this->userStorage = $user_storage;
     $this->logger = $logger;
     $this->time = $time;
+    $this->sessionManager = $session_manager;
+    $this->account = $account;
+    $this->requestStack = $request_stack;
   }
 
   /**
@@ -71,7 +106,10 @@ class RegistrationController extends ControllerBase {
       $container->get('date.formatter'),
       $container->get('entity_type.manager')->getStorage('user'),
       $container->get('logger.factory')->get('user_registrationpassword'),
-      $container->get('datetime.time')
+      $container->get('datetime.time'),
+      $container->get('session_manager'),
+      $container->get('current_user'),
+      $container->get('request_stack')
     );
   }
 
@@ -105,7 +143,8 @@ class RegistrationController extends ControllerBase {
     if ($current_user->isAuthenticated()) {
       // The existing user is already logged in.
       if ($current_user->id() == $uid) {
-        $this->messenger()->addMessage($this->t('You are currently authenticated as user %user.', ['%user' => $current_user->getAccountName()]));
+        $this->messenger()
+          ->addMessage($this->t('You are currently authenticated as user %user.', ['%user' => $current_user->getAccountName()]));
         // Redirect to user page.
         return $this->redirect('user.page', ['user' => $current_user->id()]);
       }
@@ -125,7 +164,8 @@ class RegistrationController extends ControllerBase {
         }
         else {
           // Invalid one-time link specifies an unknown user.
-          $this->messenger()->addError($this->t('You have tried to use a one-time login link that has either been used or is no longer valid. Please request a new one using the form below.'));
+          $this->messenger()
+            ->addError($this->t('You have tried to use a one-time login link that has either been used or is no longer valid. Please request a new one using the form below.'));
           return $this->redirect('user.pass');
         }
       }
@@ -133,7 +173,8 @@ class RegistrationController extends ControllerBase {
     else {
       // Time out, in seconds, until login URL expires. 24 hours = 86400
       // seconds.
-      $timeout = $this->config('user_registrationpassword.settings')->get('registration_ftll_timeout');
+      $timeout = $this->config('user_registrationpassword.settings')
+        ->get('registration_ftll_timeout');
       $current = $this->time->getRequestTime();
       $timestamp_created = $timestamp - $timeout;
 
@@ -151,6 +192,7 @@ class RegistrationController extends ControllerBase {
         // Check if we have to enforce expiration for activation links.
         if ($this->config('user_registrationpassword.settings')->get('registration_ftll_expire') && !$account->getLastLoginTime() && $current - $timestamp > $timeout) {
           $this->messenger()->addError($this->t('You have tried to use a one-time login link that has either been used or is no longer valid. Please request a new one using the form below.'));
+
           return $this->redirect('user.pass');
         }
         // Else try to activate the account.
@@ -159,7 +201,10 @@ class RegistrationController extends ControllerBase {
         elseif ($account->id() && $timestamp >= $account->getCreatedTime() && !$account->getLastLoginTime() && $hash == user_pass_rehash($account, $timestamp)) {
           // Format the date, so the logs are a bit more readable.
           $date = $this->dateFormatter->format($timestamp);
-          $this->logger->notice('User %name used one-time login link at time %timestamp.', ['%name' => $account->getDisplayName(), '%timestamp' => $date]);
+          $this->logger->notice('User %name used one-time login link at time %timestamp.', [
+            '%name' => $account->getDisplayName(),
+            '%timestamp' => $date,
+          ]);
 
           // Activate the user and update the access and login time to $current.
           $account
@@ -172,15 +217,45 @@ class RegistrationController extends ControllerBase {
           // user, which invalidates further use of the one-time login link.
           user_login_finalize($account);
 
-          // Display default welcome message.
-          $this->messenger()->addStatus($this->t('You have just used your one-time login link. Your account is now active and you are authenticated.'));
+          $session_manager = $this->sessionManager;
+          $session_manager->delete($this->account->id());
 
-          // By default redirect to the user account page.
-          return $this->redirect('user.page', ['user' => $account->id()]);
+          // Check for a destination query parameter in request.
+          // If present, use it for the redirection url.
+          $redirect_url = $this->requestStack->getCurrentRequest()->query->get('destination');
+          // If no destination parameter exists, use configuration.
+          if (empty($redirect_url)) {
+            $config = $this->config('user_registrationpassword.settings');
+            $redirect_url = $config->get('registration_redirect');
+          }
+
+          // Process redirection url for tokens.
+          if (!empty($redirect_url)) {
+            // @phpstan-ignore-next-line
+            $token_service = \Drupal::token();
+            $redirect_url = $token_service->replace($redirect_url, [
+              // Add any additional tokens you want to replace here.
+              'user' => $account,
+            ], ['clear' => TRUE]);
+          }
+
+          // By default, redirect to user.page.
+          if (empty($redirect_url)) {
+            $redirect_url = Url::fromRoute(
+              'user.page', ['user' => $account->id()])->toString();
+          }
+
+          // Display default welcome message.
+          $this->messenger()
+            ->addStatus($this->t('You have just used your one-time login link. Your account is now active and you are authenticated.'));
+
+          // Redirect user.
+          return new RedirectResponse($redirect_url);
         }
       }
     }
-    $this->messenger()->addError($this->t('You have tried to use a one-time login link that has either been used or is no longer valid. Please request a new one using the form below.'));
+    $this->messenger()
+      ->addError($this->t('You have tried to use a one-time login link that has either been used or is no longer valid. Please request a new one using the form below.'));
     return $this->redirect('user.pass');
   }
 

@@ -24,48 +24,34 @@
   We call a macro which calls itself to render the full tree.
   @see http://twig.sensiolabs.org/doc/tags/macro.html
 #}
-{{ menus.build_menu(items, attributes, 0) }}
+{{ menus.menu_links(items, attributes, 0) }}
 
-{% macro build_menu(items, attributes, menu_level) %}
+{% macro menu_links(items, attributes, menu_level) %}
   {% import _self as menus %}
   {% if items %}
     {% if menu_level == 0 %}
-    <ul{{ attributes.addClass('nav', 'navbar-nav', 'd-flex', 'flex-row') }}>
+      <ul{{ attributes.addClass(
+        'navbar-nav', 'gap-1', 'd-flex', 'flex-column', 'flex-sm-row', 'me-auto', 'mb-0'
+      ) }}>
     {% else %}
-    <ul class="dropdown-menu">
+      <ul class="dropdown-menu">
     {% endif %}
     {% for item in items %}
-      {{ menus.add_link(item, attributes, menu_level) }}
+      {%
+        set classes_link = [
+          'nav-link',
+          item.is_expanded ? 'dropdown-toggle',
+          item.is_collapsed ? 'dropdown-toggle',
+          item.in_active_trail ? 'active',
+        ]
+      %}
+        <li{{ item.attributes.addClass('nav-item') }}>
+          {{ link(item.title, item.url, { 'class': classes_link }) }}
+          {% if item.below %}
+            {{ menus.menu_links(item.below, attributes, menu_level + 1) }}
+          {% endif %}
+        </li>
     {% endfor %}
-    </ul>
+      </ul>
   {% endif %}
-{% endmacro %}
-
-{% macro add_link(item, attributes, menu_level) %}
-  {% import _self as menus %}
-  {%
-    set list_item_classes = [
-      item.is_expanded ? 'dropdown'
-    ]
-  %}
-  {%
-    set link_class = [
-      menu_level == 0 ? 'nav-item d-block p-3',
-      item.in_active_trail ? 'active',
-      menu_level == 0 and (item.is_expanded or item.is_collapsed) ? 'dropdown-toggle',
-      menu_level > 0 ? 'dropdown-item',
-    ]
-  %}
-  {%
-    set toggle_class = [
-  ]
-  %}
-  <li{{ item.attributes.addClass(list_item_classes) }}>
-    {% if menu_level == 0 and item.below %}
-      {{ link(item.title, item.url, { 'class': link_class, 'role': 'button', 'data-bs-toggle': 'dropdown', 'aria-expanded': 'false', 'title': ('Expand menu' | t) ~ ' ' ~ item.title }) }}
-      {{ menus.build_menu(item.below, attributes, menu_level + 1) }}
-    {% else %}
-      {{ link(item.title, item.url, { 'class': link_class }) }}
-    {% endif %}
-  </li>
 {% endmacro %}

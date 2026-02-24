@@ -15,7 +15,7 @@ email by clicking on the activation link provided via this email.
 User Registration Password transforms the checkbox on the
 `admin/config/people/accounts` page into a radio list with 3 options.
 
-The first 2 are default Drupal behaviour:
+The first 2 are default Drupal behavior:
 
 :o: Do not require a verification email, and let users set their password on
    the registration form.
@@ -29,7 +29,7 @@ The newly added option is:
    the registration form.
 
 The first 2 disable User Registration Password, only the 3rd option activates
-the behaviour implemented by this module.
+the behavior implemented by this module.
 
 
 ## Contents of this file
@@ -118,14 +118,14 @@ Also see the token widget on the admin account form for all available tokens.
 
 ## Multilingual sites
 
-All variables (including email) are all translateable via the core user
+All variables (including email) are all translatable via the core user
 configuration translation page at `admin/config/people/accounts/translate` or
 via the general translate configuration page.
 
 Ones configured correctly, users will receive an email in their default
 language, setting available on user's edit page. It does not matter what the
 site language is, this setting will be leading and supercede the site's default
-language. So it is logical and corrent that if you have an German based site
+language. So it is logical and correct that if you have an German based site
 with, let's say German and English languages enabled, and German is also the
 site's default language, still when users have English as their default browser
 language, they will receive an English email.

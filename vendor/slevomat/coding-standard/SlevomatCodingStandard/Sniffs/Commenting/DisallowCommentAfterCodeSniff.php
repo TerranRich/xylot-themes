@@ -10,7 +10,6 @@ use SlevomatCodingStandard\Helpers\FixerHelper;
 use SlevomatCodingStandard\Helpers\IndentationHelper;
 use SlevomatCodingStandard\Helpers\TokenHelper;
 use function array_key_exists;
-use function array_merge;
 use function in_array;
 use function strlen;
 use function substr;
@@ -32,8 +31,7 @@ class DisallowCommentAfterCodeSniff implements Sniff
 	 */
 	public function register(): array
 	{
-		/** @phpstan-var array<int, (int|string)> */
-		return array_merge(TokenHelper::$inlineCommentTokenCodes, [T_DOC_COMMENT_OPEN_TAG]);
+		return [...TokenHelper::INLINE_COMMENT_TOKEN_CODES, T_DOC_COMMENT_OPEN_TAG];
 	}
 
 	/**
@@ -102,12 +100,12 @@ class DisallowCommentAfterCodeSniff implements Sniff
 			&& in_array(
 				$tokens[$tokens[$firstNonWhiteSpacePointerBeforeComment]['scope_condition']]['code'],
 				[T_ELSEIF, T_ELSE, T_CLOSURE],
-				true
+				true,
 			)
 		) {
 			$phpcsFile->fixer->addContent(
 				$firstNonWhiteSpacePointerBeforeComment,
-				$phpcsFile->eolChar . IndentationHelper::addIndentation($indentation) . $commentContent
+				$phpcsFile->eolChar . IndentationHelper::addIndentation($indentation) . $commentContent,
 			);
 		} elseif ($tokens[$firstNonWhitespacePointerOnLine]['code'] === T_CLOSE_CURLY_BRACKET) {
 			$phpcsFile->fixer->addContent($firstNonWhiteSpacePointerBeforeComment, $phpcsFile->eolChar . $indentation . $commentContent);
@@ -115,7 +113,7 @@ class DisallowCommentAfterCodeSniff implements Sniff
 			$prevNonStringToken = TokenHelper::findPreviousExcluding(
 				$phpcsFile,
 				[T_WHITESPACE] + Tokens::$stringTokens,
-				$firstPointerOnLine - 1
+				$firstPointerOnLine - 1,
 			);
 			$firstTokenOnNonStringTokenLine = TokenHelper::findFirstTokenOnLine($phpcsFile, $prevNonStringToken);
 			$firstNonWhitespacePointerOnNonStringTokenLine = TokenHelper::findFirstNonWhitespaceOnLine($phpcsFile, $prevNonStringToken);

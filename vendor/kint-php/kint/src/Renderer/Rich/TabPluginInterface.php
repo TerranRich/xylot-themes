@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * The MIT License (MIT)
  *
@@ -25,12 +27,10 @@
 
 namespace Kint\Renderer\Rich;
 
-use Kint\Zval\Representation\Representation;
+use Kint\Value\AbstractValue;
+use Kint\Value\Representation\RepresentationInterface;
 
 interface TabPluginInterface extends PluginInterface
 {
-    /**
-     * @return null|string
-     */
-    public function renderTab(Representation $r);
+    public function renderTab(RepresentationInterface $r, AbstractValue $v): ?string;
 }

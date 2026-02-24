@@ -1,0 +1,8 @@
+name: 'Themes Lister'
+type: module
+description: 'Dynamically populates the Borrowed Theme field of a selected Wrestler/Team.'
+core_version_requirement: ^10 || ^11
+package: Custom
+dependencies:
+  - drupal:paragraphs
+  - drupal:field

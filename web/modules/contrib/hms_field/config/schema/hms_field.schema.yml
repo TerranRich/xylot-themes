@@ -1,0 +1,49 @@
+field.storage_settings.hms:
+  type: mapping
+  label: "Hms settings"
+
+field.field_settings.hms:
+  type: mapping
+  label: "Hms settings"
+
+field.widget.settings.hms_default:
+  type: mapping
+  label: "Hms field widget"
+  mapping:
+    format:
+      type: string
+      label: "Format"
+    default_placeholder:
+      type: boolean
+      label: "Default placeholder"
+    placeholder:
+      type: string
+      label: "Placeholder"
+
+field.formatter.settings.hms_default_formatter:
+  type: mapping
+  label: "Hms field formatter"
+  mapping:
+    format:
+      type: string
+      label: "Format"
+    leading_zero:
+      type: boolean
+      label: "Leading zero"
+
+field.formatter.settings.hms_natural_language_formatter:
+  type: mapping
+  label: "Natural language"
+  mapping:
+    display_formats:
+      type: sequence
+      label: "Display formats"
+      sequence:
+        type: string
+        label: "Format"
+    separator:
+      type: string
+      label: "Separator"
+    last_separator:
+      type: string
+      label: "Last separator"

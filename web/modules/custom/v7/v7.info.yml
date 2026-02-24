@@ -1,11 +1,10 @@
-name: Xylot Themes V7 General Use Module (GUM)
+name: Xylot Themes V7 General Use Module (Seven)
 description: Provides additional functionality for the Xylot Themes V7 site.
-package: Custom
-
 type: module
-core_version_requirement: ^9 || ^10
+package: Custom
+core_version_requirement: ^10 || ^11
 
 dependencies:
-  - drupal:inline_entity_form
+  - drupal:paragraphs
 
 configure: v7.settings

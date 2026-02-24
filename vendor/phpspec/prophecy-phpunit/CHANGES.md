@@ -1,3 +1,10 @@
+# 2.4.0
+* Add support for PHPUnit 12
+
+# 2.3.0
+
+* Add more precise type for the `prophesize` method
+
 # 2.2.0
 
 * Add support for PHPUnit 11

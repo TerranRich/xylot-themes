@@ -1,0 +1,41 @@
+.views-element-container {
+  .views-view-container {
+    columns: 3;
+
+    .views-header,
+    .views-exposed-form {
+      column-span: all;
+    }
+  }
+}
+
+#views-exposed-form-people-page,
+#views-exposed-form-wrestler-page {
+  fieldset {
+    display: flex;
+    align-items: center;
+    flex-flow: row;
+    gap: 1rem;
+
+    legend {
+      font-size: 1.125rem;
+      font-weight: 200;
+      width: auto;
+
+      .fieldset-legend::after {
+        content: ':';
+        display: inherit;
+      }
+    }
+
+    .form-radios {
+      display: flex;
+      align-items: center;
+      justify-content: start;
+      flex-flow: row;
+      gap: 0.25rem;
+    
+      margin-bottom: 1rem;
+    }
+  }
+}

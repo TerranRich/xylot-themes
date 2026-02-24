@@ -23,14 +23,73 @@ html {
 }
 
 /**
- * Basic styles for links
+ * Ensure that admin toolbar submenus are visible above all else.
  */
-a {
-  color: $brand-color;
-  text-decoration: none;
+.toolbar-tray-horizontal ul li.menu-item--expanded.hover-intent ul {
+  z-index: 2000;
+}
 
-  @include on-event {
-    color: $text-color;
-    text-decoration: underline;
+/**
+ * Ensure that all images and svgs are responsive and aren't huge.
+ */
+img, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/**
+ * Basic styles for links in the page body contents.
+ */
+main {
+
+  .breadcrumb,
+  .nav,
+  #block-spark-content {
+    a {
+      color: $brand-color;
+      text-decoration: none;
+
+      @include on-event {
+        color: $text-color;
+        text-decoration: underline;
+      }
+    }
   }
+
+  .alert a {
+    color: $text-color;
+
+    @include on-event {
+      color: #000;
+      text-decoration: underline;
+    }
+  }
+
+} // main
+
+/**
+ * Remove under lines from any dropdown menu item links.
+ */
+ul.dropdown-menu li a.dropdown-item {
+  text-decoration: none;
+}
+
+/**
+  * Override bottom margins on form label elements.
+  */
+.form-label {
+  font-weight: bold;
+  margin-bottom: 0;
+
+  &::after {
+    content: ':';
+  }
+
+} // .form-label
+
+/**
+ * Add in missing light theme for navbar toggler icons.
+ */
+[data-bs-theme=light] .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3e%3cpath stroke='rgba%280, 0, 0, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='3' d='M2 4h20M2 12h20M2 20h20'/%3e%3c/svg%3e");
 }

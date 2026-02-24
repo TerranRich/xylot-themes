@@ -1,0 +1,12 @@
+{
+  "name": "drupal/ief_popup",
+  "type": "drupal-module",
+  "description": "Extend IEF Complex Widget with add/edit dialog",
+  "homepage": "https://drupal.org/project/ief_popup",
+  "license": "GPL-2.0-or-later",
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=7.1",
+    "drupal/inline_entity_form": "^1 || ^3"
+  }
+}

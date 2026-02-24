@@ -5,6 +5,7 @@
  * Defines a view mode to set up the columns of the table for the IEF widget.
  */
 
+use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Form\FormStateInterface;
@@ -23,7 +24,9 @@ use Drupal\field_ui\Form\EntityDisplayFormBase;
 function ief_table_view_mode_entity_type_build(array &$entity_types) {
   foreach ($entity_types as &$entity_type) {
     if (!$entity_type->getHandlerClass('inline_form_table_view_mode')) {
-      $entity_type->setHandlerClass('inline_form_table_view_mode', '\Drupal\ief_table_view_mode\Form\EntityInlineTableViewModeForm');
+      if ($entity_type instanceof ContentEntityTypeInterface) {
+        $entity_type->setHandlerClass('inline_form_table_view_mode', '\Drupal\ief_table_view_mode\Form\EntityInlineTableViewModeForm');
+      }
     }
   }
 }
@@ -97,7 +100,7 @@ function ief_table_view_mode_table_field_extra_field_callback(EntityInterface $e
 
   $render = $render_controller->build($view);
 
-  $value = isset($render[$field_name]) ? $render[$field_name] : [];
+  $value = $render[$field_name] ?? [];
   // Prevent the exception \DomainException by #lazy_builder.
   // see https://www.drupal.org/project/ief_table_view_mode/issues/3178470
   if (!empty($value['#lazy_builder'])) {
@@ -128,7 +131,7 @@ function ief_table_view_mode_entity_update(EntityInterface $entity) {
   if ($entity->getEntityTypeId() == 'entity_form_display') {
     foreach ($entity->getComponents() as $component_name => $component) {
       if (isset($component['type']) && $component['type'] == 'inline_entity_form_complex_table_view_mode') {
-        /** @var \Drupal\field\Entity\FieldConfigInterface $field_config */
+        /** @var \Drupal\field\FieldConfigInterface $field_config */
         $field_config = FieldConfig::load($entity->getTargetEntityTypeId() . '.' . $entity->getTargetBundle() . '.' . $component_name);
         if ($field_config) {
           try {

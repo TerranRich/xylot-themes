@@ -36,35 +36,12 @@
  * @see html.html.twig
  */
 #}
-{%
-  set nav_classes = 'navbar navbar-expand-lg'
-%}
 
-<header class="sticky bg-dark text-light">
+<header class="sticky border-bottom border-black py-2 mb-3">
   {{ page.header }}
-
-  {% if page.nav_branding or page.nav_main or page.nav_additional %}
-  <nav class="{{ nav_classes }}">
-    <div class="container d-flex">
-      {{ page.nav_branding }}
-
-      <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse"
-              data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-              aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse justify-content-md-end" id="navbarSupportedContent">
-        {{ page.nav_main }}
-        {{ page.nav_additional }}
-      </div>
-    </div>
-  </nav>
-  {% endif %}
-
 </header>
 
-<main role="main">
+<main role="main" class="flex-grow-1">
   <a id="main-content" tabindex="-1"></a>{# link is in html.html.twig #}
 
   <div class="container">
@@ -81,7 +58,7 @@
 </main>
 
 {% if page.footer %}
-<footer class="mt-auto">
+<footer class="mt-4 pt-2">
   <div class="container">
     {{ page.footer }}
   </div>

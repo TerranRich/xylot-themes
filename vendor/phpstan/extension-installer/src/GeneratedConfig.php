@@ -21,7 +21,36 @@ final class GeneratedConfig
         0 => 'phpstan/rules.neon',
       ),
     ),
-    'version' => '2.7.2',
+    'version' => '2.8.6',
+    'phpstanVersionConstraint' => NULL,
+  ),
+  'composer/pcre' => 
+  array (
+    'install_path' => '/var/www/xylot/v7/vendor/composer/pcre',
+    'relative_install_path' => '../../../composer/pcre',
+    'extra' => 
+    array (
+      'includes' => 
+      array (
+        0 => 'extension.neon',
+      ),
+    ),
+    'version' => '3.3.2',
+    'phpstanVersionConstraint' => NULL,
+  ),
+  'jangregor/phpstan-prophecy' => 
+  array (
+    'install_path' => '/var/www/xylot/v7/vendor/jangregor/phpstan-prophecy',
+    'relative_install_path' => '../../../jangregor/phpstan-prophecy',
+    'extra' => 
+    array (
+      'includes' => 
+      array (
+        0 => 'extension.neon',
+      ),
+    ),
+    'version' => '1.0.2',
+    'phpstanVersionConstraint' => '>=1.0.0.0-dev, <2.0.0.0-dev',
   ),
   'mglaman/phpstan-drupal' => 
   array (
@@ -35,7 +64,8 @@ final class GeneratedConfig
         1 => 'rules.neon',
       ),
     ),
-    'version' => '1.2.7',
+    'version' => '1.3.9',
+    'phpstanVersionConstraint' => '>=1.12.0.0-dev, <2.0.0.0-dev',
   ),
   'phpstan/phpstan-deprecation-rules' => 
   array (
@@ -48,7 +78,8 @@ final class GeneratedConfig
         0 => 'rules.neon',
       ),
     ),
-    'version' => '1.1.4',
+    'version' => '1.2.1',
+    'phpstanVersionConstraint' => '>=1.12.0.0-dev, <2.0.0.0-dev',
   ),
   'phpstan/phpstan-phpunit' => 
   array (
@@ -62,12 +93,16 @@ final class GeneratedConfig
         1 => 'rules.neon',
       ),
     ),
-    'version' => '1.3.16',
+    'version' => '1.4.2',
+    'phpstanVersionConstraint' => '>=1.12.0.0-dev, <2.0.0.0-dev',
   ),
 );
 
 	public const NOT_INSTALLED = array (
 );
+
+	/** @var string|null */
+	public const PHPSTAN_VERSION_CONSTRAINT = '>=1.12.0.0-dev, <2.0.0.0-dev';
 
 	private function __construct()
 	{

@@ -42,7 +42,7 @@ class UseDoesNotStartWithBackslashSniff implements Sniff
 		$nextTokenPointer = TokenHelper::findNextEffective($phpcsFile, $usePointer + 1);
 
 		if (
-			in_array($tokens[$nextTokenPointer]['code'], TokenHelper::getOnlyNameTokenCodes(), true)
+			in_array($tokens[$nextTokenPointer]['code'], TokenHelper::ONLY_NAME_TOKEN_CODES, true)
 			&& (
 				$tokens[$nextTokenPointer]['content'] === 'function'
 				|| $tokens[$nextTokenPointer]['content'] === 'const'
@@ -59,7 +59,7 @@ class UseDoesNotStartWithBackslashSniff implements Sniff
 		$fix = $phpcsFile->addFixableError(
 			'Use statement cannot start with a backslash.',
 			$nextTokenPointer,
-			self::CODE_STARTS_WITH_BACKSLASH
+			self::CODE_STARTS_WITH_BACKSLASH,
 		);
 
 		if (!$fix) {

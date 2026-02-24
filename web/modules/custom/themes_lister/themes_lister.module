@@ -1,0 +1,78 @@
+<?php
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\HtmlCommand;
+
+/**
+ * Implements hook_form_FORM_ID_alter() to modify the Wrestler/Team form.
+ */
+function themes_lister_form_node_wrestler_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Check if the Themes field is present in the form.
+  if (isset($form['field_themes_list'])) {
+    // Loop through each paragraph form in the Themes field.
+    foreach ($form['field_themes_list']['widget'] as $delta => &$widget) {
+      // Check if the paragraph type is "Theme Usage - Borrowed".
+      if (isset($widget['subform']['field_owner'])) {
+        kint($widget);
+        // Add an AJAX callback to the "Borrowed From" field (field_owner).
+        $widget['subform']['field_owner']['widget'][0]['target_id']['#ajax'] = [
+          'callback' => 'themes_lister_borrowed_theme_update', // Define the callback.
+          'wrapper' => 'borrowed-theme-wrapper-' . $delta,   // Specify the wrapper to update.
+          'event' => 'autocompleteclose',  // Trigger on autocomplete close.
+        ];
+
+        // Wrap the "Borrowed Theme" field for dynamic updates.
+        $widget['subform']['field_borrowed_theme']['#prefix'] = '<div id="borrowed-theme-wrapper-' . $delta . '">';
+        $widget['subform']['field_borrowed_theme']['#suffix'] = '</div>';
+      }
+    }
+  }
+}
+
+/**
+ * AJAX callback to update the Borrowed Theme options based on the "Borrowed From" selection.
+ */
+function themes_lister_borrowed_theme_update(array &$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  // Retrieve the delta from the triggering field.
+  $triggering_element = $form_state->getTriggeringElement();
+  $parents = $triggering_element['#parents'];
+  $delta = $parents[1];
+
+  // Get the value of the "Borrowed From" field (field_owner).
+  $selected_entity_id = $form_state->getValue(['field_themes_list', $delta, 'subform', 'field_owner', 'widget', 0, 'target_id']);
+
+  // Initialize the options array for the Borrowed Theme field.
+  $borrowed_themes = [];
+
+  // If an entity is selected, load the themes for that wrestler/team.
+  if ($selected_entity_id) {
+    // Load the selected wrestler/team entity.
+    $borrowed_from_entity = \Drupal::entityTypeManager()->getStorage('node')->load($selected_entity_id);
+
+    // Retrieve the themes associated with the "Borrowed From" entity.
+    if ($borrowed_from_entity && $borrowed_from_entity->hasField('field_themes_list')) {
+      foreach ($borrowed_from_entity->get('field_themes_list') as $theme_item) {
+        $theme_entity = $theme_item->entity;
+        if ($theme_entity) {
+          $borrowed_themes[$theme_entity->id()] = $theme_entity->label();
+        }
+      }
+    }
+  }
+
+  // Update the options for the Borrowed Theme field.
+  $borrowed_theme_field = &$form['field_themes_list']['widget'][$delta]['subform']['field_borrowed_theme']['widget'][0]['target_id'];
+  $borrowed_theme_field['#options'] = $borrowed_themes;
+
+  // If no themes are available, display a message.
+  if (empty($borrowed_themes)) {
+    $borrowed_theme_field['#empty_option'] = t('No themes available.');
+  } else {
+    // Optionally set a placeholder or default option.
+    $borrowed_theme_field['#empty_option'] = t('Select a theme');
+  }
+
+  // Return the updated form section to be dynamically replaced.
+  return $form['field_themes_list']['widget'][$delta]['subform']['field_borrowed_theme'];
+}

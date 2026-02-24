@@ -1,0 +1,22 @@
+/**
+ * Styling related to all Wrestler/Team pages.
+ */
+aside.wrestler-image {
+  .image-sidebar {
+    // Place sidebar image beneath admin toolbar but above all else.
+    z-index: 500;
+  }
+}
+article.wrestler-info {
+  .corner-icon {
+    background: inherit;
+    border-bottom: 1px solid white;
+    border-left: 1px solid white;
+    border-radius: 0 0 0 1rem;
+    max-width: 6rem;
+    padding: 0.5rem;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+  }
+}

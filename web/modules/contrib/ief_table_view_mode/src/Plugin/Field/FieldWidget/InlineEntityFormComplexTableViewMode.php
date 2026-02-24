@@ -2,8 +2,8 @@
 
 namespace Drupal\ief_table_view_mode\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\inline_entity_form\Plugin\Field\FieldWidget\InlineEntityFormComplex;
-use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Complex inline widget.
@@ -23,11 +23,9 @@ class InlineEntityFormComplexTableViewMode extends InlineEntityFormComplex {
   /**
    * {@inheritdoc}
    */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    $element = [];
-    $element += parent::settingsForm($form, $form_state);
-
-    return $element;
+  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+    $target_type = $field_definition->getSetting('target_type');
+    return \Drupal::entityTypeManager()->hasHandler($target_type, 'inline_form_table_view_mode');
   }
 
   /**

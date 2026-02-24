@@ -1,0 +1,7 @@
+field.widget.settings.imagecroper:
+  type: mapping
+  label: 'Image crop Widget widget settings'
+  mapping:
+    update_image:
+      type: string
+      label: 'Type of update image'

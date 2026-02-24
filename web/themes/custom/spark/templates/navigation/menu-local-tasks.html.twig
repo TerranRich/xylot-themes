@@ -16,13 +16,13 @@
 
 {% if primary %}
   <h2 id="primary-tabs-title" class="visually-hidden">{{ 'Primary tabs'|t }}</h2>
-  <nav class="tabs-wrapper tabs-primary is-collapsible" aria-labelledby="primary-tabs-title" data-drupal-nav-tabs>
-    <ul class="nav nav-tabs flex-column flex-md-row primary clearfix" data-drupal-nav-tabs-target>{{ primary }}</ul>
+  <nav class="tabs-wrapper tabs-primary is-collapsible mb-3" aria-labelledby="primary-tabs-title" data-drupal-nav-tabs>
+    <ul class="nav nav-pills flex-column flex-md-row primary clearfix gap-2" data-drupal-nav-tabs-target>{{ primary }}</ul>
   </nav>
 {% endif %}
 {% if secondary %}
-  <h2 id="secondary-tabs-title" class="visually-hidden">{{ 'Secondary tabs'|t }}</h2>
+  <h2 id="secondary-tabs-title" class="visually-hidden mb-3">{{ 'Secondary tabs'|t }}</h2>
   <nav class="tabs-wrapper tabs-secondary" aria-labelledby="secondary-tabs-title" data-drupal-nav-tabs>
-    <ul class="nav nav-tabs flex-column flex-md-row primary clearfix" data-drupal-nav-tabs-target>{{ secondary }}</ul>
+    <ul class="nav nav-pills flex-column flex-md-row primary clearfix gap-2" data-drupal-nav-tabs-target>{{ secondary }}</ul>
   </nav>
 {% endif %}

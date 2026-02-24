@@ -2,109 +2,159 @@
 
 /**
  * @file
- * Contains ief_popup.module.
+ * Hook implementations for the IEF Complex Widget Dialog module.
  */
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\WidgetInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\inline_entity_form\Plugin\Field\FieldWidget\InlineEntityFormComplex;
 use Drupal\layout_builder\Form\ConfigureBlockFormBase;
 
 /**
  * Implements hook_preprocess_page().
  */
-function ief_popup_preprocess_page(&$variables) {
+function ief_popup_preprocess_page(array &$variables) {
   $variables['#attached']['library'][] = 'ief_popup/ief_popup';
+}
+
+/**
+ * Implements hook_field_widget_third_party_settings_form().
+ */
+function ief_popup_field_widget_third_party_settings_form(
+  WidgetInterface $plugin,
+  FieldDefinitionInterface $field_definition,
+  $form_mode,
+  array $form,
+  FormStateInterface $form_state,
+) {
+  $element = [];
+
+  // Add a 'my_setting' checkbox to the settings form for 'foo_widget' field
+  // widgets.
+  if ($plugin instanceof InlineEntityFormComplex) {
+    $element['ief_popup_enabled'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Enable Popup for IEF'),
+      '#default_value' => $plugin->getThirdPartySetting('ief_popup', 'ief_popup_enabled'),
+    ];
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_widget_settings_summary_alter().
+ */
+function ief_popup_field_widget_settings_summary_alter(array &$summary, array $context) {
+  // Append a message to the summary when an instance of inline_entity_form has
+  // ief_popup_enabled set to TRUE for the current view mode.
+  if ($context['widget']->getThirdPartySetting('ief_popup', 'ief_popup_enabled')) {
+    $summary[] = t('Display the form in a popup.');
+  }
 }
 
 /**
  * Implements hook_field_widget_single_element_WIDGET_TYPE_form_alter().
  */
 function ief_popup_field_widget_single_element_inline_entity_form_complex_form_alter(array &$element, FormStateInterface $form_state, array $context) {
-  $triggering_element = $form_state->getTriggeringElement();
-  $items = $context['items'];
-  /** @var \Drupal\field\Entity\FieldConfig $fieldConfig */
-  $fieldName = $items->getName();
-  if (isset($triggering_element['#ief_row_form']) && $triggering_element['#ief_row_form'] === 'remove') {
-    $parents = $triggering_element['#parents'];
-    // Special case for the layout builder. Remove the LB block parents from the
-    // ief parents.
-    if ($blockParents = $form_state->getTemporaryValue('block_form_parents')) {
-      $parents = array_diff_assoc($parents, $blockParents);
-    }
-    $ief_field = reset($parents);
-    if ($ief_field !== $fieldName) {
-      return;
-    }
-    $ief_row_delta = $triggering_element['#ief_row_delta'];
+  $widget = $context['widget'];
 
-    // Special case for the Layout builder.
-    $formObject = $form_state->getFormObject();
-    if ($formObject instanceof ConfigureBlockFormBase) {
-      $entity = $items->getParent()->getEntity();
-      if (!isset($element['entities'][$ief_row_delta]['form']['#entity']) && isset($element['entities'][$ief_row_delta]['#entity'])) {
-        $element['entities'][$ief_row_delta]['form']['#entity'] = $element['entities'][$ief_row_delta]['#entity'];
+  if ($widget->getThirdPartySetting('ief_popup', 'ief_popup_enabled')) {
+    $triggering_element = $form_state->getTriggeringElement();
+    $items = $context['items'];
+    $field_name = $items->getName();
+
+    if (isset($triggering_element['#ief_row_form']) && $triggering_element['#ief_row_form'] === 'remove') {
+      $parents = $triggering_element['#parents'];
+
+      // Remove layout builder block parents from IEF parents.
+      if ($block_parents = $form_state->getTemporaryValue('block_form_parents')) {
+        $parents = array_diff_assoc($parents, $block_parents);
       }
-    }
-    else {
-      $entity = $formObject->getEntity();
+
+      $ief_field = reset($parents);
+      if ($ief_field !== $field_name) {
+        return;
+      }
+
+      $ief_row_delta = $triggering_element['#ief_row_delta'];
+      $form_object = $form_state->getFormObject();
+
+      // Special case for layout builder.
+      if ($form_object instanceof ConfigureBlockFormBase) {
+        $entity = $items->getParent()->getEntity();
+        if (!isset($element['entities'][$ief_row_delta]['form']['#entity']) && isset($element['entities'][$ief_row_delta]['#entity'])) {
+          $element['entities'][$ief_row_delta]['form']['#entity'] = $element['entities'][$ief_row_delta]['#entity'];
+        }
+      }
+      else {
+        $entity = $form_object->getEntity();
+      }
+
+      // Determine parameters based on the entity type.
+      $parameters = [];
+      switch ($entity->getEntityTypeId()) {
+        case 'block_content':
+          $parameters = [
+            'parent_bundle_label' => $entity->type->entity->label(),
+            'parent_entity_title' => $entity->label(),
+          ];
+          break;
+
+        case 'node':
+          $parameters = [
+            'parent_bundle_label' => $entity->type->entity->label(),
+            'parent_entity_title' => $entity->getTitle(),
+          ];
+          break;
+
+        case 'taxonomy_term':
+          $parameters = [
+            'parent_bundle_label' => $entity->type->entity->label(),
+            'parent_entity_title' => $entity->getName(),
+          ];
+          break;
+
+        case 'user':
+          $parameters = [
+            'parent_bundle_label' => 'user',
+            'parent_entity_title' => $entity->getDisplayName(),
+          ];
+          break;
+      }
+
+      ief_popup__process_ief_form($element['entities'][$ief_row_delta]['form'], 'remove', $parameters);
     }
 
-    if ($entity->getEntityTypeId() === 'block_content') {
-      $parameters = [
-        'parent_bundle_label' => $entity->type->entity->label(),
-        'parent_entity_title' => $entity->label(),
-      ];
+    if (isset($triggering_element['#ief_form']) && $triggering_element['#ief_form'] === 'ief_add_existing') {
+      ief_popup__process_ief_form($element['form'], 'existing');
     }
-
-    if ($entity->getEntityTypeId() === 'node') {
-      $parameters = [
-        'parent_bundle_label' => $entity->type->entity->label(),
-        'parent_entity_title' => $entity->getTitle(),
-      ];
-    }
-
-    if ($entity->getEntityTypeId() === 'taxonomy_term') {
-      $parameters = [
-        'parent_bundle_label' => $entity->type->entity->label(),
-        'parent_entity_title' => $entity->getName(),
-      ];
-    }
-
-    if ($entity->getEntityTypeId() === 'user') {
-      $parameters = [
-        'parent_bundle_label' => 'user',
-        'parent_entity_title' => $entity->getDisplayName(),
-      ];
-    }
-
-    _process_ief_form($element['entities'][$ief_row_delta]['form'], 'remove', $parameters);
-  }
-
-  if (isset($triggering_element['#ief_form']) && $triggering_element['#ief_form'] === 'ief_add_existing') {
-    _process_ief_form($element['form'], 'existing');
   }
 }
 
 /**
  * Implements hook_inline_entity_form_alter().
  */
-function ief_popup_inline_entity_form_entity_form_alter(&$ief_form, &$form_state) {
-  /* only process IEF popup if complex IEF widget */
-  $is_complex_widget = FALSE;
-  foreach ($ief_form["#process"] as $process_item) {
-    /*
-     * Probably:
-     * - Drupal\inline_entity_form\Plugin\Field\FieldWidget\InlineEntityFormComplex or
-     * - Drupal\ief_table_view_mode\Plugin\Field\FieldWidget\InlineEntityFormComplexTableViewMode
-     * ...
-     */
-    if (is_string($process_item[0]) && strpos($process_item[0], "\Plugin\Field\FieldWidget\InlineEntityFormComplex") !== FALSE) {
-      $is_complex_widget = TRUE;
+function ief_popup_inline_entity_form_entity_form_alter(array &$ief_form, FormStateInterface &$form_state) {
+  // Get the field name of the current IEF form.
+  $field_name = '';
+  for ($i = count($ief_form['#parents']) - 1; $i >= 0; $i--) {
+    if (is_string($ief_form['#parents'][$i]) && strpos($ief_form['#parents'][$i], 'field') === 0) {
+      $field_name = $ief_form['#parents'][$i];
+      break;
     }
   }
 
-  if ($is_complex_widget == TRUE) {
-    /* add ief-popup-wrapper and ui-dialog to IEF */
-    _process_ief_form($ief_form, $ief_form["#op"]);
+  if (empty($field_name)) {
+    return;
+  }
+
+  $form_display = $form_state->getStorage()['form_display'];
+  $widget = $form_display->getComponent($field_name);
+
+  if (!empty($widget['third_party_settings']['ief_popup']['ief_popup_enabled'])) {
+    ief_popup__process_ief_form($ief_form, $ief_form["#op"]);
   }
 }
 
@@ -118,7 +168,7 @@ function ief_popup_inline_entity_form_entity_form_alter(&$ief_form, &$form_state
  * @param array $parameters
  *   Parameters for $ief_action "remove".
  */
-function _process_ief_form(&$ief_form, $ief_action, $parameters = []) {
+function ief_popup__process_ief_form(&$ief_form, $ief_action, $parameters = []) {
 
   /* add wrapper to the IEF form */
   $ief_overlay_classes = [
@@ -149,13 +199,13 @@ function _process_ief_form(&$ief_form, $ief_action, $parameters = []) {
     <div class="' . implode(" ", $ief_wrapper_classes) . '">
         <div>
             <div role="dialog" class="' . implode(" ", $ief_dialog_classes) . '">';
-$ief_form["#suffx"] = '
+  $ief_form["#suffix"] = '
             </div>
        </div>
    </div>';
 
   /* action buttons are added after the form_alter hook so altering action buttons happens in the after_build hook */
-  $ief_form["#after_build"][] = "_ief_form_after_build";
+  $ief_form["#after_build"][] = "ief_popup__ief_form_after_build";
 
   /* set popup_title for the title bar */
   if ($ief_action === 'edit') {
@@ -237,15 +287,20 @@ $ief_form["#suffx"] = '
       }
     }
 
-    if ($parameters['parent_bundle_label'] !== '' || $parameters['parent_entity_title'] !== '') {
+    // Check if the keys exist in the $parameters array and set default values
+    // if they are not present.
+    $parent_bundle_label = isset($parameters['parent_bundle_label']) ? strtolower($parameters['parent_bundle_label']) : '';
+    $parent_entity_title = $parameters['parent_entity_title'] ?? '';
+
+    if ($parent_bundle_label !== '' || $parent_entity_title !== '') {
       if (isset($ief_form['message']['#overriden']) && ($ief_form['message']['#overriden'] === FALSE)) {
         $ief_form["message"]["#markup"] =
           t("Are you sure you want to remove this @entity_bundle from this @parent_bundle_label?",
             [
               "%entity_title" => $entity_title,
               "@entity_bundle" => $entity_bundle,
-              "@parent_bundle_label" => strtolower($parameters["parent_bundle_label"]),
-              "%parent_entity_title" => $parameters["parent_entity_title"],
+              "@parent_bundle_label" => $parent_bundle_label,
+              "%parent_entity_title" => $parent_entity_title,
             ]);
       }
     }
@@ -277,7 +332,7 @@ $ief_form["#suffx"] = '
 /**
  * Callback IEF after_build hook.
  */
-function _ief_form_after_build($ief_form) {
+function ief_popup__ief_form_after_build($ief_form) {
 
   /*
    * add some extra classes on the actions wrapper and buttons

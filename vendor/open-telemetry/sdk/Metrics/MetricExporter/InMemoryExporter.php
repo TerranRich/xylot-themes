@@ -4,50 +4,45 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\SDK\Metrics\MetricExporter;
 
-use function array_push;
+use ArrayObject;
 use OpenTelemetry\SDK\Metrics\AggregationTemporalitySelectorInterface;
 use OpenTelemetry\SDK\Metrics\Data\Metric;
 use OpenTelemetry\SDK\Metrics\Data\Temporality;
 use OpenTelemetry\SDK\Metrics\MetricExporterInterface;
 use OpenTelemetry\SDK\Metrics\MetricMetadataInterface;
+use OpenTelemetry\SDK\Metrics\PushMetricExporterInterface;
 
 /**
  * @see https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk_exporters/in-memory.md
  */
-final class InMemoryExporter implements MetricExporterInterface, AggregationTemporalitySelectorInterface
+final class InMemoryExporter implements MetricExporterInterface, AggregationTemporalitySelectorInterface, PushMetricExporterInterface
 {
-    /**
-     * @var list<Metric>
-     */
-    private array $metrics = [];
-    /**
-     * @var string|Temporality|null
-     */
-    private $temporality;
-
     private bool $closed = false;
 
     /**
+     * @template-implements ArrayObject<Metric> $storage
+     * @param ArrayObject $storage
      * @param string|Temporality|null $temporality
      */
-    public function __construct($temporality = null)
-    {
-        $this->temporality = $temporality;
+    public function __construct(
+        private ArrayObject $storage = new ArrayObject(),
+        private readonly string|Temporality|null $temporality = null,
+    ) {
     }
 
-    public function temporality(MetricMetadataInterface $metric)
+    public function temporality(MetricMetadataInterface $metric): string|Temporality|null
     {
         return $this->temporality ?? $metric->temporality();
     }
 
     /**
-     * @return list<Metric>
+     * @return Metric[]
      */
     public function collect(bool $reset = false): array
     {
-        $metrics = $this->metrics;
+        $metrics = $this->storage->getArrayCopy();
         if ($reset) {
-            $this->metrics = [];
+            $this->storage = new ArrayObject();
         }
 
         return $metrics;
@@ -59,8 +54,9 @@ final class InMemoryExporter implements MetricExporterInterface, AggregationTemp
             return false;
         }
 
-        /** @psalm-suppress InvalidPropertyAssignmentValue */
-        array_push($this->metrics, ...$batch);
+        foreach ($batch as $metric) {
+            $this->storage->append($metric);
+        }
 
         return true;
     }
@@ -73,6 +69,11 @@ final class InMemoryExporter implements MetricExporterInterface, AggregationTemp
 
         $this->closed = true;
 
+        return true;
+    }
+
+    public function forceFlush(): bool
+    {
         return true;
     }
 }

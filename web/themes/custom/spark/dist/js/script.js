@@ -10,7 +10,7 @@
       if (once('spark', 'html').length) {
         $(function () {
 
-          console.log('It works!');
+          // console.log('It works!');
 
         });
       }

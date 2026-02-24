@@ -1,0 +1,39 @@
+main #block-spark-content #group-menu {
+  background-color: #444;
+  border-bottom: 1px solid #09f;
+  border-radius: 0.5rem 0.5rem 0 0;
+
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0.5rem 0 1rem;
+  padding: 0 1rem;
+}
+
+main #block-spark-content #group-menu a {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 900;
+  padding: 0 0.625rem;
+  text-decoration: none;
+  transition: background-color 0.125s, color 0.125s;
+}
+
+main #block-spark-content #group-menu a:hover {
+  background-color: #09f;
+  color: #fff;
+}
+
+main #block-spark-content #group-menu a:active {
+  background-color: #fff;
+  color: #000;
+}
+
+/**
+ * Override the default toolbar theme styles.
+ */
+ #toolbar-item-administration-tray .toolbar-logo {
+  width: 3.75rem;
+}

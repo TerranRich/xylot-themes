@@ -59,7 +59,7 @@ class EntityInlineTableViewModeForm extends EntityInlineForm {
       }
 
       $extra_fields = $this->entityFieldManager->getExtraFields($entity_type, $bundle);
-      $extra_fields = isset($extra_fields['display']) ? $extra_fields['display'] : [];
+      $extra_fields = $extra_fields['display'] ?? [];
 
       foreach ($extra_fields as $extra_field_name => $extra_field) {
         $display_options = $display->getComponent($extra_field_name);

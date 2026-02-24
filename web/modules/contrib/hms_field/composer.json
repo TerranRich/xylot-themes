@@ -1,0 +1,11 @@
+{
+  "name": "drupal/hms_field",
+  "description": "Provides Hour minute second formatter for integers.",
+  "type": "drupal-module",
+  "homepage": "https://www.drupal.org/project/hms_field",
+  "support": {
+      "issues": "https://www.drupal.org/project/issues/hms_field",
+      "source": "http://cgit.drupalcode.org/hms_field"
+  },
+  "license": "GPL-2.0+"
+}

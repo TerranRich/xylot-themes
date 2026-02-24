@@ -1,9 +1,9 @@
-admin_overrides:
+group_menu:
   js:
-    js/admin_overrides.js: {}
+    js/group_menu.js: {}
   css:
     theme:
-      css/admin_overrides.css: {}
+      css/group_menu.css: {}
   dependencies:
     - core/drupalSettings
     - core/once

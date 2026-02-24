@@ -1,0 +1,6 @@
+/**
+ * Override the default admin theme styles.
+ */
+#toolbar-item-administration-tray .toolbar-logo {
+  width: 3.75rem;
+}

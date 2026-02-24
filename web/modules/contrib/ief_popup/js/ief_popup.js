@@ -13,7 +13,7 @@
             else {
                 $(".toolbar").css('z-index',  '');
             }
-          $(".toolbar").css("z-index",  "unset");
+
             /* fire click event on cancel button if .ief-popup-close is clicked */
             $(".ief-popup-close").click(function (e) {
                 e.preventDefault();

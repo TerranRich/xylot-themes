@@ -1,0 +1,13 @@
+name: Image Crop Widget
+type: module
+core: 8.x
+core_version_requirement: ^8 || ^9 || ^10 || ^11
+description: 'Edit images in image form: rotate, crop.'
+package: Media
+dependencies:
+  - drupal:image
+
+# Information added by Drupal.org packaging script on 2024-08-22
+version: '9.1.0'
+project: 'imagecroper'
+datestamp: 1724308552

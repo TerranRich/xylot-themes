@@ -2,10 +2,9 @@
 
 namespace Drupal\Tests\user_registrationpassword\Functional;
 
-use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Test\AssertMailTrait;
+use Drupal\Tests\BrowserTestBase;
 use Drupal\user\Form\UserPasswordForm;
-
 
 /**
  * Functionality tests for User registration password module privacy feature.
@@ -38,7 +37,6 @@ class UserRegistrationPasswordUserPasswordResetForm extends BrowserTestBase {
   protected function setUp(): void {
     parent::setUp();
     global $base_url;
-    $this->base_url = $base_url;
   }
 
   /**
@@ -74,7 +72,25 @@ class UserRegistrationPasswordUserPasswordResetForm extends BrowserTestBase {
    */
   public function testRegistrationFormDefaultValues() {
     // Load form object.
-    $form_object = new UserPasswordForm(\Drupal::entityTypeManager()->getStorage('user'), \Drupal::languageManager(), \Drupal::configFactory(), \Drupal::flood());
+    if (version_compare(\Drupal::VERSION, '10.0.0', '<')) {
+      // @phpstan-ignore-next-line
+      $form_object = new UserPasswordForm(
+        \Drupal::entityTypeManager()->getStorage('user'),
+        \Drupal::languageManager(),
+        \Drupal::configFactory(),
+        \Drupal::flood()
+      );
+    }
+    else {
+      $form_object = new UserPasswordForm(
+        \Drupal::entityTypeManager()->getStorage('user'),
+        \Drupal::languageManager(),
+        \Drupal::configFactory(),
+        \Drupal::flood(),
+        \Drupal::typedDataManager(),
+        \Drupal::service('email.validator')
+      );
+    }
     // Get the form array.
     $form = \Drupal::formBuilder()->getForm($form_object);
 
@@ -82,4 +98,5 @@ class UserRegistrationPasswordUserPasswordResetForm extends BrowserTestBase {
     $this->assertEquals($form['#validate'][0], '_user_registrationpassword_user_pass_validate', 'Validate handler correctly changed.');
     $this->assertEquals($form['#submit'][0], '_user_registrationpassword_user_pass_submit', 'Submit handler correctly changed.');
   }
+
 }

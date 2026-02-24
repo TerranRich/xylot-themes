@@ -29,7 +29,7 @@ class UserRegistrationPasswordMailNotifyTest extends EntityKernelTestBase {
    * @return array
    *   An array of notify options.
    */
-  public function userRegistrationMailsProvider() {
+  public static function userRegistrationMailsProvider(): array {
     return [
       ['register_confirmation_with_pass', ['register_confirmation_with_pass']],
     ];

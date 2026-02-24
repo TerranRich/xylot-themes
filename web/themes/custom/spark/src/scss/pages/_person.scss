@@ -1,0 +1,23 @@
+/**
+ * Styling for all "Person" pages (/people/*).
+ */
+
+body.page-term-people {
+
+  article.person-entry {
+
+  }
+
+  .terms-list {
+    .wrestler-tile {
+      .face-picture {
+        img {
+          height: 10rem;
+          width: auto;
+          margin-bottom: 0.75rem;
+        }
+      }
+    }
+  }
+
+} // body.page-term-people

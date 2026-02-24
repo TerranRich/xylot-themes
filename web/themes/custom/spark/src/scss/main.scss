@@ -11,20 +11,28 @@
   'base/base',
   'base/fonts',
   'base/typography',
-  'base/helpers';
+  'base/helpers',
+  'base/xicons';
 
 // 3. Layout-related sections
 @import
+  'layout/global',
   'layout/header',
-  'layout/footer';
+  'layout/footer',
+  'layout/local-tasks';
 
 // 4. Components
 @import
-  'components/button';
+  'components/breadcrumb',
+  'components/button',
+  'components/input';
 
 // 5. Page-specific styles
 @import
-  'pages/home';
+  'pages/shared',
+  'pages/home',
+  'pages/person',
+  'pages/wrestler';
 
 // 6. Themes
 @import

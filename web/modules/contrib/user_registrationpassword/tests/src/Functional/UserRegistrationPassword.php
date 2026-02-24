@@ -79,7 +79,7 @@ class UserRegistrationPassword extends BrowserTestBase {
     $this->drupalGet("user/registrationpassword/" . $account->id() . "/$test_timestamp/" . user_pass_rehash($account, $test_timestamp));
     $this->assertSession()->pageTextContains('You have tried to use a one-time login link that has either been used or is no longer valid. Please request a new one using the form below.');
 
-    // Fake key combi.
+    // Fake key combination.
     $this->drupalGet("user/registrationpassword/" . $account->id() . "/$timestamp/" . user_pass_rehash($account, $bogus_timestamp));
     $this->assertSession()->pageTextContains('You have tried to use a one-time login link that has either been used or is no longer valid. Please request a new one using the form below.');
 
@@ -99,7 +99,11 @@ class UserRegistrationPassword extends BrowserTestBase {
     $this->drupalGet("user/registrationpassword/" . $account->id() . "/$timestamp/" . user_pass_rehash($account, $timestamp));
     $this->assertSession()->responseContains(new FormattableMarkup(
       'Another user (%other_user) is already logged into the site on this computer, but you tried to use a one-time link for user %resetting_user. Please <a href=":logout">log out</a> and try using the link again.',
-      ['%other_user' => $another_account->getAccountName(), '%resetting_user' => $account->getAccountName(), ':logout' => Url::fromRoute('user.logout')->toString()]
+      [
+        '%other_user' => $another_account->getAccountName(),
+        '%resetting_user' => $account->getAccountName(),
+        ':logout' => Url::fromRoute('user.logout')->toString(),
+      ]
     ));
     $this->drupalLogout();
 
@@ -187,14 +191,28 @@ class UserRegistrationPassword extends BrowserTestBase {
     $edit3['name'] = $this->randomMachineName();
     $this->drupalGet('user/password');
     $this->submitForm($edit3, 'Submit');
-    $this->assertSession()->pageTextContains($edit3['name'] . ' is not recognized as a username or an email address.');
+    if (version_compare(\Drupal::VERSION, '10', '<')) {
+      $this->assertSession()->pageTextContains(
+        $edit3['name'] . ' is not recognized as a username or an email address.');
+    }
+    else {
+      $this->assertSession()->pageTextContains(
+        'If ' . $edit3['name'] . ' is a valid account, an email will be sent with instructions to reset your password.');
+    }
 
     // Request a new activation email for a non-existing user email.
     $edit4 = [];
     $edit4['name'] = $this->randomMachineName() . '@example.com';
     $this->drupalGet('user/password');
     $this->submitForm($edit4, 'Submit');
-    $this->assertSession()->pageTextContains($edit4['name'] . ' is not recognized as a username or an email address.');
+    if (version_compare(\Drupal::VERSION, '10', '<')) {
+      $this->assertSession()->pageTextContains(
+        $edit4['name'] . ' is not recognized as a username or an email address.');
+    }
+    else {
+      $this->assertSession()->pageTextContains(
+        'If ' . $edit4['name'] . ' is a valid account, an email will be sent with instructions to reset your password.');
+    }
   }
 
   /**
@@ -242,7 +260,14 @@ class UserRegistrationPassword extends BrowserTestBase {
     $edit2['name'] = $edit['name'];
     $this->drupalGet('user/password');
     $this->submitForm($edit2, 'Submit');
-    $this->assertSession()->pageTextContains($edit2['name'] . ' is blocked or has not been activated yet.');
+    if (version_compare(\Drupal::VERSION, '10', '<')) {
+      $this->assertSession()->pageTextContains(
+        $edit2['name'] . ' is blocked or has not been activated yet.');
+    }
+    else {
+      $this->assertSession()->pageTextContains(
+        'If ' . $edit2['name'] . ' is a valid account, an email will be sent with instructions to reset your password.');
+    }
   }
 
 }

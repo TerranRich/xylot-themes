@@ -1,0 +1,21 @@
+#block-spark-breadcrumbs {
+  nav {
+    ol.breadcrumb {
+      padding-bottom: 0.25rem;
+      --bs-breadcrumb-margin-bottom: 0.5rem;
+
+      li.breadcrumb-item {
+        line-height: 1;
+        padding-top: 0.25rem;
+
+        &:before {
+          --bs-breadcrumb-divider: "\00BB";
+        }
+
+        &:first-child {
+          padding-top: 0.125rem;
+        }
+      }
+    }
+  }
+}

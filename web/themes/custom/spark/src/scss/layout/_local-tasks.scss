@@ -1,0 +1,24 @@
+/**
+ * Styling for the Local Tasks block and menus.
+ */
+
+#block-spark-local-tasks {
+
+  ul.nav {
+    li.nav-item {
+      a.nav-link {
+        text-decoration: none;
+        line-height: 1;
+        padding-top: 0.625rem;
+
+        &:not(.active):hover,
+        &:not(.active):active {
+          background: #0008;
+          color: #fff;
+        }
+
+      } // a.nav-link
+    }
+  }
+
+} // #block-spark-local-tasks

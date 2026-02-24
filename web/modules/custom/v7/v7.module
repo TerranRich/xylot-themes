@@ -3,39 +3,25 @@
  * @file
  * Primary module hooks for Xylot Themes V7 General Use Module (GUM) module.
  */
-use Drupal\Core\Form\FormStateInterface;
+use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Asset\AttachedAssetsInterface;
+use Drupal\Core\Entity\Element\EntityAutocomplete;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
-
-/**
- * Implements hook_form_alter().
- */
-function v7_inline_entity_form_entity_form_alter(array &$entity_form, FormStateInterface &$form_state) {
-  // $entity_type = $entity_form['#entity_type'];
-  // $ief_id = $entity_form['#ief_id'];
-
-  /// Taxnomy terms ///
-  // switch ($entity_type) {
-
-  //   case 'taxonomy_term':
-  //     $vocab = $entity_form['#bundle'];
-
-  //     switch ($vocab) {
-
-  //     } // end switch
-
-  //   break;
-
-  // } // end switch
-}
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\Entity\Node;
+use Drupal\node\NodeInterface;
+use Drupal\paragraphs\Entity\Paragraph;
 
 /**
  * Implements hook_form_alter().
  *
  * Replaces the "Add media" button text with more appropriate text.
  */
-function v7_field_widget_media_library_widget_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $context) {
-  /* */
+function v7_field_widget_media_library_widget_form_alter(&$form, FormStateInterface $form_state, $context) {
   // $entity = $form_state->getFormObject()->getEntity();
   $title = $form['#title'];
 
@@ -57,8 +43,731 @@ function v7_field_widget_media_library_widget_form_alter(&$form, \Drupal\Core\Fo
   $form['open_button']['#value'] = $button_text;
 }
 
+/**
+ * Implements hook_admin_paths_alter().
+ */
+function v7_admin_paths_alter(&$paths) {
+  $paths['admin'] = TRUE;
+  $paths['admin/*'] = TRUE;
+}
+
+/**
+ * Implements hook_library_info_build().
+ */
+function v7_library_info_build() {
+  $libraries['admin_overrides'] = [
+    'version' => '1.x',
+    'css' => [
+      'theme' => [
+        'css/admin_overrides.css' => [],
+      ],
+    ],
+    'js' => [
+      'js/admin_overrides.js' => [],
+    ],
+  ];
+  $libraries['group_menu'] = [
+    'version' => '1.x',
+    'css' => [
+      'theme' => [
+        'css/group_menu.css' => [],
+      ],
+    ],
+    'js' => [
+      'js/group_menu.js' => [],
+    ],
+  ];
+
+  return $libraries;
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
 function v7_preprocess_page(&$variables) {
-  if (\Drupal::service('router.admin_context')->isAdminRoute()) {
-    $variables['#attached']['library'][] = 'v7/admin_overrides';
+  $variables['#attached']['library'][] = 'v7/group_menu';
+}
+
+function v7_preprocess_html(&$variables) {
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Customize the columns shown in the IEF table for the Themes List field.
+ *
+ * @inheritdoc
+ */
+function v7_inline_entity_form_table_fields_alter(&$fields, $context) {
+  if ($context['entity_type'] == 'paragraph' && $context['field_name'] == 'field_themes_list') {
+    // Remove the Label column.
+    unset($fields['label']);
+
+    // Remove the Type column, which we will replace with Usage (so it appears at the end).
+    unset($fields['type']);
+
+    // Add custom columns for List Order, Theme, Borrowed From, and Borrowed Order.
+    $fields['field_listing_order'] = [
+      'type'  => 'field',
+      'label' => t('List Order'),
+      'field' => 'field_listing_order',
+    ];
+    $fields['field_theme'] = [
+      'type'  => 'callback',
+      'label' => t('Theme'),
+      'callback' => '_v7_custom_theme_field_render',
+    ];
+
+    // Alter text in Type column and rename it Usage.
+    $fields['type'] = [
+      'type' => 'callback',
+      'label' => t('Usage'),
+      'callback' => '_v7_custom_usage_field_render',
+    ];
+
+    // Show Borrowed info, if any, replacing "N/A" with "——
+    $fields['field_owner'] = [
+      'type'  => 'callback',
+      'label' => t('Borrowed From'),
+      'callback' => '_v7_custom_borrowed_from_field_render',
+    ];
+    $fields['field_borrowed_listing_order'] = [
+      'type'  => 'callback',
+      'label' => t('Borrowed Order'),
+      'callback' => '_v7_custom_borrowed_order_field_render',
+    ];
   }
+}
+
+/**
+ * Custom render callback for the Theme field in the IEF table.
+ *
+ * @param EntityInterface $entity
+ *   The entity being rendered (either Original or Borrowed paragraph).
+ * @param string $field_name
+ *   The name of the field being rendered.
+ *
+ * @return string
+ *   The customized output for the Theme field.
+ */
+function _v7_custom_theme_field_render(EntityInterface $entity, $field_name) {
+  // Determine the Theme node referenced by this paragraph.
+  $theme = NULL;
+
+  // For Original paragraphs, use 'field_theme'.
+  if ($entity->hasField('field_theme') && !$entity->get('field_theme')->isEmpty()) {
+    $theme = $entity->get('field_theme')->entity;
+  }
+  // For Borrowed paragraphs, use 'field_borrowed_theme'.
+  elseif ($entity->hasField('field_borrowed_theme') && !$entity->get('field_borrowed_theme')->isEmpty()) {
+    $theme = $entity->get('field_borrowed_theme')->entity;
+  }
+
+  // If no Theme node is referenced, return a placeholder.
+  if (!$theme) {
+    // Indicate there is nothing here.
+    return '——';
+  }
+
+  // Gather necessary fields from the Theme node.
+  $is_title_known = $theme->get('field_is_title_known')->value ?: FALSE;
+  $theme_title = $theme->label();
+  $theme_subtitle = $theme->get('field_subtitle')->value;
+  $has_subtitle = !empty($theme_subtitle);
+
+  // If the title is known, wrap it in quotes. If not, wrap it in parentheses.
+  if ($is_title_known) {
+    if ($has_subtitle) {
+      // If title is known and there is a subtitle, append subtitle in parentheses and wrap both in quotes.
+      $full_title = '“' . $theme_title . ' (' . $theme_subtitle . ')”';
+    } else {
+      // If title is known and there is no subtitle, wrap only the title in quotes.
+      $full_title = '“' . $theme_title . '”';
+    }
+  } else {
+    if ($has_subtitle) {
+      // If title is unknown and there is a subtitle, append subtitle with en-dash and wrap both in parentheses.
+      $full_title = '(' . $theme_title . ' – ' . $theme_subtitle . ')';
+    } else {
+      // If title is unknown and there is no subtitle, wrap only the title in parentheses.
+      $full_title = '(' . $theme_title . ')';
+    }
+  }
+
+  // Customize the output format (this example concatenates fields).
+  return $full_title;
+}
+
+/**
+ * Custom render callback for the Usage (Type) field in the IEF table.
+ *
+ * @param EntityInterface $entity
+ *   The entity being rendered (either Original or Borrowed paragraph).
+ * @param string $field_name
+ *   The name of the field being rendered (usually 'type').
+ *
+ * @return string
+ *   The customized output for the Usage (Type) field.
+ */
+function _v7_custom_usage_field_render(EntityInterface $entity, $field_name) {
+  // Get the paragraph type from the entity.
+  $paragraph_type = $entity->bundle();
+
+  // Map paragraph type machine names to custom labels.
+  $type_mapping = [
+    'original_theme_usage' => t('Original'),
+    'borrowed_theme_usage' => t('Borrowed'),
+  ];
+
+  // Return the mapped label, or fall back to the machine name if not mapped.
+  return @$type_mapping[$paragraph_type] ?: $paragraph_type;
+}
+
+/**
+ * Custom render callback for the Borrowed From field.
+ *
+ * @param Paragraph $paragraph
+ *   The paragraph entity being rendered.
+ * @param array $form
+ *   The form array for the IEF table.
+ *
+ * @return string
+ *   The rendered output for the field.
+ */
+function _v7_custom_borrowed_from_field_render(Paragraph $paragraph, array $form) {
+  if ($paragraph->hasField('field_owner')) {
+    // Get the field value.
+    $owner = $paragraph->get('field_owner')->entity;
+    if ($owner) {
+      return $owner->label();
+    }
+    // Fallback to placeholder if no owner is set.
+    return '——';
+  } else {
+    // Return a placeholder for empty value.
+    return '——';
+  }
+}
+
+/**
+ * Custom render callback for the Borrowed Order field.
+ *
+ * @param Paragraph $paragraph
+ *   The paragraph entity being rendered.
+ * @param array $form
+ *   The form array for the IEF table.
+ *
+ * @return string
+ *   The rendered output for the field.
+ */
+function _v7_custom_borrowed_order_field_render(Paragraph $paragraph, array $form) {
+  if ($paragraph->hasField('field_borrowed_listing_order')) {
+    // Get the field value.
+    $order = $paragraph->get('field_borrowed_listing_order')->value;
+    if (!empty($order)) {
+      return $order;
+    }
+    // Fallback to placeholder if no owner is set.
+    return '——';
+  } else {
+    // Return a placeholder for empty value.
+    return '——';
+  }
+}
+
+/**
+ * Implements hook_js_alter().
+ */
+function v7_js_alter(&$javascript, AttachedAssetsInterface $assets) {
+  foreach ($javascript as &$file) {
+    if ($file['type'] != 'external') {
+      $file['type'] = 'external';
+      $file['data'] = '/' . $file['data'];
+    }
+  }
+}
+
+/// BORROWING FUNCITONALITY ///
+
+/**
+ * Helper: Get all themes belonging to a given wrestler/team node.
+ */
+function _v7_get_wrestler_themes($owner_id) {
+  $options = ['' => '- Select a wrestler above first -'];
+  if (!$owner_id) return $options;
+
+  $owner = Node::load($owner_id);
+  if (!$owner || !$owner->hasField('field_themes_list')) {
+    return $options;
+  }
+  $options = ['' => '- Select a theme to continue -'];
+  foreach ($owner->get('field_themes_list') as  $item) {
+    $paragraph = $item->entity;
+    if (!$paragraph) continue;
+    $listing_order = $paragraph->get('field_listing_order')->value;
+    if ($paragraph->bundle() === 'original_theme_usage') {
+      $theme = $paragraph->get('field_theme')->entity;
+    } elseif ($paragraph->bundle() === 'borrowed_theme_usage') {
+      $theme = $paragraph->get('field_borrowed_theme')->entity;
+    } else {
+      continue;
+    }
+    if ($theme) {
+      $id = (string)$theme->id();
+      $options[$id] = $listing_order . ': ' . $theme->label();
+    }
+  }
+
+  return $options;
+}
+
+/**
+ * Helper: Get the Listing Order for a given theme belonging to a wrestler/team.
+ */
+function _v7_get_listing_order($owner_nid, $theme_id) {
+  if (!$owner_nid || !$theme_id) {
+    return '';
+  }
+  $owner = Node::load($owner_nid);
+  if (!$owner || !$owner->hasField('field_themes_list')) {
+    return '';
+  }
+  foreach ($owner->get('field_themes_list') as $item) {
+    $paragraph = $item->entity;
+    if (!$paragraph) {
+      continue;
+    }
+    if ($paragraph->bundle() == 'original_theme_usage') {
+      $theme = $paragraph->get('field_theme')->entity;
+    } elseif ($paragraph->bundle() == 'borrowed_theme_usage') {
+      $theme = $paragraph->get('field_borrowed_theme')->entity;
+    } else {
+      continue;
+    }
+    if ($theme && (string)$theme->id() === (string)$theme_id) {
+      return $paragraph->get('field_listing_order')->value;
+    }
+  }
+
+  return '';
+}
+
+/**
+ * AJAX callback for updating the Borrowed Listing Order field.
+ */
+function _v7_borrowed_theme_select_ajax_callback(
+  array &$form, FormStateInterface $form_state
+) {
+  // Determine whether adding or editing.
+  if (
+    isset($form['field_themes_list']['widget']['form']['inline_entity_form'])
+  ) {
+    // Adding.
+    $ief = &$form['field_themes_list']['widget']['form']['inline_entity_form'];
+
+    // Determine Borrowed From wrestler/team node ID.
+    $owner_id = NULL;
+    if (
+      isset($ief['field_owner']['widget'][0]['target_id']['#value']) &&
+      !empty($ief['field_owner']['widget'][0]['target_id']['#value'])
+    ) {
+      $owner_id = $ief['field_owner']['widget'][0]['target_id']['#value'];
+    } elseif (
+      isset($ief['field_owner']['widget'][0]['target_id']['#default_value']) &&
+      is_object($ief['field_owner']['widget'][0]['target_id']['#default_value'])
+    ) {
+      $owner_id = $ief['field_owner']['widget'][0]['target_id']
+        ['#default_value']->id();
+    }
+
+    // Convert string ("Wrestler/Team Name (nid)") to node ID integer (nid).
+    $owner_id = _v7_extract_owner_id($owner_id);
+
+    // Determine theme ID.
+    $theme_id = NULL;
+    if (
+      isset($ief['field_borrowed_theme']['widget']['#value']) &&
+      !empty($ief['field_borrowed_theme']['widget']['#value'])
+    ) {
+      $theme_id = $ief['field_borrowed_theme']['widget']['#value'];
+    } elseif (
+      isset(
+        $ief['field_borrowed_theme']['widget']['#default_value']
+      ) &&
+      is_object(
+        $ief['field_borrowed_theme']['widget']['#default_value']
+      )
+    ) {
+      $theme_id = $ief['field_borrowed_theme']['widget']
+        ['#default_value']->id();
+    }
+  }
+  elseif (isset($form['field_themes_list']['widget']['entities'])) {
+    // Editing. Determine correct delta from trigger element's #parents array.
+    $triggering_element = $form_state->getTriggeringElement();
+    $parents = $triggering_element['#parents'];
+    $entities_key = array_search('entities', $parents);
+    $paragraph_index = NULL;
+    // The numerical delta is usually right after 'elements' in #parents array.
+    if ($entities_key !== FALSE && isset($parents[$entities_key + 1])) {
+      $paragraph_index = $parents[$entities_key + 1];
+    }
+    if ($paragraph_index === NULL) {
+      err('Something went wrong!');
+      return;
+    }
+    // Retrieve form values and subform.
+    $form_values = $form_state->getValues();
+    $subform = $form_values['field_themes_list']['form']['inline_entity_form']['entities'][$paragraph_index]['form'];
+    $owner_id = $subform['field_owner'][0]['target_id'];
+    $theme_id = $subform['field_borrowed_theme'][0]['target_id'];
+
+    $ief = &$form['field_themes_list']['widget']['entities'][$paragraph_index]
+      ['form']['inline_entity_form'];
+
+    dbg('OWNER ID = ' . $owner_id . '; THEME ID = ' . $theme_id);
+    // Make sure field_borrowed_theme select has correct list of themes from field_owner.
+    $ief['field_borrowed_theme']['widget']['#options'] = _v7_get_wrestler_themes($owner_id);
+    // Set options at every widget instance and at the deepest level.
+    $options = $ief['field_borrowed_theme']['widget']['#options'];
+    if (isset($ief['field_borrowed_theme']['widget']) && is_array($ief['field_borrowed_theme']['widget'])) {
+      foreach ($ief['field_borrowed_theme']['widget'] as &$widget_instance) {
+        if (is_array($widget_instance) && isset($widget_instance['target_id'])) {
+          $widget_instance['target_id']['#options'] = $options;
+        }
+        if (is_array($widget_instance) && isset($widget_instance['#options'])) {
+          $widget_instance['#options'] = $options;
+        }
+      }
+    }
+
+    // Output list of #options attached to field_borrowed_theme dropdown select.
+    dbg('Options: ' . print_r($ief['field_borrowed_theme']['widget']['#options'], TRUE));
+  } else {
+    return;
+  }
+
+  // Get the listing order for the newly selected theme.
+  $listing_order = _v7_get_listing_order($owner_id, $theme_id);
+  // Set the listing order in the subform.
+  if (isset($ief['field_borrowed_listing_order']['widget'][0]['value'])) {
+    $ief['field_borrowed_listing_order']['widget'][0]['value']['#value']
+      = $listing_order;
+  }
+
+  // Return the updated listing order field.
+  return $ief['field_borrowed_listing_order'];
+}
+
+/**
+ * Implements hook_entity_presave().
+ */
+function v7_entity_presave(EntityInterface $entity) {
+  if ($entity instanceof Paragraph && $entity->bundle() == 'borrowed_theme_usage') {
+    $owner = $entity->get('field_owner')->entity;
+    $theme = $entity->get('field_borrowed_theme')->entity;
+    if ($owner && $theme) {
+      $listing_order = _v7_get_listing_order($owner->id(), $theme->id());
+      $entity->set('field_borrowed_listing_order', $listing_order);
+    }
+  }
+}
+
+function v7_inline_entity_form_entity_form_alter(
+  array &$entity_form, FormStateInterface &$form_state
+) {
+  // We're targeting the Borrowed Theme Usage paragraph subform.
+  if (
+    in_array('field_themes_list', $entity_form['#parents']) &&
+    $entity_form['#bundle'] === 'borrowed_theme_usage'
+  ) {
+    // Check if both fields exist in the form.
+    if (
+      isset($entity_form['field_owner']['widget'][0]['target_id']) &&
+      isset($entity_form['field_borrowed_theme']['widget'])
+    ) {
+      $owner = &$entity_form['field_owner']['widget'][0]['target_id'];
+      $theme = &$entity_form['field_borrowed_theme']['widget'];
+
+      // Add AJAX to the Owner field.
+      $owner['#ajax'] = [
+        'callback' => '_v7_borrowed_theme_owner_ajax_callback',
+        'wrapper' => 'borrowed-theme-wrapper',
+        'event' => 'autocompleteclose',
+        'progress' => ['type' => 'throbber'],
+      ];
+
+      // AJAX wrappers.
+      $theme['#prefix'] = '<div id="borrowed-theme-wrapper">';
+      $theme['#suffix'] = '</div>';
+      $entity_form['field_borrowed_listing_order']['#prefix']
+        = '<div id="borrowed-listing-order-wrapper">';
+      $entity_form['field_borrowed_listing_order']['#suffix'] = '</div>';
+
+      // Set default to empty drodown.
+      $theme['#options'] = ['' => t('- Select a wrestler above first -')];
+
+      // Always try to determine the owner_nid from current form state.
+      $input_owner = $form_state->getUserInput()['field_owner']['widget'][0]
+        ['target_id'] ?? NULL;
+      $owner_nid = NULL;
+
+      // Try to resolve owner nid from autocomplete input (usually "Name (ID)").
+      if (!empty($input_owner)) {
+        $owner_nid = _v7_extract_owner_id($input_owner);
+      }
+
+      $parents = $form_state->getTriggeringElement()['#parents'] ?? $entity_form['#parents'] ?? NULL;
+      $paragraph_index = _v7_get_delta_from_parents($parents);
+      $owner_nid = $form_state->getUserInput()['field_themes_list']['form']['inline_entity_form']['entities'][$paragraph_index]['form']['field_owner'][0]['target_id'];
+      $owner_nid = _v7_extract_owner_id($owner_nid);
+
+      // Defensive fallback: try default value if form input isn't usable yet.
+      if (!$owner_nid && !empty($owner['#default_value'])) {
+        if (is_object($owner['#default_value'])) {
+          $owner_nid = $owner['#default_value']->id();
+        } elseif (is_numeric($owner['#default_value'])) {
+          $owner_nid = $owner['#default_value'];
+        }
+      }
+
+      // Now populate the options.
+      if (!empty($owner_nid)) {
+        $theme['#options'] = _v7_get_wrestler_themes($owner_nid);
+      }
+      else {
+        $theme['#options'] = ['' => t('- Select a wrestler above first -')];
+      }
+
+      // Get the current selected theme ID.
+      $theme_id = NULL;
+      // Extract theme ID value.
+      $theme_input_form = $form_state->getUserInput()['field_themes_list']['form'];
+      foreach ($theme_input_form as $form) {
+        if (isset($form['field_borrowed_theme'])) {
+          $theme_id = $form['field_borrowed_theme'];
+        }
+      }
+      $theme_id = _v7_extract_owner_id($theme_id);
+
+      // Ensure the selected value is in the options.
+      if ($theme_id && !isset($theme['#options'][$theme_id])) {
+        // Load the theme entity to get its label.
+        $theme_entity = \Drupal::entityTypeManager()->getStorage('node')
+          ->load($theme_id);
+        if ($theme_entity) {
+          $theme['#options'][$theme_id] = $theme_entity->label();
+        }
+      }
+
+      // Add AJAX to the theme dropdown.
+      $theme['#ajax'] = [
+        'callback' => '_v7_borrowed_theme_select_ajax_callback',
+        'wrapper' => 'borrowed-listing-order-wrapper',
+        'event' => 'change',
+        'progress' => ['type' => 'throbber', 'message' => NULL],
+      ];
+
+      // Get the current selected theme ID.
+      $theme_id = NULL;
+      $theme_input = $form_state->getUserInput()['field_borrowed_theme']
+        ['widget'][0]['target_id'] ?? NULL;
+      if ($theme_input) {
+        $theme_id = $theme_input;
+      } elseif (isset($theme['#default_value'])) {
+        if (
+          is_object($theme['#default_value']) &&
+          method_exists($theme['#default_value'], 'id')
+        ) {
+          $theme_id = $theme['#default_value']->id();
+        } elseif (is_numeric($theme['#default_value'])) {
+          $theme_id = $theme['#default_value'];
+        }
+      }
+
+      // Ensure the selected value is in the options.
+      if ($theme_id && !isset($theme['#options'][$theme_id])) {
+        // Load the theme entity to get its label.
+        $theme_entity = \Drupal::entityTypeManager()->getStorage('node')
+          ->load($theme_id);
+        if ($theme_entity) {
+          $theme['#options'][$theme_id] = $theme_entity->label();
+        }
+      }
+
+      // Auto-fill listing order field.
+      if ($owner_nid && $theme_id) {
+        $listing_order = _v7_get_listing_order($owner_nid, $theme_id);
+        $entity_form['field_borrowed_listing_order']['widget'][0]['value']
+          ['#value'] = $listing_order;
+        $entity_form['field_borrowed_listing_order']['widget'][0]['value']
+          ['#default_value'] = $listing_order;
+        dbg('Selected Listing Order = ' . $listing_order);
+      }
+
+      // If no owner node ID found, populate Borrowed Theme dropdown regardless.
+      if (empty($owner_nid)) {
+        // If a theme is selected, add it to the options so validation passes.
+        $theme_id = NULL;
+        $theme_input = $form_state->getUserInput()['field_borrowed_theme']
+          ['widget'][0]['target_id'] ?? NULL;
+        if ($theme_input) {
+          $theme_id = (string)$theme_input;
+        } elseif (isset($theme['#default_value'])) {
+          if (
+            is_object($theme['#default_value']) &&
+            method_exists($theme['#default_value'], 'id')
+          ) {
+            $theme_id = (string)$theme['#default_value']->id();
+          } elseif (is_numeric($theme['#default_value'])) {
+            $theme_id = (string)$theme['#default_value'];
+          }
+        }
+        if ($theme_id) {
+          $theme_entity = \Drupal::entityTypeManager()->getStorage('node')
+            ->load($theme_id);
+          if ($theme_entity) {
+            $theme['#options'][$theme_id] = $theme_entity->label();
+          }
+        }
+      }
+
+      // // Loop over all widget instances to set options at the deepest level.
+      // if (isset($theme['widget']) && is_array($theme['widget'])) {
+      //   foreach ($theme['widget'] as &$widget_instance) {
+      //     if (is_array($widget_instance)) {
+      //       if (isset($widget_instance['target_id'])) {
+      //         $widget_instance['target_id']['#options'] = $theme['#options'];
+      //       }
+      //       if (isset($widget_instance['#options'])) {
+      //         $widget_instance['#options'] = $theme['#options'];
+      //       }
+      //     }
+      //   }
+      // }
+    }
+  }
+}
+
+/**
+ * AJAX callback for updating the Borrowed Theme dropdown.
+ */
+function _v7_borrowed_theme_owner_ajax_callback(
+  array &$form, FormStateInterface $form_state
+) {
+  // Determine whether adding or editing.
+  if (
+    isset($form['field_themes_list']['widget']['form']['inline_entity_form'])
+  ) {
+    // Adding.
+    $ief = &$form['field_themes_list']['widget']['form']['inline_entity_form'];
+
+    // Determine Borrowed From wrestler/team node ID.
+    $owner_id = NULL;
+    if (
+      isset($ief['field_owner']['widget'][0]['target_id']['#value']) &&
+      !empty($ief['field_owner']['widget'][0]['target_id']['#value'])
+    ) {
+      $owner_id = $ief['field_owner']['widget'][0]['target_id']['#value'];
+    } elseif (
+      isset($ief['field_owner']['widget'][0]['target_id']['#default_value']) &&
+      is_object($ief['field_owner']['widget'][0]['target_id']['#default_value'])
+    ) {
+      $owner_id = $ief['field_owner']['widget'][0]['target_id']['#default_value']
+        ->id();
+    }
+
+    // Convert string ("Wrestler/Team Name (nid)") to node ID integer (nid).
+    $owner_id = _v7_extract_owner_id($owner_id);
+
+    // If still no owner ID, show an error (TODO: improve this).
+    if (!$owner_id) {
+      // If no owner is selected, reset the theme options.
+      $error_opts = [
+        '' => t('- Something went wrong. Please reload and try again. -'),
+      ];
+      $ief['field_borrowed_theme']['widget']['#options'] = $error_opts;
+      $ief['field_borrowed_theme']['widget'][0]['target_id']['#options']
+        = $error_opts;
+      return $ief['field_borrowed_theme'];
+    }
+  } elseif (isset($form['field_themes_list']['widget']['entities'])) {
+    // Editing. Determine correct delta from trigger element's #parents array.
+    $triggering_element = $form_state->getTriggeringElement();
+    $parents = $triggering_element['#parents'];
+    $entities_key = array_search('entities', $parents);
+    $paragraph_index = _v7_get_delta_from_parents($parents);
+    if ($paragraph_index === NULL) {
+      err('Something went wrong!');
+      return;
+    }
+    // Retrieve form values and subform.
+    $form_values = $form_state->getValues();
+    $subform = $form_values['field_themes_list']['form']['inline_entity_form']
+      ['entities'][$paragraph_index]['form'];
+    $owner_id = $subform['field_owner'][0]['target_id'];
+
+    $ief = &$form['field_themes_list']['widget']['entities'][$paragraph_index]
+      ['form']['inline_entity_form'];
+  } else {
+    return;
+  }
+
+  // Load the themes for the selected owner.
+  $theme_options = _v7_get_wrestler_themes($owner_id);
+
+  $ief['field_borrowed_theme']['widget']['#options'] = $theme_options;
+  $ief['field_borrowed_theme']['widget']['#value'] = '';
+  $ief['field_borrowed_theme']['widget']['#default_value'] = '';
+
+  // Return the updated theme field.
+  return $ief['field_borrowed_theme'];
+}
+
+function _v7_get_delta_from_parents(array $parents) {
+  // The numerical delta is usually right after 'elements' in #parents array.
+  $entities_key = array_search('entities', $parents);
+  if ($entities_key !== FALSE && isset($parents[$entities_key + 1])) {
+    return $parents[$entities_key + 1];
+  }
+  return NULL;
+}
+
+/**
+ * Helper: Extracts an entity ID from a string (e.g., "Name (123)").
+ */
+function _v7_extract_owner_id($input) {
+  if (is_numeric($input)) {
+    return (int) $input;
+  }
+
+  if (is_string($input)) {
+    return EntityAutocomplete::extractEntityIdFromAutocompleteInput($input);
+  }
+
+  if (is_object($input) && method_exists($input, 'id')) {
+    return $input->id();
+  }
+
+  return NULL;
+}
+
+
+function dbg(string $msg) {
+  \Drupal::logger('v7')->debug($msg);
+}
+function ntc(string $msg) {
+  \Drupal::logger('v7')->notice($msg);
+}
+function err(string $msg) {
+  \Drupal::logger('v7')->error($msg);
+}
+function wrn(string $msg) {
+  \Drupal::logger('v7')->warn($msg);
+}
+function keys(array $array, string $delimiter = ', ') {
+  return implode($delimiter, array_keys($array));
+}
+function vals(array $array, string $delimiter = ', ') {
+  return implode($delimiter, array_values($array));
 }
