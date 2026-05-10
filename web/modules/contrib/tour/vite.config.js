@@ -6,16 +6,18 @@ export default defineConfig(({ mode }) => {
     build: {
       manifest: true,
       rollupOptions: {
-        external: ['jQuery', 'Backbone', 'Drupal', 'drupalSettings', 'once'],
-        input: 'js/tour.js',
+        input: 'js/third-party.js',
         output: {
-          assetFileNames: (assetInfo) => {
-            return assetInfo.name;
-          },
           entryFileNames: (assetInfo) => {
             return `${assetInfo.name}.js`;
           },
         },
+      },
+      lib: {
+        entry: 'js/third-party.js',
+        name: 'ThirdPartyLib',
+        formats: ['iife'],
+        fileName: () => 'js/third-party.js',
       },
     },
     css: { devSourcemap: true },

@@ -27,6 +27,9 @@ function import_new_tour_config(string $id): void {
     }
 
     $file = \Drupal::service('extension.list.module')->getPath('tour') . '/config/optional/tour.tour.' . $id . '.yml';
+    if (!file_exists($file)) {
+      return;
+    }
     $raw = file_get_contents($file);
     if ($raw) {
       $value = Yaml::decode($raw);

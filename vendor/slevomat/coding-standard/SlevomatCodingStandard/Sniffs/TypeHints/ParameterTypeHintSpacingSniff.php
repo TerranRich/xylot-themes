@@ -4,6 +4,7 @@ namespace SlevomatCodingStandard\Sniffs\TypeHints;
 
 use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use SlevomatCodingStandard\Helpers\FixerHelper;
 use SlevomatCodingStandard\Helpers\TokenHelper;
 use SlevomatCodingStandard\Helpers\TypeHintHelper;
 use function array_keys;
@@ -53,14 +54,10 @@ class ParameterTypeHintSpacingSniff implements Sniff
 			$parameterName = $tokens[$parameterPointer]['content'];
 
 			$parameterStartPointer = TokenHelper::findPrevious($phpcsFile, T_COMMA, $parameterPointer - 1, $parametersStartPointer);
-			if ($parameterStartPointer === null) {
-				$parameterStartPointer = $parametersStartPointer;
-			}
+			$parameterStartPointer ??= $parametersStartPointer;
 
 			$parameterEndPointer = TokenHelper::findNext($phpcsFile, T_COMMA, $parameterPointer + 1, $parametersEndPointer + 1);
-			if ($parameterEndPointer === null) {
-				$parameterEndPointer = $parametersEndPointer;
-			}
+			$parameterEndPointer ??= $parametersEndPointer;
 
 			$attributeCloserPointer = TokenHelper::findPrevious($phpcsFile, T_ATTRIBUTE_END, $parameterPointer - 1, $parameterStartPointer);
 
@@ -99,7 +96,7 @@ class ParameterTypeHintSpacingSniff implements Sniff
 				);
 				if ($fix) {
 					$phpcsFile->fixer->beginChangeset();
-					$phpcsFile->fixer->addContent($typeHintEndPointer, ' ');
+					FixerHelper::add($phpcsFile, $typeHintEndPointer, ' ');
 					$phpcsFile->fixer->endChangeset();
 				}
 			} elseif ($tokens[$typeHintEndPointer + 1]['content'] !== ' ') {
@@ -113,7 +110,7 @@ class ParameterTypeHintSpacingSniff implements Sniff
 				);
 				if ($fix) {
 					$phpcsFile->fixer->beginChangeset();
-					$phpcsFile->fixer->replaceToken($typeHintEndPointer + 1, ' ');
+					FixerHelper::replace($phpcsFile, $typeHintEndPointer + 1, ' ');
 					$phpcsFile->fixer->endChangeset();
 				}
 			}
@@ -144,7 +141,7 @@ class ParameterTypeHintSpacingSniff implements Sniff
 			}
 
 			$phpcsFile->fixer->beginChangeset();
-			$phpcsFile->fixer->replaceToken($nullabilitySymbolPointer + 1, '');
+			FixerHelper::replace($phpcsFile, $nullabilitySymbolPointer + 1, '');
 			$phpcsFile->fixer->endChangeset();
 		}
 	}

@@ -1,12 +1,15 @@
 {
+  "name": "tour",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "vite build"
   },
   "dependencies": {
-    "shepherd.js": "^14.0.1",
-    "vite": "^5.4.9"
+    "backbone": "^1.6.1",
+    "shepherd.js": "^13.0.3",
+    "underscore": "^1.13.7",
+    "vite": "^7.0.0"
   },
   "devDependencies": {
     "prettier": "^3.3.3"

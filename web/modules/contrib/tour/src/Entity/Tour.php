@@ -79,10 +79,8 @@ class Tour extends ConfigEntityBase implements TourInterface {
 
   /**
    * The modules needed by this tour.
-   *
-   * @var string
    */
-  protected string $module = '';
+  protected ?string $module = NULL;
 
   /**
    * The routes on which this tour should be displayed, keyed by route id.
@@ -127,6 +125,9 @@ class Tour extends ConfigEntityBase implements TourInterface {
    * {@inheritdoc}
    */
   public function getModule(): string {
+    if (is_null($this->module)) {
+      return '';
+    }
     return $this->module;
   }
 
@@ -157,31 +158,30 @@ class Tour extends ConfigEntityBase implements TourInterface {
     if (!isset($this->keyedRoutes)) {
       $this->keyedRoutes = [];
       foreach ($this->getRoutes() as $route) {
-        $this->keyedRoutes[$route['route_name']] = $route['route_params'] ?? [];
+        // There may be multiple routes with the same route name, e.g.
+        // multiple entity.node.canonical entries with different node ID's:
+        $this->keyedRoutes[$route['route_name']][] = $route['route_params'] ?? [];
       }
     }
     if (!isset($this->keyedRoutes[$route_name])) {
-      // We don't know about this route.
+      // We don't know about the given $route_name.
       return FALSE;
     }
-    if (empty($this->keyedRoutes[$route_name])) {
-      // We don't need to worry about route params, the route name is enough.
-      return TRUE;
-    }
-    foreach ($this->keyedRoutes[$route_name] as $key => $value) {
-      // If a required param is missing or doesn't match, return FALSE.
-      if (empty($route_params[$key]) || $route_params[$key] !== $value) {
-        return FALSE;
+    foreach ($this->keyedRoutes[$route_name] as $routeMatch) {
+      if (empty($routeMatch)) {
+        // No route_params given, so we don't need to worry about route params,
+        // the route name is enough.
+        return TRUE;
+      }
+      foreach ($routeMatch as $key => $value) {
+        if (!empty($route_params[$key]) && $route_params[$key] === $value) {
+          // Return true if any route matches:
+          return TRUE;
+        }
       }
     }
-    return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function resetKeyedRoutes(): void {
-    unset($this->keyedRoutes);
+    // None of the routes matched:
+    return FALSE;
   }
 
   /**

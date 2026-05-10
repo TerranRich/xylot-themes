@@ -158,7 +158,7 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
     {
         $log = [];
         foreach ($this->traces as $request => $traces) {
-            $log[] = sprintf('%s: %s', $request, implode(', ', $traces));
+            $log[] = \sprintf('%s: %s', $request, implode(', ', $traces));
         }
 
         return implode('; ', $log);
@@ -219,7 +219,13 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
             $this->record($request, 'reload');
             $response = $this->fetch($request, $catch);
         } else {
-            $response = $this->lookup($request, $catch);
+            $response = null;
+            do {
+                try {
+                    $response = $this->lookup($request, $catch);
+                } catch (CacheWasLockedException) {
+                }
+            } while (null === $response);
         }
 
         $this->restoreResponseBody($request, $response);
@@ -576,21 +582,12 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
 
         // wait for the lock to be released
         if ($this->waitForLock($request)) {
-            // replace the current entry with the fresh one
-            $new = $this->lookup($request);
-            $entry->headers = $new->headers;
-            $entry->setContent($new->getContent());
-            $entry->setStatusCode($new->getStatusCode());
-            $entry->setProtocolVersion($new->getProtocolVersion());
-            foreach ($new->headers->getCookies() as $cookie) {
-                $entry->headers->setCookie($cookie);
-            }
-        } else {
-            // backend is slow as hell, send a 503 response (to avoid the dog pile effect)
-            $entry->setStatusCode(503);
-            $entry->setContent('503 Service Unavailable');
-            $entry->headers->set('Retry-After', 10);
+            throw new CacheWasLockedException(); // unwind back to handle(), try again
         }
+        // backend is slow as hell, send a 503 response (to avoid the dog pile effect)
+        $entry->setStatusCode(503);
+        $entry->setContent('503 Service Unavailable');
+        $entry->headers->set('Retry-After', 10);
 
         return true;
     }

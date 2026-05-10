@@ -1,21 +1,31 @@
 tour:
   version: VERSION
   js:
-    dist/tour.js: { weight: -1 }
+    js/tour.js: {
+      weight: -1,
+      minified: true,
+      preprocess: false,
+    }
   dependencies:
     - core/jquery
-    - core/once
+    - tour/third-party
     - core/drupal
     - core/drupalSettings
-    # @todo Remove this in https://www.drupal.org/project/drupal/issues/3204011
-    - core/internal.backbone
+    - core/once
     - tour/tour-styling
+
+third-party:
+  version: VERSION
+  js:
+    dist/third-party.js: { weight: -2 }
+  css:
+    component:
+      css/third-party/shepherd/css/shepherd.css: { }
 
 tour-styling:
   version: VERSION
   css:
     component:
-      dist/tour.css: { media: screen }
       css/tour.module.css: { media: screen }
 
 tour-block-styling:

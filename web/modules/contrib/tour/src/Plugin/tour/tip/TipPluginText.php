@@ -21,13 +21,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class TipPluginText extends TipPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The body text which is used for render of this Text Tip.
-   *
-   * @var string
-   */
-  protected string $body;
-
-  /**
    * Constructs a \Drupal\tour\Plugin\tour\tip\TipPluginText object.
    *
    * @param array $configuration
@@ -54,11 +47,9 @@ class TipPluginText extends TipPluginBase implements ContainerFactoryPluginInter
    * {@inheritdoc}
    */
   public function defaultConfiguration(): array {
-    return [
+    return parent::defaultConfiguration() + [
       'body' => '',
-      'selector' => NULL,
-      'position' => '',
-    ] + parent::defaultConfiguration();
+    ];
   }
 
   /**
@@ -79,69 +70,7 @@ class TipPluginText extends TipPluginBase implements ContainerFactoryPluginInter
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
-    $id = $this->get('id');
-    $form['label'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Title'),
-      '#description' => $this->t('The tip title should match the title of the component the selector field is referencing. For the initial general tip with the empty selector field, use the h1 of the page. Each additional tip without a selector should have a unique descriptive title.'),
-      '#required' => TRUE,
-      '#default_value' => $this->get('label'),
-    ];
-    $form['id'] = [
-      '#type' => 'machine_name',
-      '#default_value' => $id,
-      '#disabled' => !empty($id),
-      '#machine_name' => [
-        'exists' => '\Drupal\tour\Entity\Tour::load',
-      ],
-    ];
-    $form['plugin'] = [
-      '#type' => 'value',
-      '#value' => $this->get('plugin'),
-    ];
-    $form['weight'] = [
-      '#type' => 'weight',
-      '#title' => $this->t('Weight'),
-      '#default_value' => $this->get('weight'),
-      '#attributes' => [
-        'class' => ['tip-order-weight'],
-      ],
-    ];
-
-    $form['selector'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Selector'),
-      '#default_value' => $this->get('selector'),
-      '#description' => $this->t('This can be any selector string or a DOM element (e.g,. .some .selector-path or #some-id). If you don’t specify the element will appear in the middle of the screen.'),
-    ];
-
-    $form['position'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Position'),
-      '#options' => [
-        'auto' => $this->t('Auto'),
-        'auto-start' => $this->t('Auto start'),
-        'auto-end' => $this->t('Auto end'),
-        'top' => $this->t('Top'),
-        'top-start' => $this->t('Top start'),
-        'top-end' => $this->t('Top end'),
-        'bottom' => $this->t('Bottom'),
-        'bottom-start' => $this->t('Bottom start'),
-        'bottom-end' => $this->t('Bottom end'),
-        'right' => $this->t('Right'),
-        'right-start' => $this->t('Right start'),
-        'right-end' => $this->t('Right end'),
-        'left' => $this->t('Left'),
-        'left-start' => $this->t('Left start'),
-        'left-end' => $this->t('Left end'),
-      ],
-      '#default_value' => $this->get('position'),
-      '#states' => [
-        'visible' => [
-          ':input[name="selector"]' => ['!value' => ''],
-        ],
-      ],
-    ];
+    $form = parent::buildConfigurationForm($form, $form_state);
     $tags = Xss::getAdminTagList();
     $form['body'] = [
       '#type' => 'textarea',
@@ -152,12 +81,6 @@ class TipPluginText extends TipPluginBase implements ContainerFactoryPluginInter
     ];
 
     return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
   }
 
 }

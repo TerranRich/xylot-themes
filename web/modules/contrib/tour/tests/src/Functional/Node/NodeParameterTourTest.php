@@ -34,6 +34,8 @@ class NodeParameterTourTest extends TourTestBase {
     $this->drupalCreateContentType(['type' => 'page']);
     // Create a page article.
     $this->drupalCreateContentType(['type' => 'article']);
+    // Create a blog content type.
+    $this->drupalCreateContentType(['type' => 'blog']);
 
     $this->drupalLogin($this->adminUser);
 
@@ -53,6 +55,15 @@ class NodeParameterTourTest extends TourTestBase {
     $node = $this->drupalCreateNode([
       'type' => 'article',
       'title' => 'Article',
+    ]);
+
+    $this->drupalGet($node->toUrl()->toString() . '/edit');
+    $this->assertTourTips();
+
+    // Node 4, should have tour.
+    $node = $this->drupalCreateNode([
+      'type' => 'blog',
+      'title' => 'Blog',
     ]);
 
     $this->drupalGet($node->toUrl()->toString() . '/edit');

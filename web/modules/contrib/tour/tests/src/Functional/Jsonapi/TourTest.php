@@ -84,14 +84,23 @@ class TourTest extends ConfigEntityResourceTestBase {
    */
   protected function getExpectedDocument(): array {
     $self_url = Url::fromUri('base:/jsonapi/tour/tour/' . $this->entity->uuid())->setAbsolute()->toString(TRUE)->getGeneratedUrl();
+    $normalized_version = preg_replace('/x-dev$/', '0', \Drupal::VERSION);
+    if (version_compare($normalized_version, '11.2.0', '>=')) {
+      $json_href = 'http://jsonapi.org/format/1.1/';
+      $json_version = '1.1';
+    }
+    else {
+      $json_href = 'http://jsonapi.org/format/1.0/';
+      $json_version = '1.0';
+    }
     return [
       'jsonapi' => [
         'meta' => [
           'links' => [
-            'self' => ['href' => 'http://jsonapi.org/format/1.0/'],
+            'self' => ['href' => $json_href],
           ],
         ],
-        'version' => '1.0',
+        'version' => $json_version,
       ],
       'links' => [
         'self' => ['href' => $self_url],

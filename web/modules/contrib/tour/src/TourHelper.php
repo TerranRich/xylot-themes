@@ -7,9 +7,10 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Path\PathMatcher;
+use Drupal\Core\Path\PathMatcherInterface;
 use Drupal\Core\Routing\CurrentRouteMatch;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\taxonomy\VocabularyInterface;
@@ -30,7 +31,7 @@ class TourHelper implements ContainerInjectionInterface {
    *
    * @param \Drupal\Core\Routing\CurrentRouteMatch $currentRouteMatch
    *   Checks the current route.
-   * @param \Drupal\Core\Path\PathMatcher $pathMatcher
+   * @param \Drupal\Core\Path\PathMatcherInterface $pathMatcher
    *   Path matching helper service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
@@ -39,7 +40,7 @@ class TourHelper implements ContainerInjectionInterface {
    */
   public function __construct(
     protected CurrentRouteMatch $currentRouteMatch,
-    protected PathMatcher $pathMatcher,
+    protected PathMatcherInterface $pathMatcher,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ConfigFactoryInterface $configFactory,
   ) {
@@ -78,7 +79,6 @@ class TourHelper implements ContainerInjectionInterface {
    *   An associative array of tour entities keyed by their entity IDs.
    */
   public function loadTourEntities(): array {
-    $tour_params = [];
     $route_match = $this->currentRouteMatch;
     $route_name = $this->checkRoute();
     try {
@@ -89,46 +89,68 @@ class TourHelper implements ContainerInjectionInterface {
         ->accessCheck(FALSE)
         ->execute();
 
-      if (!empty($results) && $tours = Tour::loadMultiple(array_keys($results))) {
-        // First loop get all route params.
-        foreach ($tours as $tour_id => $tour) {
-          $tour_routes = $tour->getRoutes();
-          if (!empty($tour_routes)) {
-            foreach ($tour_routes as $tour_route) {
-              if (isset($tour_route['route_params'])) {
-                $tour_params = array_merge($tour_params, $tour_route['route_params']);
-              }
-            }
-          }
-        }
+      if (empty($results)) {
+        return $results;
+      }
 
-        $params = $route_match->getRawParameters()->all();
-        if (!empty($tour_params)) {
-          foreach ($tour_params as $key => $tour_param) {
+      // The $results match the route name. Test each of these to see if it
+      // also matches the route parameters.
+      $tours = Tour::loadMultiple(array_keys($results));
+      $matches = [];
+      $route_parameters = $route_match->getRawParameters()->all();
+
+      foreach ($tours as $tour_id => $tour) {
+        $tour_routes = $tour->getRoutes();
+        foreach ($tour_routes as $tour_route) {
+          if ($tour_route['route_name'] != $route_name) {
+            // Ignore tour routes that are not related to this route.
+            continue;
+          }
+
+          // Massage the route parameters using the tour route parameters.
+          // This adds additional parameter information that can be compared
+          // against the routes parameters in the tour.
+          $params = $route_parameters;
+          foreach ($tour_route['route_params'] ?? [] as $key => $tour_param) {
             switch ($key) {
               case 'id':
               case 'dashboard':
                 if (($entity = $route_match->getParameter('dashboard')) && ($entity instanceof ConfigEntityInterface)) {
+                  if ($entity->id() === $tour_param) {
+                    // Add the id as comparable parameter.
+                    $params['id'] = $entity->id();
+                  }
+                }
+                break;
+
+              case 'node_type':
+              case 'node':
+              case 'taxonomy_term':
+                if ($key === 'node_type') {
+                  $key = 'node';
+                }
+
+                if (($entity = $route_match->getParameter($key)) && ($entity instanceof EntityInterface)) {
                   if ($entity->id() === $tour_param) {
                     $params['id'] = $entity->id();
                   }
                 }
                 break;
 
-              case 'node':
-              case 'taxonomy_term':
-                if (($entity = $route_match->getParameter($key)) && ($entity instanceof EntityInterface)) {
-                  if ($entity->id() === $tour_param) {
-                    $params['bundle'] = $entity->id();
-                  }
-                }
-                break;
-
               case 'bundle':
-              case 'node_type':
-                if (($entity = $route_match->getParameter('node')) && ($entity instanceof EntityInterface)) {
-                  if ($entity->bundle() === $tour_param) {
-                    $params['bundle'] = $entity->bundle();
+                if (($route = $route_match->getRouteObject()) && ($parameters = $route->getOption('parameters'))) {
+                  // Determine if the current route represents an entity.
+                  foreach ($parameters as $name => $options) {
+                    if (isset($options['type']) && str_starts_with($options['type'], 'entity:')) {
+                      $entity = $route_match->getParameter($name);
+                      if ($entity instanceof ContentEntityInterface && $entity->hasLinkTemplate('canonical')) {
+                        if ($entity->bundle() === $tour_param) {
+                          $params['bundle'] = $entity->bundle();
+                        }
+                      }
+                      // Since entity was found, no need to iterate further.
+                      break;
+                    }
                   }
                 }
                 break;
@@ -136,6 +158,7 @@ class TourHelper implements ContainerInjectionInterface {
               case 'taxonomy_vocabulary':
                 if (($vocab = $route_match->getParameter('taxonomy_vocabulary')) && ($vocab instanceof VocabularyInterface)) {
                   if ($vocab->id() === $tour_param) {
+                    // Add the vocabulary (bundle) as comparable parameter.
                     $params['bundle'] = $vocab->id();
                   }
                 }
@@ -145,20 +168,15 @@ class TourHelper implements ContainerInjectionInterface {
                 break;
             }
           }
-        }
 
-        foreach ($tours as $tour_id => $tour) {
-          // Match on the parameters.
-          if (!$tour->hasMatchingRoute($route_name, $params)) {
-            unset($results[$tour_id]);
+          // Test if the tour matches the route name and parameters.
+          if ($tour->hasMatchingRoute($route_name, $params)) {
+            $matches[$tour_id] = $results[$tour_id];
           }
         }
-
-        // So none of the params matched the tour so return empty array.
-        return $results;
       }
 
-      return $results;
+      return $matches;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       return [];

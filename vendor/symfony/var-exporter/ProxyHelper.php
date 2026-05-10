@@ -28,19 +28,19 @@ final class ProxyHelper
     public static function generateLazyGhost(\ReflectionClass $class): string
     {
         if (\PHP_VERSION_ID >= 80200 && \PHP_VERSION_ID < 80300 && $class->isReadOnly()) {
-            throw new LogicException(sprintf('Cannot generate lazy ghost with PHP < 8.3: class "%s" is readonly.', $class->name));
+            throw new LogicException(\sprintf('Cannot generate lazy ghost with PHP < 8.3: class "%s" is readonly.', $class->name));
         }
         if ($class->isFinal()) {
-            throw new LogicException(sprintf('Cannot generate lazy ghost: class "%s" is final.', $class->name));
+            throw new LogicException(\sprintf('Cannot generate lazy ghost: class "%s" is final.', $class->name));
         }
         if ($class->isInterface() || $class->isAbstract() || $class->isTrait()) {
             throw new LogicException(\sprintf('Cannot generate lazy ghost: "%s" is not a concrete class.', $class->name));
         }
         if (\stdClass::class !== $class->name && $class->isInternal()) {
-            throw new LogicException(sprintf('Cannot generate lazy ghost: class "%s" is internal.', $class->name));
+            throw new LogicException(\sprintf('Cannot generate lazy ghost: class "%s" is internal.', $class->name));
         }
         if ($class->hasMethod('__get') && 'mixed' !== (self::exportType($class->getMethod('__get')) ?? 'mixed')) {
-            throw new LogicException(sprintf('Cannot generate lazy ghost: return type of method "%s::__get()" should be "mixed".', $class->name));
+            throw new LogicException(\sprintf('Cannot generate lazy ghost: return type of method "%s::__get()" should be "mixed".', $class->name));
         }
 
         static $traitMethods;
@@ -48,14 +48,14 @@ final class ProxyHelper
 
         foreach ($traitMethods as $method) {
             if ($class->hasMethod($method->name) && $class->getMethod($method->name)->isFinal()) {
-                throw new LogicException(sprintf('Cannot generate lazy ghost: method "%s::%s()" is final.', $class->name, $method->name));
+                throw new LogicException(\sprintf('Cannot generate lazy ghost: method "%s::%s()" is final.', $class->name, $method->name));
             }
         }
 
         $parent = $class;
         while ($parent = $parent->getParentClass()) {
             if (\stdClass::class !== $parent->name && $parent->isInternal()) {
-                throw new LogicException(sprintf('Cannot generate lazy ghost: class "%s" extends "%s" which is internal.', $class->name, $parent->name));
+                throw new LogicException(\sprintf('Cannot generate lazy ghost: class "%s" extends "%s" which is internal.', $class->name, $parent->name));
             }
         }
 
@@ -70,7 +70,7 @@ final class ProxyHelper
             }
 
             if ($flags & (\ReflectionProperty::IS_FINAL | \ReflectionProperty::IS_PRIVATE)) {
-                throw new LogicException(sprintf('Cannot generate lazy ghost: property "%s::$%s" is final or private(set).', $class->name, $name));
+                throw new LogicException(\sprintf('Cannot generate lazy ghost: property "%s::$%s" is final or private(set).', $class->name, $name));
             }
 
             $p = $propertyScopes[$k][4] ?? Hydrator::$propertyScopes[$class->name][$k][4] = new \ReflectionProperty($scope, $name);
@@ -92,7 +92,7 @@ final class ProxyHelper
                     $arg = '$'.$method->getParameters()[0]->name;
                     $hooks .= "        set({$parameters}) { \$this->initializeLazyObject(); parent::\${$name}::set({$arg}); }\n";
                 } else {
-                    throw new LogicException(sprintf('Cannot generate lazy ghost: hook "%s::%s()" is not supported.', $class->name, $method->name));
+                    throw new LogicException(\sprintf('Cannot generate lazy ghost: hook "%s::%s()" is not supported.', $class->name, $method->name));
                 }
             }
 
@@ -127,13 +127,13 @@ final class ProxyHelper
     public static function generateLazyProxy(?\ReflectionClass $class, array $interfaces = []): string
     {
         if (!class_exists($class?->name ?? \stdClass::class, false)) {
-            throw new LogicException(sprintf('Cannot generate lazy proxy: "%s" is not a class.', $class->name));
+            throw new LogicException(\sprintf('Cannot generate lazy proxy: "%s" is not a class.', $class->name));
         }
         if ($class?->isFinal()) {
-            throw new LogicException(sprintf('Cannot generate lazy proxy: class "%s" is final.', $class->name));
+            throw new LogicException(\sprintf('Cannot generate lazy proxy: class "%s" is final.', $class->name));
         }
         if (\PHP_VERSION_ID >= 80200 && \PHP_VERSION_ID < 80300 && $class?->isReadOnly()) {
-            throw new LogicException(sprintf('Cannot generate lazy proxy with PHP < 8.3: class "%s" is readonly.', $class->name));
+            throw new LogicException(\sprintf('Cannot generate lazy proxy with PHP < 8.3: class "%s" is readonly.', $class->name));
         }
 
         $propertyScopes = $class ? Hydrator::$propertyScopes[$class->name] ??= Hydrator::getPropertyScopes($class->name) : [];
@@ -159,7 +159,7 @@ final class ProxyHelper
                 }
 
                 if ($flags & (\ReflectionProperty::IS_FINAL | \ReflectionProperty::IS_PRIVATE)) {
-                    throw new LogicException(sprintf('Cannot generate lazy proxy: property "%s::$%s" is final or private(set).', $class->name, $name));
+                    throw new LogicException(\sprintf('Cannot generate lazy proxy: property "%s::$%s" is final or private(set).', $class->name, $name));
                 }
 
                 $p = $propertyScopes[$k][4] ?? Hydrator::$propertyScopes[$class->name][$k][4] = new \ReflectionProperty($scope, $name);
@@ -170,7 +170,7 @@ final class ProxyHelper
         $methodReflectors = [$class?->getMethods(\ReflectionMethod::IS_PUBLIC | \ReflectionMethod::IS_PROTECTED) ?? []];
         foreach ($interfaces as $interface) {
             if (!$interface->isInterface()) {
-                throw new LogicException(sprintf('Cannot generate lazy proxy: "%s" is not an interface.', $interface->name));
+                throw new LogicException(\sprintf('Cannot generate lazy proxy: "%s" is not an interface.', $interface->name));
             }
             $methodReflectors[] = $interface->getMethods();
 
@@ -204,31 +204,31 @@ final class ProxyHelper
                 if ('get' === $hook) {
                     $ref = ($method->returnsReference() ? '&' : '');
                     $hooks .= <<<EOPHP
-                            {$ref}get {
-                                if (isset(\$this->lazyObjectState)) {
-                                    return (\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$p->name};
+                                {$ref}get {
+                                    if (isset(\$this->lazyObjectState)) {
+                                        return (\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$p->name};
+                                    }
+
+                                    return parent::\${$p->name}::get();
                                 }
 
-                                return parent::\${$p->name}::get();
-                            }
-
-                    EOPHP;
+                        EOPHP;
                 } elseif ('set' === $hook) {
                     $parameters = self::exportParameters($method, true);
                     $arg = '$'.$method->getParameters()[0]->name;
                     $hooks .= <<<EOPHP
-                            set({$parameters}) {
-                                if (isset(\$this->lazyObjectState)) {
-                                    \$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)();
-                                    \$this->lazyObjectState->realInstance->{$p->name} = {$arg};
+                                set({$parameters}) {
+                                    if (isset(\$this->lazyObjectState)) {
+                                        \$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)();
+                                        \$this->lazyObjectState->realInstance->{$p->name} = {$arg};
+                                    }
+
+                                    parent::\${$p->name}::set({$arg});
                                 }
 
-                                parent::\${$p->name}::set({$arg});
-                            }
-
-                    EOPHP;
+                        EOPHP;
                 } else {
-                    throw new LogicException(sprintf('Cannot generate lazy proxy: hook "%s::%s()" is not supported.', $class->name, $method->name));
+                    throw new LogicException(\sprintf('Cannot generate lazy proxy: hook "%s::%s()" is not supported.', $class->name, $method->name));
                 }
             }
 
@@ -266,7 +266,7 @@ final class ProxyHelper
             }
             if ($method->isFinal()) {
                 if ($extendsInternalClass || $methodsHaveToBeProxied || method_exists(LazyProxyTrait::class, $method->name)) {
-                    throw new LogicException(sprintf('Cannot generate lazy proxy: method "%s::%s()" is final.', $class->name, $method->name));
+                    throw new LogicException(\sprintf('Cannot generate lazy proxy: method "%s::%s()" is final.', $class->name, $method->name));
                 }
                 continue;
             }
@@ -281,12 +281,12 @@ final class ProxyHelper
                 $body = "        $parentCall;";
             } elseif (str_ends_with($signature, '): never') || str_ends_with($signature, '): void')) {
                 $body = <<<EOPHP
-                        if (isset(\$this->lazyObjectState)) {
-                            (\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$method->name}({$args});
-                        } else {
-                            {$parentCall};
-                        }
-                EOPHP;
+                            if (isset(\$this->lazyObjectState)) {
+                                (\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$method->name}({$args});
+                            } else {
+                                {$parentCall};
+                            }
+                    EOPHP;
             } else {
                 if (!$methodsHaveToBeProxied && !$method->isAbstract()) {
                     // Skip proxying methods that might return $this
@@ -303,12 +303,12 @@ final class ProxyHelper
                 }
 
                 $body = <<<EOPHP
-                        if (isset(\$this->lazyObjectState)) {
-                            return (\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$method->name}({$args});
-                        }
+                            if (isset(\$this->lazyObjectState)) {
+                                return (\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$method->name}({$args});
+                            }
 
-                        return {$parentCall};
-                EOPHP;
+                            return {$parentCall};
+                    EOPHP;
             }
             $methods[$lcName] = "    {$signature}\n    {\n{$body}\n    }";
         }
@@ -335,10 +335,10 @@ final class ProxyHelper
         ) {
             // fix contravariance type problem when $class declares a `__unserialize()` method without typehint.
             $lazyProxyTraitStatement = <<<EOPHP
-            use \Symfony\Component\VarExporter\LazyProxyTrait {
-                    __unserialize as private __doUnserialize;
-                }
-            EOPHP;
+                use \Symfony\Component\VarExporter\LazyProxyTrait {
+                        __unserialize as private __doUnserialize;
+                    }
+                EOPHP;
 
             $body .= <<<EOPHP
 
@@ -350,8 +350,8 @@ final class ProxyHelper
                 EOPHP;
         } else {
             $lazyProxyTraitStatement = <<<EOPHP
-            use \Symfony\Component\VarExporter\LazyProxyTrait;
-            EOPHP;
+                use \Symfony\Component\VarExporter\LazyProxyTrait;
+                EOPHP;
         }
 
         return <<<EOPHP
@@ -396,7 +396,7 @@ final class ProxyHelper
             $args = substr($args, 0, -2);
         } else {
             $args = explode(', ', $args, 1 + $byRefIndex);
-            $args[$byRefIndex] = sprintf('...\array_slice(\func_get_args(), %d)', $byRefIndex);
+            $args[$byRefIndex] = \sprintf('...\array_slice(\func_get_args(), %d)', $byRefIndex);
             $args = implode(', ', $args);
         }
 
@@ -477,7 +477,9 @@ final class ProxyHelper
             return '';
         }
         if (null === $glue) {
-            return (!$noBuiltin && $type->allowsNull() && !\in_array($name, ['mixed', 'null'], true) ? '?' : '').$types[0];
+            $defaultNull = $owner instanceof \ReflectionParameter && 'NULL' === rtrim(substr(explode('$'.$owner->name.' = ', (string) $owner, 2)[1] ?? '', 0, -2));
+
+            return (!$noBuiltin && ($type->allowsNull() || $defaultNull) && !\in_array($name, ['mixed', 'null'], true) ? '?' : '').$types[0];
         }
         sort($types);
 
@@ -514,7 +516,7 @@ final class ProxyHelper
 
         $regexp = '/([\[\( ]|^)([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\\\\[a-zA-Z0-9_\x7f-\xff]++)*+)(\(?)(?!: )/';
         $callback = (false !== strpbrk($default, "\\:('") && $class = $param->getDeclaringClass())
-            ? fn ($m) => $m[1].match ($m[2]) {
+            ? static fn ($m) => $m[1].match ($m[2]) {
                 'new', 'false', 'true', 'null' => $m[2],
                 'NULL' => 'null',
                 'self' => '\\'.$class->name,
@@ -522,13 +524,13 @@ final class ProxyHelper
                 'parent' => ($parent = $class->getParentClass()) ? '\\'.$parent->name : 'parent',
                 default => self::exportSymbol($m[2], '(' !== $m[3], $namespace),
             }.$m[3]
-            : fn ($m) => $m[1].match ($m[2]) {
+            : static fn ($m) => $m[1].match ($m[2]) {
                 'new', 'false', 'true', 'null', 'self', 'parent' => $m[2],
                 'NULL' => 'null',
                 default => self::exportSymbol($m[2], '(' !== $m[3], $namespace),
             }.$m[3];
 
-        return implode('', array_map(fn ($part) => match ($part[0]) {
+        return implode('', array_map(static fn ($part) => match ($part[0]) {
             '"' => $part, // for internal classes only
             "'" => false !== strpbrk($part, "\\\0\r\n") ? '"'.substr(str_replace(['$', "\0", "\r", "\n"], ['\$', '\0', '\r', '\n'], $part), 1, -1).'"' : $part,
             default => preg_replace_callback($regexp, $callback, $part),

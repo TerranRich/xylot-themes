@@ -43,7 +43,6 @@
         "mglaman/phpstan-drupal": "^1.1",
         "phpstan/phpstan": "^1.10",
         "symfony/dotenv": "^6.0",
-        "drupal/forum": "^1.0",
         "drupal/imagecroper": "^9.0",
         "drupal/image_widget_crop": "^2.4",
         "drupal/redirect": "^1.9",

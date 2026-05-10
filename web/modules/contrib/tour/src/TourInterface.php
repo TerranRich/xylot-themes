@@ -26,9 +26,17 @@ interface TourInterface extends ConfigEntityInterface {
    *   Associative array of raw route params.
    *
    * @return bool
-   *   TRUE if the tour matches the route parameters.
+   *   TRUE if the tour matches any route and their route parameters.
    */
   public function hasMatchingRoute(string $route_name, array $route_params): bool;
+
+  /**
+   * Returns the module of the tour.
+   *
+   * @return string
+   *   The string of module(s). Empty string if NULL.
+   */
+  public function getModule(): string;
 
   /**
    * Returns tip plugin.
@@ -48,10 +56,5 @@ interface TourInterface extends ConfigEntityInterface {
    *   An array of tip plugins.
    */
   public function getTips(): array;
-
-  /**
-   * Resets the statically cached keyed routes.
-   */
-  public function resetKeyedRoutes();
 
 }

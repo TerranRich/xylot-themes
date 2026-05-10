@@ -68,7 +68,12 @@ class TourButtonBlock extends BlockBase implements ContainerFactoryPluginInterfa
     $no_tips = empty($results);
 
     if ($this->tourHelper->shouldEmptyBeHidden($no_tips)) {
-      return [];
+      return [
+        '#cache' => [
+          'contexts' => ['url'],
+          'tags' => ['tour_settings'],
+        ],
+      ];
     }
 
     $tour_avail_text = $tour_helper->getTourLabels()['tour_avail_text'];

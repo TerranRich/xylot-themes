@@ -137,7 +137,7 @@ class ClassMemberSpacingSniff implements Sniff
 
 			$phpcsFile->fixer->beginChangeset();
 
-			$phpcsFile->fixer->addContent($previousMemberEndPointer, $newLines);
+			FixerHelper::add($phpcsFile, $previousMemberEndPointer, $newLines);
 
 			FixerHelper::removeBetween($phpcsFile, $previousMemberEndPointer, $firstPointerOnMemberLine);
 
@@ -175,7 +175,7 @@ class ClassMemberSpacingSniff implements Sniff
 					continue;
 				}
 
-				$propertyPointer = TokenHelper::findNext($phpcsFile, [T_VARIABLE, T_FUNCTION, T_CONST, T_ENUM_CASE], $memberPointer + 1);
+				$propertyPointer = TokenHelper::findNext($phpcsFile, [T_VARIABLE, T_FUNCTION, T_CONST], $memberPointer + 1);
 				if (
 					$propertyPointer === null
 					|| $tokens[$propertyPointer]['code'] !== T_VARIABLE

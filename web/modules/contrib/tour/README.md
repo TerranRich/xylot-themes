@@ -16,6 +16,7 @@ basis we will not be doing any Tour or Tip updates retroactively.**
 - Requirements
 - Installation
 - Configuration
+- Extension modules
 - Recipes
 - Maintainers
 - Shout-outs
@@ -23,6 +24,9 @@ basis we will not be doing any Tour or Tip updates retroactively.**
 ## Requirements (required)
 
 This module requires no modules outside of Drupal core.
+
+This module is stuck on shepherd v13 due to their licensing agreement
+[License](https://github.com/shipshapecode/shepherd?tab=License-1-ov-file#readme)
 
 ## Installation
 
@@ -70,6 +74,15 @@ information, see [Installing Drupal Modules](https://www.drupal.org/docs/extendi
 - Tour ships with a hot key feature that triggers with 'alt' + 't'.
 - It has been discovered that Shepherd allows for previous/next Tour tips using
   the left and right arrow keys.
+
+## Extension Modules
+
+- [Tour Extras](https://www.drupal.org/project/tour_extras)
+  - Provides a formatted text tip plugin that extends the standard text tip with
+    WYSIWYG editing capabilities.
+  - Provides a URL step tip plugin that removes the last step of a tour and
+    hooks into the preceding step's "Next" button action, to redirect to a
+    specified url.
 
 ## Recipes
 

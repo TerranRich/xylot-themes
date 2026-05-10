@@ -401,13 +401,13 @@ class PropertyTypeHintSniff implements Sniff
 		}
 
 		$phpcsFile->fixer->beginChangeset();
-		$phpcsFile->fixer->addContentBefore($propertyPointer, sprintf('%s ', $propertyTypeHint));
+		FixerHelper::addBefore($phpcsFile, $propertyPointer, sprintf('%s ', $propertyTypeHint));
 
 		if (
 			$pointerAfterProperty !== null
 			&& in_array($tokens[$pointerAfterProperty]['code'], [T_SEMICOLON, T_COMMA], true)
 		) {
-			$phpcsFile->fixer->addContent($propertyPointer, ' = null');
+			FixerHelper::add($phpcsFile, $propertyPointer, ' = null');
 		}
 
 		$phpcsFile->fixer->endChangeset();
@@ -604,14 +604,12 @@ class PropertyTypeHintSniff implements Sniff
 	 */
 	private function getTraversableTypeHints(): array
 	{
-		if ($this->normalizedTraversableTypeHints === null) {
-			$this->normalizedTraversableTypeHints = array_map(
-				static fn (string $typeHint): string => NamespaceHelper::isFullyQualifiedName($typeHint)
-						? $typeHint
-						: sprintf('%s%s', NamespaceHelper::NAMESPACE_SEPARATOR, $typeHint),
-				SniffSettingsHelper::normalizeArray($this->traversableTypeHints),
-			);
-		}
+		$this->normalizedTraversableTypeHints ??= array_map(
+			static fn (string $typeHint): string => NamespaceHelper::isFullyQualifiedName($typeHint)
+					? $typeHint
+					: sprintf('%s%s', NamespaceHelper::NAMESPACE_SEPARATOR, $typeHint),
+			SniffSettingsHelper::normalizeArray($this->traversableTypeHints),
+		);
 		return $this->normalizedTraversableTypeHints;
 	}
 

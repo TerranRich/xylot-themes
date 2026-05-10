@@ -17,12 +17,20 @@ class LateBindingLogger implements LoggerInterface
     ) {
     }
 
+    #[\Override]
+    public function logRecordBuilder(): LogRecordBuilderInterface
+    {
+        return ($this->logger ??= ($this->factory)())->logRecordBuilder();
+    }
+
+    #[\Override]
     public function emit(LogRecord $logRecord): void
     {
         ($this->logger ??= ($this->factory)())->emit($logRecord);
     }
 
-    public function isEnabled(?ContextInterface $context = null, ?int $severityNumber = null): bool
+    #[\Override]
+    public function isEnabled(?ContextInterface $context = null, ?int $severityNumber = null, ?string $eventName = null): bool
     {
         return true;
     }

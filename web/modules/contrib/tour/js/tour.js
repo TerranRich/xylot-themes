@@ -1,13 +1,9 @@
-/* eslint import/no-unresolved: 0 */
+/* global offsetFloating */
 /**
  * @file
  * Attaches behaviors for the Tour module's toolbar tab.
  */
-
-import Shepherd from 'shepherd.js';
-import 'shepherd.js/dist/css/shepherd.css';
-
-(($, Backbone, Drupal, settings, document, once) => {
+(($, Backbone, Shepherd, offsetFloating, Drupal, settings, document, once) => {
   const queryString = decodeURI(window.location.search);
 
   /**
@@ -37,39 +33,20 @@ import 'shepherd.js/dist/css/shepherd.css';
           model,
         });
 
-        model
-          // Allow other scripts to respond to tour events.
-          .on('change:isActive', (tourModel, isActive) => {
-            $(document).trigger(
-              isActive ? 'drupalTourStarted' : 'drupalTourStopped',
-            );
-          });
         // Initialization: check whether a tour is available on the current
         // page.
         if (settings._tour_internal) {
           model.set('tour', settings._tour_internal);
         }
-        // Start the tour immediately if toggled via query string.
-        if (/tour=\\?/i.test(queryString)) {
-          model.set('isActive', true);
-        }
-
-        document.addEventListener('keydown', function (event) {
-          if (event.altKey && event.code === 'KeyT') {
-            model.set('isActive', true);
-            event.preventDefault();
-            event.stopPropagation();
-          }
-        });
 
         // Provide an API.
-        Drupal.tour.setActive = function (active = true) {
+        Drupal.tour.setActive = function setActive(active = true) {
           model.set('isActive', active);
         };
-        Drupal.tour.get = function () {
+        Drupal.tour.get = function get() {
           return Shepherd.activeTour;
         };
-        Drupal.tour.getPromise = function (timeout = 2000) {
+        Drupal.tour.getPromise = function getPromise(timeout = 2000) {
           const timerMillSecs = 10;
           return new Promise((resolve, reject) => {
             (function waitForTour(timeLeft) {
@@ -79,12 +56,36 @@ import 'shepherd.js/dist/css/shepherd.css';
               if (timeLeft <= 0) {
                 reject();
               }
-              setTimeout(function () {
+              setTimeout(function waitForTourTimeout() {
                 waitForTour(timeLeft - timerMillSecs);
               }, timerMillSecs);
             })(timeout);
           });
         };
+
+        // Register events:
+        model
+          // Allow other scripts to respond to tour events.
+          .on('change:isActive', (tourModel, isActive) => {
+            $(document).trigger(
+              isActive ? 'drupalTourStarted' : 'drupalTourStopped',
+            );
+          });
+
+        // Start the tour immediately if toggled via query string.
+        window.addEventListener('load', (event) => {
+          if (/[?&]tour(=|$)/i.test(queryString)) {
+            model.set('isActive', true);
+          }
+        });
+
+        document.addEventListener('keydown', function handleKeydown(event) {
+          if (event.altKey && event.code === 'KeyT') {
+            model.set('isActive', true);
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        });
       });
     },
   };
@@ -178,7 +179,8 @@ import 'shepherd.js/dist/css/shepherd.css';
         }
         // Render the state.
         const isActive = this.model.get('isActive');
-        this.$el.each(function (index, element) {
+        this.$el.each(function toggleElement(index, element) {
+          // eslint-disable-next-line no-unused-vars
           const toggleButton =
             $(element).prop('tagName') === 'BUTTON' ||
             $(element).attr('role') === 'button'
@@ -209,7 +211,9 @@ import 'shepherd.js/dist/css/shepherd.css';
 
             const shepherdTour = new Shepherd.Tour(settings.tourShepherdConfig);
             shepherdTour.on('cancel', () => {
-              that.el.focus();
+              if (that.el && typeof that.el.focus === 'function') {
+                that.el.focus();
+              }
               that.model.set('isActive', false);
             });
             shepherdTour.on('complete', () => {
@@ -237,23 +241,26 @@ import 'shepherd.js/dist/css/shepherd.css';
                 buttons: actionButtons,
                 classes: tourStepConfig.classes,
                 index,
+                floatingUIOptions: {
+                  middleware: [offsetFloating({ mainAxis: 20, crossAxis: 0 })],
+                },
               };
 
               tourItemOptions.when = {
                 show() {
                   const nextButton =
-                    shepherdTour.currentStep.el.querySelector('footer button');
+                    shepherdTour.currentStep?.el?.querySelector?.(
+                      'footer button',
+                    );
 
-                  // Drupal disables Shepherd's built-in focus after item
-                  // creation functionality due to focus being set on the tour
-                  // item container after every scroll and resize event. In its
-                  // place, the 'next' button is focused here.
-                  nextButton.focus();
+                  if (nextButton && typeof nextButton.focus === 'function') {
+                    nextButton.focus();
+                  }
                 },
               };
 
               const step = shepherdTour.addStep(tourItemOptions);
-              step.on('before-show', function () {
+              step.on('before-show', function beforeShow() {
                 const selector = step.options.attachTo.element;
                 // eslint-disable-next-line no-jquery/no-is
                 if (selector && !$(selector).is(':visible')) {
@@ -271,7 +278,7 @@ import 'shepherd.js/dist/css/shepherd.css';
               });
 
               // @todo remove when fixed upstream.
-              step.on('show', function () {
+              step.on('show', function onShow() {
                 const shepherdElement = document.querySelectorAll(
                   '.shepherd-element.shepherd-enabled',
                 );
@@ -481,4 +488,13 @@ import 'shepherd.js/dist/css/shepherd.css';
    */
   Drupal.theme.tourItemContent = (tourStepConfig) =>
     `${tourStepConfig.body}<div class="tour-progress">${tourStepConfig.counter}</div>`;
-})(jQuery, Backbone, Drupal, drupalSettings, document, once);
+})(
+  jQuery,
+  Backbone,
+  Shepherd,
+  offsetFloating,
+  Drupal,
+  drupalSettings,
+  document,
+  once,
+);

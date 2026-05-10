@@ -39,8 +39,6 @@ class TourTest extends UnitTestCase {
       ->willReturn($routes);
 
     $this->assertSame($result, $tour->hasMatchingRoute($route_name, $route_params));
-
-    $tour->resetKeyedRoutes();
   }
 
   /**

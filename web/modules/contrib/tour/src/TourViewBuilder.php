@@ -182,6 +182,10 @@ class TourViewBuilder extends EntityViewBuilder {
       $build['#attached']['drupalSettings']['_tour_internal'] = $items;
       $build['#attached']['library'][] = 'tour/tour';
     }
+
+    // Allow modules to alter the tour build array.
+    $this->moduleHandler()->alter('tour_build', $build, $entities);
+
     return $build;
   }
 

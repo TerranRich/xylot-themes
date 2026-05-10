@@ -55,5 +55,20 @@ function hook_tour_tips_info_alter(&$info) {
 }
 
 /**
+ * Allow modules to alter the tour build array before rendering.
+ *
+ * @param array $build
+ *   The render array for the tour.
+ * @param \Drupal\tour\TourInterface[] $entities
+ *   An array of tour entities that are being rendered.
+ */
+function hook_tour_build_alter(array &$build, array $entities) {
+  // Conditionally add a custom library to all tours:
+  if (Drupal::currentUser()->hasPermission('administer tour')) {
+    $build['#attached']['library'][] = 'my_module/tour_styling';
+  }
+}
+
+/**
  * @} End of "addtogroup hooks".
  */
